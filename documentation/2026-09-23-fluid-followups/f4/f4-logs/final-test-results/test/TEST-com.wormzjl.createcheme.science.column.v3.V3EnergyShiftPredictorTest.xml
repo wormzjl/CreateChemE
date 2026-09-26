@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3EnergyShiftPredictorTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:06.623Z" hostname="WORMZ-PC" time="0.493">
+  <properties/>
+  <testcase name="thePredictorReducesTheFirstHeatRungResidualOfTheThreeCoolerArrangement()" classname="com.wormzjl.createcheme.science.column.v3.V3EnergyShiftPredictorTest" time="0.443"/>
+  <testcase name="aSingularSystemIsRefusedRatherThanReturningAnArbitraryShift()" classname="com.wormzjl.createcheme.science.column.v3.V3EnergyShiftPredictorTest" time="0.01"/>
+  <testcase name="theCommonModeSignatureNeedsMoreThanHalfTheRowsOnOneSide()" classname="com.wormzjl.createcheme.science.column.v3.V3EnergyShiftPredictorTest" time="0.01"/>
+  <testcase name="aBoundedShiftStillReducesTheLinearisedEnergyResidual()" classname="com.wormzjl.createcheme.science.column.v3.V3EnergyShiftPredictorTest" time="0.01"/>
+  <testcase name="theTridiagonalSystemReproducesAKnownTemperatureShiftOnAHandBuiltColumn()" classname="com.wormzjl.createcheme.science.column.v3.V3EnergyShiftPredictorTest" time="0.011"/>
+  <testcase name="theShiftIsScaledToTheTrayBoundWithoutChangingItsDirection()" classname="com.wormzjl.createcheme.science.column.v3.V3EnergyShiftPredictorTest" time="0.009"/>
+  <system-out><![CDATA[Three-cooler no-draw case: 0.4336087 s; cold/stage-continuation/4-8-15-30/fine-fd/heat-ramp-1.0/heat-3; [stage-trace cutoff=0.0; truncated=154/480; one-phase=15; closure-pruned=0; defect/feed=0.00000, energy-shift predictor: applied=4, declined=0, largest shift=40.0 K, first heat-ramp-0.25 scaled energy 0.020557704831569303 -> 0.014904539781864424, floor support refreshed 1 time(s); retained=326/480, scaled residual: initial=1.2811263161438546E-10, final=1.2811263161438546E-10, dominant residual: EquationId[family=VAPOR_LIQUID_EQUILIBRIUM, node=30, component=13], physical=1.2811263161438546E-10, dominant VLE state: component=cdu17_pc11, node=30, temperature=491.92973278107576, liquid-flow=69.69591753232005, vapor-flow=6.262969103952404E-5, verified final Newton correction]
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

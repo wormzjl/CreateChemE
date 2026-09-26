@@ -1,0 +1,14 @@
+# Fandino O., Trusler J.P.M., Vega-Maza D. (2015). Phase behavior of (CO2 + H2) and (CO2 + N2) at temperatures between
+# (218.15 and 303.15) K at pressures up to 15 MPa. Int. J. Greenhouse Gas Control 36, 78-92. DOI 10.1016/j.ijggc.2015.02.018.
+# Source copy: Imperial College Spiral hdl 10044/1/23572, "CO2-H2-N2 paper - accepted version.pdf" (CC BY-NC-ND 4.0),
+# raw/fandino-2015-ijggc-36-78-spiral-accepted.pdf (md5 e17156bc610601109ef7e191bcf803a8 = repository checksum).
+# Table 8 (manuscript p.23): experimental three-phase (S + L + V) locus, pairs of T and p; no phase compositions.
+# Units: T in K, p in MPa. Footnote: estimated standard uncertainty of T at given p, u(T) = 0.1 K.
+# Only the CO2 + N2 column is transcribed (the CO2 + H2 column is outside the pilot). Digits verbatim.
+# Use: P4/G4 liquid-competition check at the CO2-rich end (the SLV line of CO2 + N2 just below the CO2 triple point),
+# not a frost-point holdout. Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+system	T_K	p_MPa
+CO2 + N2	214.87	4.821
+CO2 + N2	214.86	4.823
+CO2 + N2	213.90	7.842
+CO2 + N2	212.70	13.018

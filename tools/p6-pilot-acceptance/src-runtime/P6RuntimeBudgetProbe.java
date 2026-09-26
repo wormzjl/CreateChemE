@@ -1,0 +1,119 @@
+package com.wormzjl.createcheme.runtime.fluid;
+
+import com.wormzjl.createcheme.runtime.BoundedCpuSolveService;
+import com.wormzjl.createcheme.runtime.ProcessSolveServices;
+import com.wormzjl.createcheme.science.fluid.network.*;
+import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import com.wormzjl.createcheme.science.material.MaterialCatalog;
+import java.util.*;
+import org.junit.jupiter.api.Test;
+
+/**
+ * P6 runtime-budget probe (batch 2026-09-24-coolprop-low-temperature; detached to tools/p6-pilot-acceptance/, never
+ * committed): the real coordinator (the CrystalIslandRuntimeTest rig, certificates on as in a world, every admitted slice
+ * solved at once) drives a pilot island and a bundled-network island of the same shape for 1,200 online ticks (twelve
+ * 5 s intervals), and prints the scheduler counters (FluidRuntimeDiagnostics: solves dispatched, deadlines fired, holds,
+ * deferred retries, certificates, rested and replayed ticks), the checkpoints per slice (calls of the cancellation token,
+ * which the island command runs at every solver checkpoint) and the worker time per slice. Shapes: (1) one closed 0.1 m3
+ * vessel at 170 K and 1 MPa, 10 % CO2 in N2 on the pilot (deposits at its first interval) against N2 on the bundled
+ * network; (2) CrystalDepositionIslandTest (c)'s chain, a warm vessel (250 K, 1.3 MPa), a junction and a cold vessel
+ * (140 K, 1 MPa N2) with 4 mm pipes, 10 % CO2 in the warm vessel on the pilot against N2 on the bundled network.
+ */
+class P6RuntimeBudgetProbe {
+    static final String PILOT="createcheme:pilot_cryogenic",BUNDLED="createcheme:tjl20_methane_nitrogen";
+    static final int TICKS=1200;
+
+    static final class Counting implements BoundedCpuSolveService.CancellationToken {
+        long calls;
+        public long deadlineNanos(){return Long.MAX_VALUE;}public boolean isDeadlineExceeded(){return false;}
+        public boolean isCancellationRequested(){return false;}public void throwIfCancellationRequested(){calls++;}
+    }
+    static final class Rig {
+        final long[] epoch={0};
+        final Map<Long,IslandCoordinator.Attempt> attempts=new LinkedHashMap<>();
+        final Map<Long,ProcessSolveServices.FluidIslandCommand> commands=new HashMap<>();
+        final IslandCoordinator coordinator;long requests;
+        final List<long[]> slices=new ArrayList<>();
+        final FluidThermodynamics model;
+        Rig(FluidThermodynamics model) {
+            this.model=model;
+            coordinator=new IslandCoordinator(new IslandCoordinator.Dispatcher() {
+                public int availableWorkers(){return 8-attempts.size();}
+                public long nextRequestId(){return ++requests;}
+                public boolean submit(IslandCoordinator.Attempt attempt,ProcessSolveServices.FluidIslandCommand command){attempts.put(attempt.slice().requestId(),attempt);commands.put(attempt.slice().requestId(),command);return true;}
+                public void cancel(long request){}
+            },changed->{},()->0L,new IslandCoordinator.Settings(30_000_000_000L,20_000_000_000L,64,false,100,CertificatePolicy.defaults()),
+                    IslandCoordinator.CommitHook.NO_MATERIAL,()->epoch[0]);
+        }
+        void register(long id,PassiveNetwork graph) {
+            coordinator.register(new IslandCoordinator.Snapshot(id,0,graph,new IslandClock.Snapshot(0,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY"),model);
+        }
+        void tick() {
+            epoch[0]++;coordinator.tick();
+            while(!attempts.isEmpty()) {
+                for(long request:List.copyOf(attempts.keySet())) {
+                    var attempt=attempts.remove(request);var command=commands.remove(request);
+                    var token=new Counting();long start=System.nanoTime();
+                    var result=(ProcessSolveServices.FluidIslandSolveResult)command.solve(token);
+                    slices.add(new long[]{epoch[0],token.calls,System.nanoTime()-start,result.candidate().isPresent()?1:0});
+                    if(result.candidate().isEmpty())System.out.println("  held slice at tick "+epoch[0]+": "+result.detail());
+                    coordinator.completed(attempt,Optional.of(result));
+                }
+                coordinator.pump();
+            }
+        }
+    }
+
+    static FluidThermodynamics.State charge(FluidThermodynamics model,double t,double p,double[] z,double volume) {
+        var unit=model.flashTP(t,p,z,()->{});double[] n=z.clone();for(int i=0;i<n.length;i++)n[i]*=volume/unit.volume();
+        return model.flashTP(t,p,n,()->{});
+    }
+    static double[] basis(FluidThermodynamics model,double nitrogen,double co2) {
+        double[] z=new double[model.components().size()];
+        z[model.components().indexOf("Nitrogen")]=nitrogen;
+        if(co2>0)z[model.components().indexOf("CarbonDioxide")]=co2;
+        return z;
+    }
+
+    static void run(String label,FluidThermodynamics model,PassiveNetwork graph) {
+        FluidRuntimeDiagnostics.reset();FluidRuntimeDiagnostics.ENABLED=true;
+        var rig=new Rig(model);rig.register(1,graph);
+        long start=System.nanoTime();
+        try{for(int t=0;t<TICKS;t++)rig.tick();}finally{FluidRuntimeDiagnostics.ENABLED=false;}
+        long wall=System.nanoTime()-start;
+        var sample=FluidRuntimeDiagnostics.sample();var snapshot=rig.coordinator.snapshot(1);
+        long maxCheckpoints=0,sumCheckpoints=0,sumNanos=0,maxNanos=0,firstCheckpoints=rig.slices.isEmpty()?0:rig.slices.getFirst()[1];
+        for(var s:rig.slices){maxCheckpoints=Math.max(maxCheckpoints,s[1]);sumCheckpoints+=s[1];sumNanos+=s[2];maxNanos=Math.max(maxNanos,s[2]);}
+        int n=Math.max(1,rig.slices.size());
+        double crystals=0;for(var node:snapshot.graph().reservoirs())for(var stock:node.inventory().crystals().stocks())crystals+=stock.moles();
+        System.out.printf(Locale.ROOT,"%s | slices %d | checkpoints first %d mean %.0f max %d | worker ms mean %.2f max %.2f | committed tick %d | status %s | crystals %.6f mol | wall %.0f ms%n",
+                label,rig.slices.size(),firstCheckpoints,(double)sumCheckpoints/n,maxCheckpoints,sumNanos/1e6/n,maxNanos/1e6,snapshot.clock().committedTick(),snapshot.status(),crystals,wall/1e6);
+        var keys=List.of("solvesDispatched","completionsRouted","deadlinesFired","numericalHolds","budgetHolds","retriesDeferred","domainHolds",
+                "certificatesIssued","certificatesRenewed","certificateWakes","restedTicks","replayedTicks","materialisations","islandVisits","readinessPumps");
+        var line=new StringBuilder("  counters:");for(String k:keys)line.append(' ').append(k).append('=').append(sample.get(k));
+        System.out.println(line);
+        var perSlice=new StringBuilder("  slices (tick:checkpoints:ms):");for(var s:rig.slices)perSlice.append(String.format(Locale.ROOT," %d:%d:%.2f",s[0],s[1],s[2]/1e6));
+        System.out.println(perSlice);
+    }
+
+    @Test void pilotAgainstBundledIslandsOfTheSameShape() {
+        var catalog=MaterialCatalog.bundled();
+        var pilot=new FluidThermodynamics(catalog,PILOT);
+        var bundled=FluidThermodynamics.forNetwork(catalog,BUNDLED);
+        // (1) one closed vessel.
+        run("(1) pilot  closed vessel, 10 % CO2 in N2 at 170 K, 1 MPa",pilot,
+                new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(101,0,charge(pilot,170,1e6,basis(pilot,.9,.1),.1))),List.of()));
+        run("(1) bundled closed vessel, N2 at 170 K, 1 MPa",bundled,
+                new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(101,0,charge(bundled,170,1e6,basis(bundled,1,0),.1))),List.of()));
+        // (2) the pipe chain.
+        for(var entry:List.of(Map.entry("pilot  chain, 10 % CO2 in the warm vessel",pilot),Map.entry("bundled chain, N2 only",bundled))) {
+            var model=entry.getValue();boolean isPilot=model==pilot;
+            var warm=charge(model,250,1.3e6,basis(model,isPilot?.9:1,isPilot?.1:0),.1);
+            var cold=charge(model,140,1e6,basis(model,1,0),.1);
+            var pipe=new PipeResistance.Geometry(1,.004,.000045,0);
+            var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(101,0,warm),new PassiveNetwork.Reservoir(102,0,warm,true),new PassiveNetwork.Reservoir(103,0,cold)),
+                    List.of(new PassiveNetwork.Pipe(10,0,1,pipe),new PassiveNetwork.Pipe(11,1,2,pipe)));
+            run("(2) "+entry.getKey(),model,graph);
+        }
+    }
+}

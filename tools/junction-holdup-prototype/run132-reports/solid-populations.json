@@ -1,0 +1,41 @@
+[
+  {
+    "populations": 1,
+    "jacobianColors": 7,
+    "layout": 6,
+    "warmMilliseconds": [
+      0.5501,
+      0.1341,
+      0.0966,
+      0.0531,
+      0.0542
+    ],
+    "nonlinearUnknowns": 7
+  },
+  {
+    "populations": 8,
+    "jacobianColors": 7,
+    "layout": 6,
+    "warmMilliseconds": [
+      0.2542,
+      0.1295,
+      0.0852,
+      0.0736,
+      0.1172
+    ],
+    "nonlinearUnknowns": 7
+  },
+  {
+    "populations": 64,
+    "jacobianColors": 7,
+    "layout": 6,
+    "warmMilliseconds": [
+      0.3191,
+      0.3343,
+      0.5483,
+      0.3472,
+      0.3459
+    ],
+    "nonlinearUnknowns": 7
+  }
+]

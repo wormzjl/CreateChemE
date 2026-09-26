@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionRobustnessProbe" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-24T15:47:07.455Z" hostname="WORMZ-PC" time="0.083">
+  <properties/>
+  <testcase name="unequalFeedsAndSourceOrder()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionRobustnessProbe" time="0.083">
+    <failure message="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.0025833887422139004; active-set pass=0" type="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence">com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.0025833887422139004; active-set pass=0
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(PassiveIntervalSolver.java:182)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(PassiveIntervalSolver.java:83)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(PassiveIntervalSolver.java:51)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(PassiveIntervalSolver.java:40)
+	at app//com.wormzjl.createcheme.runtime.fluid.JunctionRobustnessProbe.runCase(JunctionRobustnessProbe.java:56)
+	at app//com.wormzjl.createcheme.runtime.fluid.JunctionRobustnessProbe.unequalFeedsAndSourceOrder(JunctionRobustnessProbe.java:30)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[ROBUST ports=3 pressure=102325.0 swap=false unequal=false PASS conservation
+ROBUST ports=4 pressure=102325.0 swap=false unequal=false PASS conservation
+ROBUST ports=5 pressure=102325.0 swap=false unequal=false PASS conservation
+ROBUST ports=6 pressure=102325.0 swap=false unequal=false PASS conservation
+ROBUST ports=3 pressure=150000.0 swap=false unequal=false PASS conservation
+ROBUST ports=4 pressure=150000.0 swap=false unequal=false PASS conservation
+ROBUST ports=5 pressure=150000.0 swap=false unequal=false PASS conservation
+ROBUST ports=6 pressure=150000.0 swap=false unequal=false PASS conservation
+ROBUST ports=3 pressure=102325.0 swap=false unequal=true PASS conservation
+ROBUST ports=4 pressure=102325.0 swap=false unequal=true PASS conservation
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

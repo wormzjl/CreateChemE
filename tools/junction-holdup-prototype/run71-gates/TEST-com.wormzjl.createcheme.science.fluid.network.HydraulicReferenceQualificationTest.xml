@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.HydraulicReferenceQualificationTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-25T06:34:24.613Z" hostname="WORMZ-PC" time="0.225">
+  <properties/>
+  <testcase name="twoFiniteVesselsMatchSmallSignalComplianceWithReversedInitialPressures()" classname="com.wormzjl.createcheme.science.fluid.network.HydraulicReferenceQualificationTest" time="0.179"/>
+  <testcase name="boundaryFlowsAcrossAllRegimesMatchOfflineDecimalFrictionInBothDirections()" classname="com.wormzjl.createcheme.science.fluid.network.HydraulicReferenceQualificationTest" time="0.028"/>
+  <testcase name="individualGeometryChangesMatchPoiseuilleAndFittingReferencesIncludingNearZero()" classname="com.wormzjl.createcheme.science.fluid.network.HydraulicReferenceQualificationTest" time="0.001"/>
+  <testcase name="transitionHasMatchingOneSidedSlopesAndNoNegativeDifferentialResistance()" classname="com.wormzjl.createcheme.science.fluid.network.HydraulicReferenceQualificationTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

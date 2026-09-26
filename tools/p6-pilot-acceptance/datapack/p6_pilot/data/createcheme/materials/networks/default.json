@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:default",
+  "package": "createcheme:pilot_cryogenic",
+  "default_column_preset": "tia_juana",
+  "fluid_presets": [
+    "water",
+    "nitrogen",
+    "methane",
+    "ethane",
+    "carbon_dioxide"
+  ]
+}

@@ -1,0 +1,6 @@
+# epoch_ms=1790173084376
+39292:
+ garbage-first heap   total 2211840K, used 1667149K [0x0000000700000000, 0x0000000800000000)
+  region size 2048K, 593 young (1214464K), 4 survivors (8192K)
+ Metaspace       used 140846K, committed 142720K, reserved 1179648K
+  class space    used 22856K, committed 23744K, reserved 1048576K

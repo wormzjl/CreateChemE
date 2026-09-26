@@ -1,0 +1,26 @@
+{
+  "purpose": "research_only_no_production_change",
+  "engine_version": "10.2.5.0",
+  "formula_checks": 104,
+  "maximum_relative_difference": 0.0,
+  "fallback_at_298_kelvin": [
+    {
+      "component": "TJL_PC12",
+      "temperature_kelvin": 298,
+      "reduced_temperature": 0.2478467774203244,
+      "letsou_dynamic_viscosity_pascal_seconds": 0.0023321531986368028,
+      "api_reported_dynamic_viscosity_pascal_seconds": 2.426351733182434,
+      "extra_density_multiplier_numeric_value": 1040.3912292728849,
+      "assessment": "The fallback already returns Pa s; multiplying by density is dimensionally inconsistent. Removing that factor alone does not make a low-Tr residue prediction valid."
+    },
+    {
+      "component": "TJL_PC13",
+      "temperature_kelvin": 298,
+      "reduced_temperature": 0.2262941780608604,
+      "letsou_dynamic_viscosity_pascal_seconds": 0.004200412437391882,
+      "api_reported_dynamic_viscosity_pascal_seconds": 4.501155810121276,
+      "extra_density_multiplier_numeric_value": 1071.598534003992,
+      "assessment": "The fallback already returns Pa s; multiplying by density is dimensionally inconsistent. Removing that factor alone does not make a low-Tr residue prediction valid."
+    }
+  ]
+}

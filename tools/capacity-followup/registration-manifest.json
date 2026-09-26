@@ -1,0 +1,2658 @@
+{
+  "archive": {
+    "path": ".neural-cache/capacity-followup-v1/registration.zip",
+    "sha256": "b2e27c94309bf311c2668c5a3120b44c234a78171b67f92bb0da1d4e9e351d1c"
+  },
+  "checkpoints": 12,
+  "createdBeforeNewFits": true,
+  "entries": [
+    {
+      "bytes": 1091,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityEvaluationProbe$1.class",
+      "sha256": "eefa4360f561246429e0287e8d531f3f1a4c9ccd732ca25b2e106f1b3d3ca495"
+    },
+    {
+      "bytes": 30891,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityEvaluationProbe.class",
+      "sha256": "2107bc9906de8e284aa05250dd04d75ae217406d820be5cc1ab5d89c46d63364"
+    },
+    {
+      "bytes": 802,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityInitializer$Design.class",
+      "sha256": "6321043a8ca6772000acc8b910d7fa65543fbdf5a200ad488b99da189f25f1fb"
+    },
+    {
+      "bytes": 1364,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityInitializer$Document.class",
+      "sha256": "bc1f583895de38f27697d6e86842c5bc41e67da1a0293ab4e61c1956ad2d60c4"
+    },
+    {
+      "bytes": 1564,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityInitializer$Raw.class",
+      "sha256": "cc5d5f5df7bb927eb27be82e98b6bd3a71a0d067d1c299f388869dd20fe39c91"
+    },
+    {
+      "bytes": 436,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityInitializer$Tensor.class",
+      "sha256": "cad6938ce36e44797785213e00dbc1f061b82ce14d608007eed8755dc7e0f22b"
+    },
+    {
+      "bytes": 17027,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityInitializer.class",
+      "sha256": "f9e197c7c37ed1114ae0ceb7424c16a3059ec214cff4a19419a748c5205e3e24"
+    },
+    {
+      "bytes": 2831,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityModels.class",
+      "sha256": "9a5b1941a0c99d377dbaffccc53b8fac6918e06374010273bc6b21bdc8874b25"
+    },
+    {
+      "bytes": 1579,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityParityCheck$Values.class",
+      "sha256": "387e1b66234989b1d00a1cb6339e6d52ab7fdd6f16dbe3a46f9c4c5566c9114c"
+    },
+    {
+      "bytes": 14886,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityParityCheck.class",
+      "sha256": "99155e698bd1ade3facbd786ed04fc05da67d54c2b9fde47bccac8eb7c1fb554"
+    },
+    {
+      "bytes": 11414,
+      "entry": "build/neural-capacity-followup/classes-v1/com/wormzjl/createcheme/science/column/v3/V3CapacityRuntimeCheck.class",
+      "sha256": "e36a64ea77c8a044ea065aebea3300b56cf71c04378c1e8934b5203cbc3eedbd"
+    },
+    {
+      "bytes": 6844,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/HollandB12Thermo.class",
+      "sha256": "4d32da8027b945f09eed78e6d5c06c29172eb9959573ea5f3b7001502a225e00"
+    },
+    {
+      "bytes": 2031,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/HollandExample32Data$Component.class",
+      "sha256": "491d237d0228ec5654798c6b78c1fe84eb6fa992b2f2b89e49abb63c4395911c"
+    },
+    {
+      "bytes": 4622,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/HollandExample32Data$Fixture.class",
+      "sha256": "a79618d0b5396e874c1a0177a7d7938ef08dc52834f6aae7baa0b5692fd2e3ce"
+    },
+    {
+      "bytes": 2379,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/HollandExample32Data$PublishedSolution.class",
+      "sha256": "23333618c2a270d93d6fe862d8619f7faaf758438fa5774632d689d5b6a41eff"
+    },
+    {
+      "bytes": 2469,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/HollandExample32Data$Source.class",
+      "sha256": "ac381faacea2e5295787e0bb01dee90068c53c5b9945b18e01e85258e68d2d48"
+    },
+    {
+      "bytes": 9393,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/HollandExample32Data.class",
+      "sha256": "fd3d34dbb836beebe4022be2db4b3d17c1d0ad752426fd6e7f770bcaf61156e7"
+    },
+    {
+      "bytes": 2580,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/IndependentHollandMeshOracle$SolveResult.class",
+      "sha256": "f21e1d0559374f313732c50f7a3d907001760375859f04169c74bc7203cc73f5"
+    },
+    {
+      "bytes": 1791,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/IndependentHollandMeshOracle$State.class",
+      "sha256": "f33801be12cad57004c9580d25f465c824cbbda9f5efd670b6870b0397973265"
+    },
+    {
+      "bytes": 13120,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/IndependentHollandMeshOracle.class",
+      "sha256": "29af00d78e5de7e1acfdcf8b67226dcac70693e67003f48f5a1d994c8cf3b416"
+    },
+    {
+      "bytes": 2445,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedMatrix.class",
+      "sha256": "359ae007391b8ce52911df3a4e71594573fb2911644fee5fa5633cfe8339417c"
+    },
+    {
+      "bytes": 3034,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedPivotedSolver$BandRows.class",
+      "sha256": "11af4998f5207e1937937e55a1557899dc8a440361f2b341dfd1edd2d1ee9366"
+    },
+    {
+      "bytes": 1556,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedPivotedSolver$FailureCode.class",
+      "sha256": "55deade5e5c4e2774d883b70da3ad9343bb0be95bb48b1578543b76c14b38044"
+    },
+    {
+      "bytes": 3128,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedPivotedSolver$Result$Failure.class",
+      "sha256": "9cc805c4839d23893c13518659629d718d5cd49594a21c17459f1ea0b9c2a00a"
+    },
+    {
+      "bytes": 2836,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedPivotedSolver$Result$Success.class",
+      "sha256": "a4cf32ac87f9478836ea711c9f4d2f8d125f468431bc6a214e960d0a0310b737"
+    },
+    {
+      "bytes": 566,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedPivotedSolver$Result.class",
+      "sha256": "b3ebf46c43a5281fef246fda8e623ff55b5e16fc6df9d1ab68e99235001005f9"
+    },
+    {
+      "bytes": 1723,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedPivotedSolver$Workspace.class",
+      "sha256": "6e5f753cd02e1afd1a1131ac4f45d43733c4ce5200b241536ad6ebc5c6e87526"
+    },
+    {
+      "bytes": 6728,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedPivotedSolver.class",
+      "sha256": "dc771ef754ffe872cddc9aeda04bfb71beca6370c811e0a6c76ea008fde2704c"
+    },
+    {
+      "bytes": 1941,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3Cdu17TiaJuanaPackage$C4Metadata.class",
+      "sha256": "2fe9c27309c2a80e3a8ad14d1eae8cc9e207dab99179f776c842586a0a7e5964"
+    },
+    {
+      "bytes": 8920,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3Cdu17TiaJuanaPackage.class",
+      "sha256": "1446c484789013b5735f4f7483b98a0cab682c30359e8ad040ccb0815a495c62"
+    },
+    {
+      "bytes": 2883,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3CrudeFeed.class",
+      "sha256": "37f13a4d7b6dd78aa414359c7a64606b0cec72a1e27bf0bf68bd395f754d4cca"
+    },
+    {
+      "bytes": 5326,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlash.class",
+      "sha256": "193ed9decc25aeafc4710128fb55f9f04669add8dfbb9985ca6b936136fc87d2"
+    },
+    {
+      "bytes": 1248,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedPhase.class",
+      "sha256": "d29a65f245102b45d71ee908e33e48e97b0e982fb6d0f1bf897a48f3e274b62d"
+    },
+    {
+      "bytes": 1563,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashPhaseSupport$PhaseSupport.class",
+      "sha256": "5950e753081c71d26fbaf1ce91b63b37af8785baa664f7580082a593c324c78c"
+    },
+    {
+      "bytes": 3424,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashPhaseSupport.class",
+      "sha256": "4e9adaf0756dc498c6a40dab1cce6c0a20434d8675d0ac46360d959422f59761"
+    },
+    {
+      "bytes": 5082,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashResult.class",
+      "sha256": "d7c2978b9453f9d0a9cc296b87dbb2091d88890fbd3ad8b20ed8e6d7da1d3085"
+    },
+    {
+      "bytes": 1629,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashTruncationEvidence$Status.class",
+      "sha256": "64f8c528f0a0b60672ebff1b35e37930d276e0b362d75cac75e84cbc08ccc481"
+    },
+    {
+      "bytes": 5876,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashTruncationEvidence.class",
+      "sha256": "ce884c782b8cbd7390b9ef6925ea6c53d69dfe8e10562bf56989153c01f94ed0"
+    },
+    {
+      "bytes": 2293,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3FugacityDerivatives.class",
+      "sha256": "94191a44a6ed690abd1d97bf70ed711d66308f39739835d6283a0c95bad6c4fa"
+    },
+    {
+      "bytes": 1743,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3FugacityResult.class",
+      "sha256": "665b09f1f39f2e7326bf26231aea09df9765b222e7452e23eb098eda8ab2e127"
+    },
+    {
+      "bytes": 1541,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonKernel$Derivatives.class",
+      "sha256": "81212f592c9919ed417fcd30b297fef9461a4693a547193acb4e03636a62ba16"
+    },
+    {
+      "bytes": 1164,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonKernel$Evaluation.class",
+      "sha256": "66ff369ec1042c86663b8a262d25fedc1ef7431c3a1a0bccbb345613713ef6d8"
+    },
+    {
+      "bytes": 1409,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonKernel$Root.class",
+      "sha256": "44a290ae5a767e046863cc98e0803e98b25f7726b00d6bbf82cc6760e0430e70"
+    },
+    {
+      "bytes": 1788,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonKernel$RootSelection.class",
+      "sha256": "6b58cdf27d95822856fc0f85a41ab1a5ecec50aa476c096570d7c66a88f40c6d"
+    },
+    {
+      "bytes": 879,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonKernel$Workspace.class",
+      "sha256": "5b00d0aecff2cecc066f1d4874f387f85b42219efd6c713bd1cee1cee4fd40b4"
+    },
+    {
+      "bytes": 14518,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonKernel.class",
+      "sha256": "9410915801b28d3c762c90a0842c461061fce5ffdbf89174a2b2c5e688e90b33"
+    },
+    {
+      "bytes": 3380,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonSession$Session.class",
+      "sha256": "c7c8d58bcf9517c1e543370879638033faec64f5bb9ca0c7be650fa09e7e769a"
+    },
+    {
+      "bytes": 7131,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonSession.class",
+      "sha256": "31e2b08b2db801c13688ededb1a1109d584d60890c3b61320a49e69ac741df63"
+    },
+    {
+      "bytes": 678,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonThermo$FlashCheckpointFailure.class",
+      "sha256": "64956523d35ba4bb337efe3cad0680976652f6eb836380fa6f59ef1e0954c2b9"
+    },
+    {
+      "bytes": 10658,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonThermo.class",
+      "sha256": "0710e50651303eaa45434ec7c27ddf03ff7e1c985708536e9ab55f9f61277a91"
+    },
+    {
+      "bytes": 1164,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3Phase.class",
+      "sha256": "5145fc268baf52ecc646f48434ad470574e2898a2e95dc8df652a00084806c4f"
+    },
+    {
+      "bytes": 4485,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyComponent.class",
+      "sha256": "85d95e23d7285105eaf9a153dcd0b699486baa120d7a23dc4f6ff6923cf4060c"
+    },
+    {
+      "bytes": 904,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyPackage.class",
+      "sha256": "311c4fada2f4bb924a096dd8f50353cc3d76cfc967c68d993c719e84236b82c2"
+    },
+    {
+      "bytes": 2181,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyPackageRegistry.class",
+      "sha256": "28c9cb70de1ac60bcba5ef049c35873d6cdb66cbaeecc4ba763c22c8da0c1efd"
+    },
+    {
+      "bytes": 405,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoDerivatives.class",
+      "sha256": "9540358697c13c2ba9bb032898658f62f692d8fea2936881808a00882a895ff1"
+    },
+    {
+      "bytes": 1464,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoException$Code.class",
+      "sha256": "cfcad02a3c3b06c3d7790e107dfbeed9a237271e22d82c58f68999710f805724"
+    },
+    {
+      "bytes": 1390,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoException.class",
+      "sha256": "6d048c6c3659e18909d5aefee9fd7876f8b43367633857274bc80deff11a90b9"
+    },
+    {
+      "bytes": 882,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoModel.class",
+      "sha256": "be799174e55849cd15cfd4f990d2e309adedeee296bf9b22dfc086681af494c9"
+    },
+    {
+      "bytes": 2117,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoWorkspace.class",
+      "sha256": "e0d14afb7b1dea5350d92340e70ecfe2dd96d046460301be6b6b40ece60ad535"
+    },
+    {
+      "bytes": 10883,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3Tjl19PropertyPackage.class",
+      "sha256": "bda705c1c37f2ce7464541f1dfea975f889fafeaabf636fabe58b533b2f7d0a6"
+    },
+    {
+      "bytes": 4990,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3Tjl20MethanePropertyPackage.class",
+      "sha256": "1a2ad8c0f0d9fd692fe517a1a3dacab3637ea6865b70971db27b04321cc5823d"
+    },
+    {
+      "bytes": 2767,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3TraceTruncationPolicy.class",
+      "sha256": "faba6b5a01c2fdc4498554f4128690e080cf3766a9f82938db38615ee1457835"
+    },
+    {
+      "bytes": 1176,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3TruncatedFlash$1.class",
+      "sha256": "91c82f125d27da7689fafc806c0b6b3bd2f117e918251008910bed659388399c"
+    },
+    {
+      "bytes": 421,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3TruncatedFlash$Progress.class",
+      "sha256": "8ee7f504bab1e8f32746d7aca709562eed858d6ca6466a9d626e57d608a4596e"
+    },
+    {
+      "bytes": 2988,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3TruncatedFlash$WorkspaceSnapshot.class",
+      "sha256": "578b40c26109a5387db129862bbfbd3ba861cbe65cce5227e48fec3f4c41533f"
+    },
+    {
+      "bytes": 14832,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3TruncatedFlash.class",
+      "sha256": "c2614559026111397215c6faa326c582fc80d0e747945f370349f2c3502543c0"
+    },
+    {
+      "bytes": 3326,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/thermo/V3WaterProperties.class",
+      "sha256": "982c3f834a79c05e8769f41c7e5d6f0944ca1ff57012cdfd905b1b5bc50882de"
+    },
+    {
+      "bytes": 3125,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAudit$Check.class",
+      "sha256": "8d47327f143477dc8fca13bd90e0e9c57aad73c32f5498f57b2611bc5d222d79"
+    },
+    {
+      "bytes": 3643,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAudit.class",
+      "sha256": "4d74ad76fd902b6613987bdcd0dbd6ba76f1bb555c3e4218eb268c688eda5ce8"
+    },
+    {
+      "bytes": 2034,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAuditor$1.class",
+      "sha256": "876e7463f2c31f1b9c656c6492fcfd7e3c4b18722dcfd3e413c27044ff014104"
+    },
+    {
+      "bytes": 2469,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAuditor$IndependentCondenserFlash.class",
+      "sha256": "08ad294eed50a4a1c640983df590d9de7e257979cb0da583c86039a3e8398b14"
+    },
+    {
+      "bytes": 1679,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAuditor$IndependentWaterSplit.class",
+      "sha256": "b703741a4ecd36de157c8aa37349187f454000ca1e1cdb0b9da6dc6457255dba"
+    },
+    {
+      "bytes": 38625,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAuditor.class",
+      "sha256": "07398859be5517b3c3b86024a3710b883ceaee9dad916301f3601e367c660d16"
+    },
+    {
+      "bytes": 2744,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ActiveComponentBasis.class",
+      "sha256": "ad3d01c8b258e1b4ee0a888da25a84bfd732041a1a160bfb4f14894b6cade127"
+    },
+    {
+      "bytes": 823,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AnchorAugmentedInitializer$Design.class",
+      "sha256": "08010e87a9d9438ba40e7f65c9cdfc2194c2af3d553b5e2f2acab47ef12212d7"
+    },
+    {
+      "bytes": 1388,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AnchorAugmentedInitializer$Document.class",
+      "sha256": "600f0f2f29c2f417870f2852ed3ccec15c8add214d5d2cad5e8d1328aed1d0f1"
+    },
+    {
+      "bytes": 1606,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AnchorAugmentedInitializer$Raw.class",
+      "sha256": "d87a727011a5ad4e081d46273842b948d56f7fa150585ed85dd7e9e23a5bcef7"
+    },
+    {
+      "bytes": 457,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AnchorAugmentedInitializer$Tensor.class",
+      "sha256": "2cbaf15cb664de1aa352b43e95c6240916f3d947c81e86acc3a71d01e8adf442"
+    },
+    {
+      "bytes": 17082,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3AnchorAugmentedInitializer.class",
+      "sha256": "9bbcd223cfbe3235a972b664e0c2758c8ad957f4c044a2e285e8cab30edd2610"
+    },
+    {
+      "bytes": 4864,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BlockJacobian.class",
+      "sha256": "92eb1a10cba10905f3c8ed1e86efa5c2a81e99c3ff13e117162c96673536334d"
+    },
+    {
+      "bytes": 1212,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BlockJacobianAssembler$1.class",
+      "sha256": "28ae1a123a10e241b576ede450b22937b24aa94fcb6610bbaad0c273ec6915d4"
+    },
+    {
+      "bytes": 3427,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BlockJacobianAssembler$AnalyticColumn.class",
+      "sha256": "7dc277f00eddeaf2b45574bd9c8c3c7ccbdc2b0cf072ac94b25c3d4967483933"
+    },
+    {
+      "bytes": 580,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BlockJacobianAssembler$AnalyticTally.class",
+      "sha256": "b387c807662512e3033b07057d097b4dd5a697aa8c69adc7d24b2efeb8f98c6a"
+    },
+    {
+      "bytes": 501,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BlockJacobianAssembler$LocalColumn.class",
+      "sha256": "d188ac36d6d4867305b941e4b79db6354a28410359784c77f0e3a7bcc202f135"
+    },
+    {
+      "bytes": 4262,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BlockJacobianAssembler$LocalProbe.class",
+      "sha256": "2b461bf02c311013a9cfc74d368afda117c6a0edc76173ed498fcb3dd87c4a92"
+    },
+    {
+      "bytes": 2318,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BlockJacobianAssembler$ThermodynamicRows.class",
+      "sha256": "2a355364fd833c2e488c1bf4cd404ec47ed6ec998fdb4581fd24b022bee312d0"
+    },
+    {
+      "bytes": 27565,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BlockJacobianAssembler.class",
+      "sha256": "5f36c20cc509a956c5f4ac129fb9d75524249ece68f44c90e025e4c4bb24c93d"
+    },
+    {
+      "bytes": 1747,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BoundedEvaluation$Completed.class",
+      "sha256": "95e21c4032bdab47cbb91ef6ec51c5afdb01b5473401c9c730ca3f485a36006a"
+    },
+    {
+      "bytes": 535,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BoundedEvaluation$Sink.class",
+      "sha256": "49df39ba73b6cf0b83de49f30a97b75017760d00a181792fe153ad70d935f53a"
+    },
+    {
+      "bytes": 2026,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BoundedEvaluation$Summary.class",
+      "sha256": "9d9cfd9767b1af849b1e3d3721581c354461656ecc1f78f602f87a1e3c9ee838"
+    },
+    {
+      "bytes": 6794,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BoundedEvaluation.class",
+      "sha256": "00ebe1734a3c24fc0555ae88eb226b28d1f035d45170cfbbfd9152faf9ee7495"
+    },
+    {
+      "bytes": 4259,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3BubblePointPreconditioner.class",
+      "sha256": "e0c0073e7d3a121361d348b8f5361a82f015c3e03938de13488b7db215b35d43"
+    },
+    {
+      "bytes": 1468,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3CalculatedQuantity.class",
+      "sha256": "312513960dd7cade9d6486e27d8ec3673a304300ded3a5d7c0fc2a58238f89c2"
+    },
+    {
+      "bytes": 3200,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3CandidateModels.class",
+      "sha256": "f89cb7b5e9ec3c5f49b7bfc17f3afd1cffc7b41e4aa256a58f4807f10bc1211b"
+    },
+    {
+      "bytes": 1633,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$CondenserAttempts.class",
+      "sha256": "8549c7434090e404318dbc10b6050aa06586d9d5fa1513511943a6ba53fe4136"
+    },
+    {
+      "bytes": 1588,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$ContinuationJacobianPolicy.class",
+      "sha256": "ad241c7073cb491b7baa4dbb5c884c3d62cae01bfc762a8d062b262659c3ed56"
+    },
+    {
+      "bytes": 3191,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$EnergyShiftLog.class",
+      "sha256": "9113e7e96bb67b026f776220023ad113a182b35227cda7e12d51a53aad524a9b"
+    },
+    {
+      "bytes": 1746,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$HeatSubdivisions.class",
+      "sha256": "d6c93d311aa301a474ad6dec33898940ba4c7a0694910cb2c287348bda261c5b"
+    },
+    {
+      "bytes": 761,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$InfeasibleSpecification.class",
+      "sha256": "5edee5b31afcd1f3e735a5212331ae76ff447d80da789dd3fbe294f58a62c6ab"
+    },
+    {
+      "bytes": 469,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$InitializationFailure.class",
+      "sha256": "1bbe77e1475a71f3bfeaa74731597e16aa15332be40b3e1309c3f735c4ab4fce"
+    },
+    {
+      "bytes": 422,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$NeuralBudgetExceeded.class",
+      "sha256": "295f234d44c1703b5f0a556a241c4829a7a48a558e3a1ee9b28c12d569825a0b"
+    },
+    {
+      "bytes": 1906,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$PhaseCorrection.class",
+      "sha256": "4151d267d248c467fbe9ade9cd0c3054a9ea38c3d366fe0a9100066d96d41d5d"
+    },
+    {
+      "bytes": 2678,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$PreparedAttempt.class",
+      "sha256": "61d4bd910a3bbecffeffa3366b9e1e167935ad556032ee56dcf6eb669222ddf8"
+    },
+    {
+      "bytes": 3503,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$RampStep.class",
+      "sha256": "f20ce20659652bd4a9419096a3e5959123bdfb58d50d3c91ea240a215ae17d2d"
+    },
+    {
+      "bytes": 3165,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$SolvePolicy.class",
+      "sha256": "73ee9ffb31c463990caf6a3a529a005f6257700c2ab761328d44745d36a6d9b8"
+    },
+    {
+      "bytes": 5575,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$SolveTelemetry.class",
+      "sha256": "0ac1696f8a534bd2a79e360b8826260d54a8144b085065ab95be3f9b52ae1e19"
+    },
+    {
+      "bytes": 5948,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator$V3SolvePass.class",
+      "sha256": "00084e40afb09fe1f2f812444190168afe482ff166933ffaf01c6bdf7fb679aa"
+    },
+    {
+      "bytes": 104713,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.class",
+      "sha256": "2c7c6a292f90d4e703f01bdbf6b1463061373156fa405acdf41472afc1426d7e"
+    },
+    {
+      "bytes": 7941,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnDisplayResult.class",
+      "sha256": "a3a8f2875f4f3515f96926c1ffbe1b15df4e2df86a097b1016b476cb9eb98a8f"
+    },
+    {
+      "bytes": 1822,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnDutyLedger$StageDuty.class",
+      "sha256": "eb1e80cf7911937cf5976db0205f8c5358c03f71667d0dd7cdbf2c0edb74f8da"
+    },
+    {
+      "bytes": 8568,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnDutyLedger.class",
+      "sha256": "5284d3aca9b2e3ee08d66dfe4ae3994e299affd16caf015f779f0ade2b1e808f"
+    },
+    {
+      "bytes": 2580,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer$ColdTrafficCandidate.class",
+      "sha256": "ff0f6770c454d0374f132716c66d168d0f8e7a10ed2ec6a7b5f80e7a3e909d55"
+    },
+    {
+      "bytes": 1676,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer$EnergyProperties.class",
+      "sha256": "3e6c35eaf3427836890507877f60087e62260c2c7f52be9eeb500c2644d8bbeb"
+    },
+    {
+      "bytes": 2070,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer$Evidence.class",
+      "sha256": "c59b96bb959f8f2d5d8251552034c07ee61b24c49eac270d24710e0dea7a569a"
+    },
+    {
+      "bytes": 1453,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer$Mode.class",
+      "sha256": "2bdd38e562f6a0d779180bdc05199511722b0f55982265d9a84e93a32516412e"
+    },
+    {
+      "bytes": 2230,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer$Seed.class",
+      "sha256": "7f8932b3b90c36e0a79da562a80261142af04f9723d8553ab33cf158f9fb82bc"
+    },
+    {
+      "bytes": 1834,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer$TrafficTotals.class",
+      "sha256": "f8207d771053ed254254b0b025f2e9446e9923c64a1ef2a19ecc6daf8d7d3aab"
+    },
+    {
+      "bytes": 31963,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.class",
+      "sha256": "b79212106993cdc2cd739f4215458d4c99f47226bc55262426bf9bf7fc0f0810"
+    },
+    {
+      "bytes": 12989,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnInput.class",
+      "sha256": "9716a9c6c6b78adb8353986bf7205b3929cc9fcd9492c8fcf2bc789fa7ccb701"
+    },
+    {
+      "bytes": 2633,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnOutcome$Failure.class",
+      "sha256": "bc3b7167062b74ab7451b3b6c4887d011f32bf045761adef630e3e4ed1dc4f5f"
+    },
+    {
+      "bytes": 2882,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnOutcome$Success.class",
+      "sha256": "52503b53945f8576b6d6b24498c4efff7dec672f5a4472c45dab39f907106d77"
+    },
+    {
+      "bytes": 590,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnOutcome.class",
+      "sha256": "1a9c554acaa7d0da5147afeaf73e14ec3ece17295fe455e009b8c972c3ac709e"
+    },
+    {
+      "bytes": 945,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnProblem$1.class",
+      "sha256": "7209f35cea82a2bbdc2d71a4d7e4d1be06be7518376db1a194d4669fa47ef256"
+    },
+    {
+      "bytes": 1645,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnProblem$WaterCondenserSplit.class",
+      "sha256": "791532ca6d70c31574f126ce360008810c538fb612e202a746d16eb794d418aa"
+    },
+    {
+      "bytes": 12271,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnProblem.class",
+      "sha256": "93032e18f57360dee563b3a74e991c6721395c65f329477304cbf92f5687ed0d"
+    },
+    {
+      "bytes": 976,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnProblemResolver$1.class",
+      "sha256": "d6749f0392d0b5bd501af74dc4da15168b91e5ad1b4c868de3e7432d6f8a9f92"
+    },
+    {
+      "bytes": 11880,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnProblemResolver.class",
+      "sha256": "f49b223227bef5466ad2ceaba2a11b54bf3e0936529f49f365c429bac6cc7913"
+    },
+    {
+      "bytes": 8094,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnResult.class",
+      "sha256": "41ebb3684109f6d4b0b913953c110b2aa9acd66fd2d3e85b109e19a96360c455"
+    },
+    {
+      "bytes": 1961,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnSpecification$CondenserOutletTemperature.class",
+      "sha256": "0f53cd2a34e419192700e6812949d5cf4453f2b44e63b1e1b9962576f6aec156"
+    },
+    {
+      "bytes": 1907,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnSpecification$OrganicRefluxRatio.class",
+      "sha256": "cd5dcac90617a555cb6930a08dbc948f3a029e97c5f019070e73a3c5fea08993"
+    },
+    {
+      "bytes": 1863,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnSpecification$ReboilerDuty.class",
+      "sha256": "b2e515fe4d113b0b29e25e5f6ab91d45f1e1d91a67a11c8c9f41fe721d86f090"
+    },
+    {
+      "bytes": 1624,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnSpecification.class",
+      "sha256": "99feacf96e3df710e012c952d73ad87e03473f3e6f562b0301d87407c4c04357"
+    },
+    {
+      "bytes": 2302,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnStreamProperties$ComponentFraction.class",
+      "sha256": "039d38ca861c3406c834a1cd9f24ae8394aa5109ada2f85a843839910614335f"
+    },
+    {
+      "bytes": 14549,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnStreamProperties.class",
+      "sha256": "f6671f59b60216ffa6e0689b1e3ba377189cd4ee5d8d4bd32bb5e8fae13fd558"
+    },
+    {
+      "bytes": 3531,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnTopology.class",
+      "sha256": "3a008997c51884e62694bce5c6daff49eb7050c94d9935abc555be73f431ed49"
+    },
+    {
+      "bytes": 829,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnTransformerInitializer$Design.class",
+      "sha256": "c245d45bb98845f26882d792ece3177f8a5e653ec937c76f92be766fdd306243"
+    },
+    {
+      "bytes": 1379,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnTransformerInitializer$Document.class",
+      "sha256": "b5b7d54123533cbf250a8cac386beacb2d6acd9c9b029e34d09f74ba988c3f30"
+    },
+    {
+      "bytes": 1618,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnTransformerInitializer$Raw.class",
+      "sha256": "fdbb383dfd35abce6bb888631e269464818923af24f6aa2e03d1e57860d0f97d"
+    },
+    {
+      "bytes": 463,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnTransformerInitializer$Tensor.class",
+      "sha256": "7c210d11af04017aaf43cfcbaafa69a86c10d8775ece701f9a4d303915ad165f"
+    },
+    {
+      "bytes": 15585,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ColumnTransformerInitializer.class",
+      "sha256": "d737a481d2c72cf4f781bd629c4be4d06f2b061aeabae18e1d13c34137366e7f"
+    },
+    {
+      "bytes": 2511,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ComponentBasis.class",
+      "sha256": "c2c385f175b6d1cb517d638f6f11d248a6772850374cb95b379af188af9b5552"
+    },
+    {
+      "bytes": 1972,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3CondenserComponentPhases.class",
+      "sha256": "e90e40a56be894735a1f217e301d182433274e25ae1106efa6f6891f4c612cf5"
+    },
+    {
+      "bytes": 1293,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3CondenserPhaseBranch.class",
+      "sha256": "3f4648a394c933233b7ec9c294405789b6a94c9e32934e9d042f4df05a0840c8"
+    },
+    {
+      "bytes": 2514,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3CondenserPhaseTransition$Prepared.class",
+      "sha256": "c1afd9f3be8458796d5027a92072e564b89cf0d591f92c3bce8f5d0b22ddb59b"
+    },
+    {
+      "bytes": 6305,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3CondenserPhaseTransition.class",
+      "sha256": "098c31b4d6b38b4bda7b179e23b4442639292d3e2a50ba181e6b4f8c8e5033fd"
+    },
+    {
+      "bytes": 2287,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ContractDiagnostic.class",
+      "sha256": "64418779b024adab10f8854ac53e14f7c465d8e04d2e6c3402fb2a03d6505bc2"
+    },
+    {
+      "bytes": 1310,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ControlledQuantity.class",
+      "sha256": "b7d0355740875a0b6bc7d103f9401ad4cbd6e494b9024e017c0f4429bc0d7e4a"
+    },
+    {
+      "bytes": 3661,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3ConvergenceEvidence.class",
+      "sha256": "c4d41e90934e502304b2a69dbc4bd4dfd9e79488ecaa673ba6f3f7c838b049c2"
+    },
+    {
+      "bytes": 3505,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DegreeOfFreedomLedger$Equation.class",
+      "sha256": "395cb05acfb280618bcd252ff00499d0f6fabe881a65ac9871396045866fae54"
+    },
+    {
+      "bytes": 1625,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DegreeOfFreedomLedger$EquationFamily.class",
+      "sha256": "4a421e341c8b15d5edb3a4dbbeb9fccbed57f323606deef63f90197d51eacde8"
+    },
+    {
+      "bytes": 2459,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DegreeOfFreedomLedger$EquationId.class",
+      "sha256": "c239cc713c940430363ce709e089a57d9d471a25a41fa92a0bd518a88aedf4cc"
+    },
+    {
+      "bytes": 1913,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DegreeOfFreedomLedger$Unknown.class",
+      "sha256": "f90416d89fd7e1c4763e04eb2cc25f5aa255cf3fa5bf31a243defd5323cf0bbe"
+    },
+    {
+      "bytes": 1605,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DegreeOfFreedomLedger$UnknownFamily.class",
+      "sha256": "06b057f7fa6b242859dcd504187ea81de60e2d07166ff0897994fcb378ef33bc"
+    },
+    {
+      "bytes": 2919,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DegreeOfFreedomLedger$UnknownId.class",
+      "sha256": "21a1196f4b12f0a701b619d2b612ff0a2f142b71dfce9b803038f0fc3d7a633d"
+    },
+    {
+      "bytes": 23767,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DegreeOfFreedomLedger.class",
+      "sha256": "e1f4d89d2d2a8db09498dd0c78ac08d03be9523ef80c784c3ce579f65fbbcbec"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DenseNeuralInitializer$CoverageGuard.class",
+      "sha256": "5e316813c6887dac7ac7aa007cf80b1ff4e43b26bb14309f7b0140fd2be0d91b"
+    },
+    {
+      "bytes": 1289,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DenseNeuralInitializer$Document.class",
+      "sha256": "04519da6773682c1fb4be1b67c267c46ef72a2c25434741eb7dd286ee8f18c85"
+    },
+    {
+      "bytes": 486,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DenseNeuralInitializer$Layer.class",
+      "sha256": "57ff2d73da84ffb8f28919c0d051f1c9fecc63d270cb83817ce158ff3dc7715b"
+    },
+    {
+      "bytes": 8600,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DenseNeuralInitializer.class",
+      "sha256": "68a51e5ea528b80595ea3abb626f4f741ca2ebdf33e7b4dd578cedccbd8319a1"
+    },
+    {
+      "bytes": 1206,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DryMeshCoordinateMap$1.class",
+      "sha256": "6219d88ff96fa450021ca79eff084c042ef09d7af72fe835e1d1741ed810c78d"
+    },
+    {
+      "bytes": 9336,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DryMeshCoordinateMap.class",
+      "sha256": "ad5f5b9a70c6626ec3adb232d0574febd72b24429706192f512c08e7264c9884"
+    },
+    {
+      "bytes": 4366,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3DryMeshState.class",
+      "sha256": "c66fdd270fc501fbd7708e5b772558249c3f9fef3d6c3be4b62a7a85cfc7a135"
+    },
+    {
+      "bytes": 2887,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3EnergyShiftPredictor$Prediction.class",
+      "sha256": "8f683a8244f291b5ddea1fa306d60b679b8aa53b270bd04bd0984bb8e1ba7bfd"
+    },
+    {
+      "bytes": 2348,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3EnergyShiftPredictor$TemperatureSystem.class",
+      "sha256": "0503f2fdbae39cfcb456f01ea7734e41c23ef639aeb265cf0525e5ff16bd1c24"
+    },
+    {
+      "bytes": 10268,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3EnergyShiftPredictor.class",
+      "sha256": "2a54aa05af2b391e47f636311511c8d6951fe679d51a736147a0098696b607dd"
+    },
+    {
+      "bytes": 6318,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralFeatures.class",
+      "sha256": "e2e63e2de3c24965331d1aa1a062e1fa59b7c4386c07a811c31e753614f23c58"
+    },
+    {
+      "bytes": 494,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralInitializer$CoverageGuard.class",
+      "sha256": "f296503236232302948139129ee8f15eb18ce560bee3cf94f2b74ffa2915c053"
+    },
+    {
+      "bytes": 848,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralInitializer$DesignConstraints.class",
+      "sha256": "a751cf2b84687760fc239838d358d8a25b21902a58fdca4b0b609c3ca9751112"
+    },
+    {
+      "bytes": 1682,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralInitializer$Document.class",
+      "sha256": "706200a619a629664b43074a0c956e9d97fdcf94ecab401831b608d2aaf0e373"
+    },
+    {
+      "bytes": 501,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralInitializer$Layer.class",
+      "sha256": "9c73d4efed6595034e6697de17c4af070192546c9132e5ede6b5b4cb07f36045"
+    },
+    {
+      "bytes": 13229,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralInitializer.class",
+      "sha256": "a1cf1b74a5f059b6dd290155790e5086a8919a54d0c8e6ee109c11e3b4674660"
+    },
+    {
+      "bytes": 2120,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian$ColorSlot.class",
+      "sha256": "fafcb65ce742fd28c03f2288b1bcbf45dc00ea4e89db3137f4d6a07c26e17054"
+    },
+    {
+      "bytes": 1762,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian$DifferenceScale.class",
+      "sha256": "b74d72fe33062232abb719a2065aa83e4b58b39f3f972865dc902fde3995686b"
+    },
+    {
+      "bytes": 3592,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian$Jacobian.class",
+      "sha256": "a2793355020f4000f09f462cc53f7e9f70c6f6ed904d3cab0fb3cc5210e02aa5"
+    },
+    {
+      "bytes": 3682,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian$MatrixValues.class",
+      "sha256": "cf0b9e9a71fa5f46141515241b5b78a5514da359a9898643c46e4d98e346ed55"
+    },
+    {
+      "bytes": 447,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian$V3ThermoWorkspaceFactory.class",
+      "sha256": "d592ea7987b96e75839aaf0c41c000050c8bc821182c62ebef4e9014deb792c2"
+    },
+    {
+      "bytes": 13516,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian.class",
+      "sha256": "44983babed9e0cc877cca3b96f8efd46c7c624def87f5568d4f9558955dd661c"
+    },
+    {
+      "bytes": 2707,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FreeWaterContinuation$Continuation$Closure.class",
+      "sha256": "dc78f51f6763670edb3d327ff89db54455bfab771f1653cf81dcc42cb1b24d66"
+    },
+    {
+      "bytes": 13170,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FreeWaterContinuation$Continuation.class",
+      "sha256": "c9ea39b5965d8323d21b54233b071c93743f52d27e1e857c462d7e3f08d05ebd"
+    },
+    {
+      "bytes": 2319,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FreeWaterContinuation$Result.class",
+      "sha256": "7abebf4edafcbd76ad0b8b7adb3a4229c386f72062946fdd70521e496b954d7d"
+    },
+    {
+      "bytes": 3826,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3FreeWaterContinuation.class",
+      "sha256": "f546522b75d6b0b40cba76a7d03961811e244d0566108f71604f094d8a83fdf7"
+    },
+    {
+      "bytes": 976,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralFeatures$1.class",
+      "sha256": "1c419f926a3fe571f9b199a09b9dad8c98d745c82e2d964c3755a9b0d2a76b9e"
+    },
+    {
+      "bytes": 11022,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralFeatures.class",
+      "sha256": "5b896974381a310c40b4a975f019320846b0ecab40c6d6b95328370b7e0401c9"
+    },
+    {
+      "bytes": 485,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralInitializer$CoverageGuard.class",
+      "sha256": "5e2a1b9e0876abc554f40c7ce31ae4e51ff0af24e7c6b68192a756762c3a9b15"
+    },
+    {
+      "bytes": 839,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralInitializer$DesignConstraints.class",
+      "sha256": "066788ae9c42daf829ed0d44e05a60df0c49b48fc9f9f8541a783e4d28537e8c"
+    },
+    {
+      "bytes": 1594,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralInitializer$Document.class",
+      "sha256": "714bae00a6bf0b0b7eb152907ff3c17bf358d456a5c77ea3943861cf00489be1"
+    },
+    {
+      "bytes": 492,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralInitializer$Layer.class",
+      "sha256": "27777b341687a7ed3ff37efb57bdf3dd5f8c71f3abe70c7f956834b2fb727cdf"
+    },
+    {
+      "bytes": 12939,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralInitializer.class",
+      "sha256": "b7d3a9c44ea6de4fef8116768de9be3fe794baac18ba3ca02c70e866f48b7c21"
+    },
+    {
+      "bytes": 8891,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HeatFeasibility.class",
+      "sha256": "1f3f5f52a069f4e6422f78e133b3775812792e026746fc2e4fd94190c10bc810"
+    },
+    {
+      "bytes": 1918,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HollandExample32$Comparison.class",
+      "sha256": "38f56f1268af6b35d0c0be3a0167b6e93317005e765f2c36452a3f50a020f8e3"
+    },
+    {
+      "bytes": 19026,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HollandExample32.class",
+      "sha256": "c3a70dd98b748e2c42c11b0ec070e2a06cd35361a882211cda82928e4422f0c8"
+    },
+    {
+      "bytes": 1677,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridBaseline$Anchor.class",
+      "sha256": "499601da23a8b42e44ebdabab3ea267cdff4dac586828c22caa902584d4217e5"
+    },
+    {
+      "bytes": 4165,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridBaseline$ControlledThermo.class",
+      "sha256": "3dfb5388213fe3eaf8f4146c9fc086419c3db8b9c59bf4b72a5085e48bcc43a7"
+    },
+    {
+      "bytes": 4629,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridBaseline.class",
+      "sha256": "fba8e796c98ff39e87ddb0f68dff17ea199314c941d5be83e97035086e211671"
+    },
+    {
+      "bytes": 1038,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridPreconditioner$1.class",
+      "sha256": "1ba19b4f1c2368f4ca3ba1bc1b77323ac985ec8702966fe88e9e2906b6f85f2e"
+    },
+    {
+      "bytes": 3328,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridPreconditioner$Selection.class",
+      "sha256": "0a4fa255f2f4f91f0a3558b62eee22b27fcbcb8aa2aabb5d794b05862ff3228a"
+    },
+    {
+      "bytes": 6424,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridPreconditioner.class",
+      "sha256": "712d90cde99d6fcfd07d49506d74c4c5488d4e67d25b90e50c40f6cc53cf9982"
+    },
+    {
+      "bytes": 820,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridResidualInitializer$Design.class",
+      "sha256": "6a4976300e5a2ade1d4ce00eab828bb01973b46c2b1472ae2f0dc596a8932671"
+    },
+    {
+      "bytes": 1358,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridResidualInitializer$Document.class",
+      "sha256": "9f6a28747a1612efba627ba92a8488e9f1fd4213f71c9892022eb6cd046c2cdc"
+    },
+    {
+      "bytes": 1600,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridResidualInitializer$Raw.class",
+      "sha256": "42c13f7b834e08bae5f2c26103ab5cc85319174fefe434dbcd823b7d4dc732cb"
+    },
+    {
+      "bytes": 454,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridResidualInitializer$Tensor.class",
+      "sha256": "54d0233818f0a6435adc41a3c4868779cfcd1e8b5c46d5e083fffc875d0aa321"
+    },
+    {
+      "bytes": 16827,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3HybridResidualInitializer.class",
+      "sha256": "544610543846f08b64863d47db124eac3fe97c2df1e82eb24e91ebcddb8d7824"
+    },
+    {
+      "bytes": 1445,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3InitializationOptions$Mode.class",
+      "sha256": "efb905bb64cc96a8ecdb662150a6adc873e264cbad383bb705bda61536e04c4a"
+    },
+    {
+      "bytes": 1470,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3InitializationOptions$WetStart.class",
+      "sha256": "ad0df8ad5f5c7f28146df619d38233dd357cb139af4a040c7c46ac334029bffc"
+    },
+    {
+      "bytes": 3074,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3InitializationOptions.class",
+      "sha256": "b1d1e8f75d0603bc3a2504bc101f659927acdf1e884b71c99551964d7df43c2e"
+    },
+    {
+      "bytes": 9883,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3InputDigest.class",
+      "sha256": "c7969580de24f59070c4655d568bfafdb24c78bd73aae754d37f9c6bd136bf96"
+    },
+    {
+      "bytes": 2117,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3MechanisticTransformerInitializer$ControlledThermo.class",
+      "sha256": "51718e67a7a3b6d1ab473eb9aebebb222f68800b0f64eff6141b380bdc68a75c"
+    },
+    {
+      "bytes": 2050,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3MechanisticTransformerInitializer$Evidence.class",
+      "sha256": "3d10b33b3ae898387e082f81b831468dc488134e73998a4a6847d26f3922a9d5"
+    },
+    {
+      "bytes": 10695,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3MechanisticTransformerInitializer.class",
+      "sha256": "8a98eab31ba32b3990fcda836ca2a7e9c050e1bdd803390d4c800f1ea0c1b658"
+    },
+    {
+      "bytes": 2486,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3MeshResidual$Row.class",
+      "sha256": "239f25c8e40ba218c14ebfaf25232321f263032c4aaffa6fb3d2c771a7754660"
+    },
+    {
+      "bytes": 1694,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3MeshResidual.class",
+      "sha256": "0f9999a99a4b082daef084ac7c1f0e27b3ed8672df032a5b07f9f0a310a22fb8"
+    },
+    {
+      "bytes": 1877,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator$1.class",
+      "sha256": "c5ccc4f21e628a1a9587a251b15c607a62c006e30c9dab13705c67bea6f1dbbb"
+    },
+    {
+      "bytes": 4768,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator$LocalNodeDerivatives.class",
+      "sha256": "45027b181967662615c15116b8112999fe020c905e6e91ada91569165ff702cd"
+    },
+    {
+      "bytes": 2569,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator$LocalNodeTerms.class",
+      "sha256": "15154fadf06a3a6f62d1447d3e7ce23edb49f86406ab4867cc80f5a59ebb52d8"
+    },
+    {
+      "bytes": 2259,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator$NodeProperties.class",
+      "sha256": "4a8654b315add65a59f0c6e0dc5495eb9ff274cab5532bbf1e3fa62befb41686"
+    },
+    {
+      "bytes": 19785,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator.class",
+      "sha256": "e16d4d2eb3dd4e4e7945e562e762cfb7c2a8fd3005575f43d183b3382a8ab008"
+    },
+    {
+      "bytes": 1964,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NearestProfileInitializer$Candidate.class",
+      "sha256": "c3c12cff9465a7c43c1f5b04de8f0265c94de678e86fe13e96c0270414ea8f7d"
+    },
+    {
+      "bytes": 842,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NearestProfileInitializer$DesignConstraints.class",
+      "sha256": "cef0c69cbbbc3e70783cbc3f7ef7805ed0a1dc46f91bad45364a017d4260111b"
+    },
+    {
+      "bytes": 1412,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NearestProfileInitializer$Document.class",
+      "sha256": "7d593afa12f137eef225735a1e0e9e96f7fad959425f6053502ea4f15dface58"
+    },
+    {
+      "bytes": 923,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NearestProfileInitializer$Reference.class",
+      "sha256": "bf5ca803827d0dc3d51e28ca333ce07600f51a9c22dba880573292b031bed599"
+    },
+    {
+      "bytes": 18346,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NearestProfileInitializer.class",
+      "sha256": "0de50977ac1544619df4089602e9860d220cb9b595315404ebaf1d6e6889926a"
+    },
+    {
+      "bytes": 5945,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NeuralFeatures.class",
+      "sha256": "c75eccecb00db0388fef0bc8a1734cef93d17faee54f1875f3148d6aa43e6dc9"
+    },
+    {
+      "bytes": 1066,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NeuralInitializer$1.class",
+      "sha256": "d97392b8aed54463eb4b65ab2454308f1b210b1cc1dc44e5b2156fb683969f43"
+    },
+    {
+      "bytes": 910,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NeuralInitializer.class",
+      "sha256": "8c7d74b0cb77d98bc6a7271275665b225871dc0b40d7881a9c466c994ccb8c82"
+    },
+    {
+      "bytes": 1424,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NeuralModels$Family.class",
+      "sha256": "f74ee564cbf99ff4578f9770c90f7b69acece8f0255b2278067ccf55e0c7d9c0"
+    },
+    {
+      "bytes": 1516,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NeuralModels$Gen3Holder.class",
+      "sha256": "49c55fb07d6e96ea01534ba1233f763802c894e3f8bf7669f3fc6c0d42d65403"
+    },
+    {
+      "bytes": 1506,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NeuralModels$GeneralHolder.class",
+      "sha256": "dafef472f73d04bc4df803173d438b489e4e2a291bd16716b21c10c57db991eb"
+    },
+    {
+      "bytes": 2552,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NeuralModels$Holder.class",
+      "sha256": "443d41e63cff0446e11ee04cbf4972d64ba2a2f58c016b13cc847f7309cd7623"
+    },
+    {
+      "bytes": 1449,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NeuralModels.class",
+      "sha256": "8ebfb52b8f4fb53f7ef1af11f26c7cbc3a10bd5b47c41e32c4bfd45cf6f06e90"
+    },
+    {
+      "bytes": 12549,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NeuralMvpProbe.class",
+      "sha256": "4f92ae86b9168dc900c299a83636bb2968d2398d366df68ba97e60b348de1c8b"
+    },
+    {
+      "bytes": 8233,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NeuralSeed.class",
+      "sha256": "227fa094374ff4dd0cd31a82c58f56146c7516d3bd79ab8be00aa0a22d145204"
+    },
+    {
+      "bytes": 1404,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NewtonTrace.class",
+      "sha256": "9b4d7831526841e6bfc854d0699b80d479dcf1f3ba3eb45850ce7eebc8a320b8"
+    },
+    {
+      "bytes": 5955,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3NormalEquations.class",
+      "sha256": "49a0d85399c71046a36a64146656d4eb054f695585ec93bdbbb5d14dea965b7f"
+    },
+    {
+      "bytes": 2981,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3OperatingDomainValidator$Assessment$Eligible.class",
+      "sha256": "5661aa6b399790210ce00a8ba30373bec8107f202c09f5e46d7609b2e5000b1c"
+    },
+    {
+      "bytes": 1606,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3OperatingDomainValidator$Assessment$Lane.class",
+      "sha256": "7521be5c0f62fc5ca08d87a19a2bab201ab790dec43406e6f405653792052948"
+    },
+    {
+      "bytes": 1706,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3OperatingDomainValidator$Assessment$Reason.class",
+      "sha256": "9407e239944af4fff11e32c63eb0afd6071f1123e1e2cc4bce6e1bd1ab251da0"
+    },
+    {
+      "bytes": 4257,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3OperatingDomainValidator$Assessment$Rejected.class",
+      "sha256": "03db2eb91e5cd7ff93b35cba5f7a033f2379612f3928fdcacd8e5ec97a2f4c45"
+    },
+    {
+      "bytes": 953,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3OperatingDomainValidator$Assessment.class",
+      "sha256": "08af2483ccbed93a25d1b5facf8c7b883c755ba7e76186cc146c6a597694b257"
+    },
+    {
+      "bytes": 2966,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3OperatingDomainValidator.class",
+      "sha256": "82c5870dd56dd9ca700cb8e1281c3f2c41b9b347c69edc35262bd2cc291714f3"
+    },
+    {
+      "bytes": 1765,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3PhaseAwareNeuralInitializer$Scored.class",
+      "sha256": "38d36525f89393fdda483e16ce52c6f3587c8646533069c23dccb4bb0a9b3f97"
+    },
+    {
+      "bytes": 9120,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3PhaseAwareNeuralInitializer.class",
+      "sha256": "579b6df25f4cfad08b8bd6e6828daee68bceb8b6300f6314a7fad9d055c87c2a"
+    },
+    {
+      "bytes": 4424,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3Pumparounds.class",
+      "sha256": "e4be966c776b7cff2e40d132a4aae28c84fbacf4c7167049a08fdb746db01153"
+    },
+    {
+      "bytes": 1350,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3PumparoundSpec$Split.class",
+      "sha256": "8957ae4183854012d4a550c1f9d80f17d0307092ca194b617640742ea5248850"
+    },
+    {
+      "bytes": 3119,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3PumparoundSpec.class",
+      "sha256": "f4737ef8dc17e8230e19fad69e689d06f012e5a3d0ea0515917277895cacd137"
+    },
+    {
+      "bytes": 2514,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner$Evidence.class",
+      "sha256": "81ba14b43b82c6c4c129f9dda7f30af7df936bf7d0074bad3ab83b21945ac3f3"
+    },
+    {
+      "bytes": 1454,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner$Failure.class",
+      "sha256": "45105f8bfc712a9fc1a4be249d101dd66e1f68f42bf72187ac961af89fe97e66"
+    },
+    {
+      "bytes": 1412,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner$Id.class",
+      "sha256": "716ee70f239a6659c252a52283545e074e6136b6a60dd5c8461390166b22448e"
+    },
+    {
+      "bytes": 3188,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner$Request.class",
+      "sha256": "3b343d2b77b4489ac99da65d2e3243cfde82c1bb9eae498521fbe0ec9d88a960"
+    },
+    {
+      "bytes": 2538,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner$Result$Failed.class",
+      "sha256": "bb45f187c32a1d829161ac8544ce00780882385d01953c81a7a0e426d68b8b53"
+    },
+    {
+      "bytes": 2573,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner$Result$NotApplicable.class",
+      "sha256": "cd08812504daa60172ab38b034838f5941ef94a13b74f6c0c099e88183a27f5d"
+    },
+    {
+      "bytes": 2448,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner$Result$Prepared.class",
+      "sha256": "25d769b20572a6bb090b0883497b3ada87e6adc2ee3d7e67e743cad1797a1ca1"
+    },
+    {
+      "bytes": 889,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner$Result.class",
+      "sha256": "599f7b7295c988a4b2fe149c711a2e6e9fae5d349645a80346e3226c47e005f5"
+    },
+    {
+      "bytes": 1460,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner.class",
+      "sha256": "c6a71535a3c7b17379d48d1690e87cc897e9df001ee59e4f8c0c90e4bbac7ba9"
+    },
+    {
+      "bytes": 1546,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SideDraws$Withdrawal.class",
+      "sha256": "d28969f4e7babf500e94a75af9631d37fc5ff3df78873951b71bc7f7a7c953a9"
+    },
+    {
+      "bytes": 1775,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SideDraws.class",
+      "sha256": "fc47061aa83f3db401cd7570344b6460d771dbb8b8659ae173f89b285a599b7c"
+    },
+    {
+      "bytes": 1702,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SideDrawSpec.class",
+      "sha256": "ec527b564d7daf473f1857ef89a6131f0bc073b57a7100ea2824e322c5807993"
+    },
+    {
+      "bytes": 2008,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver$AcceptedTrial.class",
+      "sha256": "5a5291fc4c804949d3dca38fb0b0625c4fe5cb08a8eb478c7cb51119118115bb"
+    },
+    {
+      "bytes": 2459,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver$Attempt$Converged.class",
+      "sha256": "f2ccbaf5f97cef61132f2c108f90dab41dcb8fa54cd38d307c5061634d84ad86"
+    },
+    {
+      "bytes": 2840,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver$Attempt$Failure.class",
+      "sha256": "7f89333cc5ea7c4a324f79b2ffc3cfcfade21072986a7df7bc002647e0d5a2be"
+    },
+    {
+      "bytes": 855,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver$Attempt.class",
+      "sha256": "d8ad0af0a8ec2683b7093bb0cf8df97d4dd797b7eb44e2995ef67a8472f47fa0"
+    },
+    {
+      "bytes": 2908,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver$Evidence.class",
+      "sha256": "01a49a2238859e571bc0a38f7a4c660d5aa5c73a3697eb0ab6b2b43d4f56d748"
+    },
+    {
+      "bytes": 2808,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver$RungBudget.class",
+      "sha256": "f6a80790905b8dec4e414c76f6fcfcc91e5a5f067dd8572437e44c388a1108ac"
+    },
+    {
+      "bytes": 2466,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver$VerifiedFinalNewton.class",
+      "sha256": "18fac1daaabb01c0a339d1151a42386c236670df3017f0a49b8a737580a93867"
+    },
+    {
+      "bytes": 28547,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver.class",
+      "sha256": "17d3715fde08a020354c958f4029548c062d77295148346b1de2de065863a3bd"
+    },
+    {
+      "bytes": 1004,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SolveControl.class",
+      "sha256": "01977ed79e1fd3f6f2ea17c70f90df2ec7b69e82661586c31a71c32b2bbc2602"
+    },
+    {
+      "bytes": 5962,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SolverDiagnostics.class",
+      "sha256": "d89683f409faafe317f1ec42eb6c9b166eb5e815e21e53864e815b7ab1877c08"
+    },
+    {
+      "bytes": 1889,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SolverFailureCode.class",
+      "sha256": "6fbf5ffb74afa54718273d4fb674f1bd0f4d82b56e9271781bc554c832a92e01"
+    },
+    {
+      "bytes": 6150,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3StageBlockLayout.class",
+      "sha256": "085c4543ecc6fa6772fde574920e3d421d58c0b981f6f252e72521a44ba85563"
+    },
+    {
+      "bytes": 2591,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3StageEquilibriumRatios$Node.class",
+      "sha256": "f8782976f0e62107a9aecc417cc3fa1dfad0bf0b904c5c25bd8627589ea7f45e"
+    },
+    {
+      "bytes": 5151,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3StageEquilibriumRatios.class",
+      "sha256": "82a65dcfdd0ce4b570036aa4a64188abdbca9946a5231ab24054d1c8fd44d916"
+    },
+    {
+      "bytes": 2560,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SteamFeeds.class",
+      "sha256": "8f44dcc005edfc2010cd229ff9fbd14e74e7295f87ac4ef63088c71671bf3548"
+    },
+    {
+      "bytes": 1862,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SteamFeedSpec.class",
+      "sha256": "283e40d681a404a63fa0f29557864e2db7cf4291085ff8b715d48593a3dba499"
+    },
+    {
+      "bytes": 12740,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3SumRatesPreconditioner.class",
+      "sha256": "644a1f4a1601c82b06f844ef7b7865785794aa5c652e276c23cfda6101782bb9"
+    },
+    {
+      "bytes": 1082,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3TraceEvaluationProbe$1.class",
+      "sha256": "06bda25f5f6a4c8104b0c1bed7360877973d8f8c41812d447617af9f4637becb"
+    },
+    {
+      "bytes": 30885,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3TraceEvaluationProbe.class",
+      "sha256": "73de068776d7517c06e0fe354dec0bde718e60da4a3a1d3e749b879eea0c0c94"
+    },
+    {
+      "bytes": 3269,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3TraceModels.class",
+      "sha256": "5f7464d3fec0122fdb9bae4014de120ba95e6f8a56a76d0f1f0c89995cb054ff"
+    },
+    {
+      "bytes": 1561,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3TraceParityCheck$Values.class",
+      "sha256": "46536d4bf33c6d9ac2d417b763b4bd9b2fa6e6760e78076b9615a2d4f6b0310b"
+    },
+    {
+      "bytes": 14184,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3TraceParityCheck.class",
+      "sha256": "ac8c18449e94f0a38f7ccd811a746e76532b907a4f801756115588c72a4c0771"
+    },
+    {
+      "bytes": 6725,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3TruncationFallback.class",
+      "sha256": "50b843c169d34c6a7534a2c2726061394248aa8eeee12ddce9ece933851efc71"
+    },
+    {
+      "bytes": 2458,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3TruncationSupport$PointPhases.class",
+      "sha256": "6f702b06ff5f5c3cdde049047ed73cdf83d2893daad010e6576b999bb486e153"
+    },
+    {
+      "bytes": 2548,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3TruncationSupport$SinkEdge.class",
+      "sha256": "5686980cef8fef52e0d2cfeaecdf68f7ac5ad5041cf8eb986c997c20ef80c2d7"
+    },
+    {
+      "bytes": 1459,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3TruncationSupport$SinkKind.class",
+      "sha256": "5a6056ffb6e5cb104a24af4b9206d04a798c16edfd1834bf0d329563821b295c"
+    },
+    {
+      "bytes": 20796,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3TruncationSupport.class",
+      "sha256": "8984f41b194b1aceb97ffcc73ffdad88ac0bc239de839403a6d95d5f102f9f47"
+    },
+    {
+      "bytes": 1286,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3WaterCondenserRegime.class",
+      "sha256": "5ef19ee8387fbc754fda72f8a9102b92dda9ccd88ef12cc8b670ba75cbe1c5af"
+    },
+    {
+      "bytes": 2374,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3WaterPhaseQualification$Assessment.class",
+      "sha256": "f6f277aee3536eb8493d239e73661226b46daa981e9ab89ee253711dfcc55cb1"
+    },
+    {
+      "bytes": 1537,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3WaterPhaseQualification$Grade.class",
+      "sha256": "8f1ad7fa13ce0422b5f9db19d2ca51037b27ff1e71b29f578bb29eb7aa4a2f61"
+    },
+    {
+      "bytes": 3065,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3WaterPhaseQualification.class",
+      "sha256": "e80a6d8d8bdb451878f2e16c9df8360f4f728cf2fb386f960935414431f78f74"
+    },
+    {
+      "bytes": 1552,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3WetTraySet$Saturation.class",
+      "sha256": "29b042118b2e411bf2a30107e8668dce9e0bcadd664629777ca288213ab016fe"
+    },
+    {
+      "bytes": 8816,
+      "entry": "build/neural-capacity-followup/native-core-v2/com/wormzjl/createcheme/science/column/v3/V3WetTraySet.class",
+      "sha256": "165c0db3ddfc60b64b3db297db626564bc1260b666800d21331c0fdc8c1e68b8"
+    },
+    {
+      "bytes": 2596,
+      "entry": "build/neural-capacity-followup/v1/archive-input-proof.json",
+      "sha256": "3fcb3f92b0032673e89b6e66079aeb93568a6b8522f6fc79e25164eeba4ec007"
+    },
+    {
+      "bytes": 2976016,
+      "entry": "build/neural-capacity-followup/v1/initial-2/fixture.json",
+      "sha256": "a6a7002ca849a32c0f1c88afb185d466337f49b16c3c29eceff9c2da2efadc10"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-capacity-followup/v1/initial-2/java-parity-rebuilt.json",
+      "sha256": "d35de8d980a4e6de239d7a80676b7452deba3f4514e4ab2d2ad4890698d1d298"
+    },
+    {
+      "bytes": 2658758,
+      "entry": "build/neural-capacity-followup/v1/initial-2/model.json",
+      "sha256": "9d1f8a48a5af20934147bf03c7f1abd4c3afc9ef8338e2dab8c21c16c5d946e1"
+    },
+    {
+      "bytes": 305,
+      "entry": "build/neural-capacity-followup/v1/initial-2/pipeline.json",
+      "sha256": "35013819b13639a0af8c23bb7023525dd7e0a05b589f2352221082cd47ee15e7"
+    },
+    {
+      "bytes": 817,
+      "entry": "build/neural-capacity-followup/v1/initial-2/precision-check-rebuilt.json",
+      "sha256": "47e9c4ad0afb17521d76f2a3018a7354014e468b850b6eaca8f94c42bd3f4903"
+    },
+    {
+      "bytes": 2976016,
+      "entry": "build/neural-capacity-followup/v1/initial-4/fixture.json",
+      "sha256": "a6a7002ca849a32c0f1c88afb185d466337f49b16c3c29eceff9c2da2efadc10"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-capacity-followup/v1/initial-4/java-parity-rebuilt.json",
+      "sha256": "d35de8d980a4e6de239d7a80676b7452deba3f4514e4ab2d2ad4890698d1d298"
+    },
+    {
+      "bytes": 4229450,
+      "entry": "build/neural-capacity-followup/v1/initial-4/model.json",
+      "sha256": "17f7914c6362a843e0c2b314143650677f77dc8cdc335515bae2beb6aadbd9e4"
+    },
+    {
+      "bytes": 305,
+      "entry": "build/neural-capacity-followup/v1/initial-4/pipeline.json",
+      "sha256": "b7a88a75fb63cc27983fc534bccd0b633d16ceb2284c47e1e83965eb0b158fb7"
+    },
+    {
+      "bytes": 817,
+      "entry": "build/neural-capacity-followup/v1/initial-4/precision-check-rebuilt.json",
+      "sha256": "93d0e22129a75f6da3adc85c71ed96a639216eee5420519f5b621e491ec30835"
+    },
+    {
+      "bytes": 713,
+      "entry": "build/neural-capacity-followup/v1/initial-models.json",
+      "sha256": "dde77e825b81eac74b41fd417f7d078c453107a3b3737441b3f4233d25bf4db1"
+    },
+    {
+      "bytes": 328,
+      "entry": "build/neural-capacity-followup/v1/initialization-mode-proof.json",
+      "sha256": "18ce865328490b4ae3da4032678eee627ee94b3dd1b89f7d4bb42116d1b8295d"
+    },
+    {
+      "bytes": 1678,
+      "entry": "build/neural-capacity-followup/v1/initialization-proof.json",
+      "sha256": "10904cb1f744d0ef2cadadc2c32663369e7ddf72a172bd5c7eb65fe1213cea8c"
+    },
+    {
+      "bytes": 88443,
+      "entry": "build/neural-capacity-followup/v1/native-core-build.json",
+      "sha256": "1d15cac9a60e6758a83dfdd5a4214395b4aab93fea8a229b0d1404a9e3c2b3b0"
+    },
+    {
+      "bytes": 2359,
+      "entry": "build/neural-capacity-followup/v1/native-runtime-proof.json",
+      "sha256": "e14c127f5f7cf96b3b6dc96424fda7cf07c8e586b7e43dc2975ded317d521192"
+    },
+    {
+      "bytes": 1865,
+      "entry": "build/neural-capacity-followup/v1/preflight/all-tests-final.log",
+      "sha256": "7dec97edf37ba50d7fac6428a30113f7a9b0a93ac985184f921cfdc5e04052c9"
+    },
+    {
+      "bytes": 108,
+      "entry": "build/neural-capacity-followup/v1/preflight/all-train-identity.log",
+      "sha256": "873693159663ee151b4228445216248dc2c283fcbc27c97a99a77d565cbbe38e"
+    },
+    {
+      "bytes": 72,
+      "entry": "build/neural-capacity-followup/v1/preflight/core-rebuild-output-v2.log",
+      "sha256": "d66955be062bb0ada4b29fa4811a66cdb2661fa1b8bc89d5c3be5afc3990dff4"
+    },
+    {
+      "bytes": 0,
+      "entry": "build/neural-capacity-followup/v1/preflight/core-source-rebuild-v2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 190,
+      "entry": "build/neural-capacity-followup/v1/preflight/core-source-rebuild.log",
+      "sha256": "9480101a5a6cfa6e885d295269eda526a863c772502c99f44187e4ac858ac871"
+    },
+    {
+      "bytes": 1429,
+      "entry": "build/neural-capacity-followup/v1/preflight/expanded-tests.log",
+      "sha256": "6a28d93719df843d0c4748e7268c12e08752246e2cf803691c16db0776e4aa82"
+    },
+    {
+      "bytes": 1238,
+      "entry": "build/neural-capacity-followup/v1/preflight/initial-native-parity.log",
+      "sha256": "43489c52baa6555a3952f0d5327f5077f4b31f2f357c0e186ff8b25b70b5b1cb"
+    },
+    {
+      "bytes": 918,
+      "entry": "build/neural-capacity-followup/v1/preflight/initialization-tests-first.log",
+      "sha256": "e7228ed653622d013107e6e557d0306db3a49fc326a351ffa18ec808b2462f99"
+    },
+    {
+      "bytes": 88,
+      "entry": "build/neural-capacity-followup/v1/preflight/mode-identity.log",
+      "sha256": "d49b166b618ee1979758ec0d403c20f1d07131478d6425e3f1dc45783ce5e879"
+    },
+    {
+      "bytes": 0,
+      "entry": "build/neural-capacity-followup/v1/preflight/native-compile-1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "entry": "build/neural-capacity-followup/v1/preflight/native-compile-2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 37568,
+      "entry": "build/neural-capacity-followup/v1/preflight/native-compile-first.log",
+      "sha256": "bcb91ee442410324ca630c210702f4f0e87bd7094c3cfa5e8069daff5022dfce"
+    },
+    {
+      "bytes": 2625,
+      "entry": "build/neural-capacity-followup/v1/preflight/native-runtime-identity.log",
+      "sha256": "5437c2ce8466535530c410b9112d6e96c65062e72d08fd6ac680a362720272c0"
+    },
+    {
+      "bytes": 2625,
+      "entry": "build/neural-capacity-followup/v1/preflight/native-runtime-output.log",
+      "sha256": "5437c2ce8466535530c410b9112d6e96c65062e72d08fd6ac680a362720272c0"
+    },
+    {
+      "bytes": 1238,
+      "entry": "build/neural-capacity-followup/v1/preflight/rebuilt-native-parity.log",
+      "sha256": "43489c52baa6555a3952f0d5327f5077f4b31f2f357c0e186ff8b25b70b5b1cb"
+    },
+    {
+      "bytes": 133479,
+      "entry": "build/neural-capacity-followup/v1/training-plan.json",
+      "sha256": "017a3673bb3f8df1f69d4944a1ab623bc83f13cb945238b9f3be439dd37c782b"
+    },
+    {
+      "bytes": 2502892,
+      "entry": "build/neural-hybrid/feasibility-v1/model.json",
+      "sha256": "7aa7eaa5ecbe4cea51a31bbe4724569e40900b128e98b1d69a6068e5e7d43e5e"
+    },
+    {
+      "bytes": 267636,
+      "entry": "build/neural-hybrid-diagnosis/v1/ablation-panel.jsonl",
+      "sha256": "0b287ecc9ff91f073dbdefdffaf92bc1b0ff452aef6ad5bb1779939911b9c1a8"
+    },
+    {
+      "bytes": 278,
+      "entry": "build/neural-hybrid-learning/v1/models/incumbent/pipeline.json",
+      "sha256": "d7fbc4a1286218cc624f36da4807760d5d3b9d405c36d9646b6e6e04724d93a8"
+    },
+    {
+      "bytes": 66683253,
+      "entry": "build/neural-hybrid-learning/v1/N-anchors.jsonl",
+      "sha256": "dc5a0665bbde4d369bfabbbf9260038648fa38a20df3b9e221f64224c52b3e57"
+    },
+    {
+      "bytes": 10439823,
+      "entry": "build/neural-hybrid-learning/v1/new-anchors.jsonl",
+      "sha256": "a1216fce2f8b4b9e11bed1e351a3ab7e1ce8ed6104d3c41737a926806124b5d4"
+    },
+    {
+      "bytes": 2257,
+      "entry": "build/neural-hybrid-learning/v1/warmup.json",
+      "sha256": "f213c11059f9b81b57fbc9a32bc1bb86fbca26f583fe24f0027e8bd03ec50769"
+    },
+    {
+      "bytes": 1148255,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260911/checkpoint-4160.pt",
+      "sha256": "0a638a1f8f41912dccd6e6d3ebb8f5242132cd0bde17c5a899b9ac3159a9bdf4"
+    },
+    {
+      "bytes": 2658860,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4160/model.json",
+      "sha256": "7f909d025e12cbc7e8457b459adfbc63e48f52fb9e98ce45b91e64e84ddd1962"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4160/pipeline.json",
+      "sha256": "cf6d32007f66ca23cea8a4cc0c3c744ae72c501284a8dcb6edffb0fbf0902534"
+    },
+    {
+      "bytes": 28067,
+      "entry": "build/neural-trace-followup/v1/models.json",
+      "sha256": "36a1119712acbbbf51d1ab0c52494e63197ed4e6d01e6d90caaaa391609b23d7"
+    },
+    {
+      "bytes": 30367358,
+      "entry": "build/neural-trace-followup/v1/N804.jsonl",
+      "sha256": "12573c376342389cf40731d68f92e2aacbb26306c84b959a522365b4a18bcc4b"
+    },
+    {
+      "bytes": 35023460,
+      "entry": "build/neural-trace-followup/v1/N905.jsonl",
+      "sha256": "56682d2886060c01e778cd36eb12217800301c360770d88b0d647550e45323f1"
+    },
+    {
+      "bytes": 13948,
+      "entry": "build/neural-trace-followup/v1/normalization.json",
+      "sha256": "4e0920d495d7d20bb2edfed3562c9b0dbd12f7f8be7698a71c164264efb72806"
+    },
+    {
+      "bytes": 43153,
+      "entry": "build/neural-trace-followup/v1/training-plan.json",
+      "sha256": "03196a6fe431b3ba46844394ca24f537fbc2253e554baf97467285210f5b7d82"
+    },
+    {
+      "bytes": 1675220,
+      "entry": "build/neural-trace-followup/v1/validation-inputs.jsonl",
+      "sha256": "95d773b06126b1637492e07cc5e7ab62b819655f5ac221c98c961bff436a9a0a"
+    },
+    {
+      "bytes": 6117642,
+      "entry": "build/neural-trace-followup/v1/validation-references.jsonl",
+      "sha256": "762502ded26a699c0ffdc6bdf6fb59b18c87b0cfdfe1c91189c2e928727560fe"
+    },
+    {
+      "bytes": 11463,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/HollandB12Thermo.java",
+      "sha256": "be68a3e2926561966451f7a8143ee6d502f47552d1a19ee84ba26ab0d10b0e13"
+    },
+    {
+      "bytes": 7988,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/HollandExample32Data.java",
+      "sha256": "10bc947be57ddfb38d10d5a7422a33bcff245830df5759a29bfca818e0a13dc4"
+    },
+    {
+      "bytes": 22248,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/IndependentHollandMeshOracle.java",
+      "sha256": "92bf88f940c3250851e824bf541faa5f0372ea9c4105d0888105f10f218f5e31"
+    },
+    {
+      "bytes": 2737,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedMatrix.java",
+      "sha256": "f1f50c216d0d42a1143d9f4c1d6e31f4d3e3ade91dade1b9030545ee0705da0f"
+    },
+    {
+      "bytes": 21328,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedPivotedSolver.java",
+      "sha256": "bc8ba246f3d868cd873436df52dacc918078eba11e99e6da3b8345991003f512"
+    },
+    {
+      "bytes": 8978,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3Cdu17TiaJuanaPackage.java",
+      "sha256": "2c34220e07d92e8df9d088f4d530287ffcb7d630515d75c8033c42608a3a4331"
+    },
+    {
+      "bytes": 2710,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3CrudeFeed.java",
+      "sha256": "b566675ddf196cdd5b0e418bc413f0a631368eec48d340ac02f56b527558a940"
+    },
+    {
+      "bytes": 9698,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlash.java",
+      "sha256": "6810eb8c4ae9f053faa8ddb9521af8e2af1f29d77a969a3e082a08a7b0643fb7"
+    },
+    {
+      "bytes": 213,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedPhase.java",
+      "sha256": "b05dd80e853b46922758c88d9d47a4488415b35169c2e7301abc81ddc9aa5611"
+    },
+    {
+      "bytes": 3921,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashPhaseSupport.java",
+      "sha256": "8b235474e066ab9c7d05a73c3db436983a762ca54b953d0465fc7c90237e6436"
+    },
+    {
+      "bytes": 6348,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashResult.java",
+      "sha256": "9266e8371d76f6aec591d714fdedc3b1ed4940f099ddb2b70dde3f463c0290ad"
+    },
+    {
+      "bytes": 4995,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashTruncationEvidence.java",
+      "sha256": "55605648c22a4d76511bd6e04a182b776ebc74773eb0462c073ac6367cc4993f"
+    },
+    {
+      "bytes": 6076,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FugacityDerivatives.java",
+      "sha256": "12b37e524f350e003997c1533a53fa9bb4223160ff7aa2ba4635f48a2918f3d0"
+    },
+    {
+      "bytes": 2445,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FugacityResult.java",
+      "sha256": "095d3e81d56a57e50e2d27ac7953296d489c575de38f46fa42f539c585a24da5"
+    },
+    {
+      "bytes": 32666,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonKernel.java",
+      "sha256": "2d912ba307fc9bd0d68632d7b4e118ba4dc6d4b74fe8b98344ba35c66d5b29d7"
+    },
+    {
+      "bytes": 8430,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonSession.java",
+      "sha256": "9c05f77c69dd1fb2bd90f109cb63c5697840419ca3bdf420f8f6423d8ce87d84"
+    },
+    {
+      "bytes": 11516,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonThermo.java",
+      "sha256": "f76792c6fbdc5846d1acc636028ee68c904e86c51baff53cbe67f140af692292"
+    },
+    {
+      "bytes": 192,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3Phase.java",
+      "sha256": "a4672f94787e61eb8c4b5fdc9758f0034591874720268e534b751128647d3d4a"
+    },
+    {
+      "bytes": 2924,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyComponent.java",
+      "sha256": "abfb07ad412403e30fbb81699055bbc9135371db02702156cea1896b463f294b"
+    },
+    {
+      "bytes": 838,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyPackage.java",
+      "sha256": "a458aaf56cf2938c3378d7fed3dd3c7593a7bed8fcf2cc193d3edbd582cdec57"
+    },
+    {
+      "bytes": 913,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyPackageRegistry.java",
+      "sha256": "e251ef9d45c6eb2e4860ab1ffae25929064bfc0584d69286d40e903d8d3a3a9c"
+    },
+    {
+      "bytes": 1561,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoDerivatives.java",
+      "sha256": "32dfd3b51b9ec4370027f192b0c991bc046c815193e49e151f3e769f04161cb6"
+    },
+    {
+      "bytes": 895,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoException.java",
+      "sha256": "a977d9ce7c4939f58b0d3ca3b18c02f62571d071d449e44b27b549c577da0d04"
+    },
+    {
+      "bytes": 873,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoModel.java",
+      "sha256": "df2f00ad425b5ebada4859aff018262db81e9c66eba6c79d2a7e2bf306aed777"
+    },
+    {
+      "bytes": 2268,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoWorkspace.java",
+      "sha256": "a3b20d03199baae7508f7955ba4f194f8101748eb749a821355f715ddade408f"
+    },
+    {
+      "bytes": 11166,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3Tjl19PropertyPackage.java",
+      "sha256": "80282ff2a87ff7cc5b9af61743dc8519ab3a2492b514d19358476444c0e62e69"
+    },
+    {
+      "bytes": 4175,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3Tjl20MethanePropertyPackage.java",
+      "sha256": "cebe978c5029dcedb4970f0d851852f4bf30f4d3e6b75d4dfe845d9de6cae595"
+    },
+    {
+      "bytes": 2511,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3TraceTruncationPolicy.java",
+      "sha256": "34830403752fca0c6256129823d43a0aed5700c9bf9a6967f5595809b706a81a"
+    },
+    {
+      "bytes": 20760,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3TruncatedFlash.java",
+      "sha256": "5bb9257252b1c7c254a917ceea38e779c748cd2fd0e9131762839d1087aeebdc"
+    },
+    {
+      "bytes": 8795,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3WaterProperties.java",
+      "sha256": "128c48fbf6e0aa4fc9aa736ae34aad4084a929a291e0376c8b725008927fb972"
+    },
+    {
+      "bytes": 2359,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAudit.java",
+      "sha256": "245b2bb9cbc6e789c7f45938cb91782a1c29c71775032d0e82fa3d378618cc0b"
+    },
+    {
+      "bytes": 59740,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAuditor.java",
+      "sha256": "beb3a0f6494aac67baaa82f767fd8ea92348cc76f002b73595047138792e5ea2"
+    },
+    {
+      "bytes": 3473,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ActiveComponentBasis.java",
+      "sha256": "4fe49d5b40034d67a612628f1cc7f4aac7387852a6e27d852567c924bf9fb463"
+    },
+    {
+      "bytes": 7585,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3BlockJacobian.java",
+      "sha256": "369e20e3f979312405b3eb6a41071c79f1bd8df9729999ca8f2fa598723d6831"
+    },
+    {
+      "bytes": 40791,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3BlockJacobianAssembler.java",
+      "sha256": "66c12b5c41fa73d232edb079220b82ec03d485819fca7fc090ef16f1473a244f"
+    },
+    {
+      "bytes": 2435,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3BubblePointPreconditioner.java",
+      "sha256": "78a3ad9164e16b29d834e63f7dc9858f7b5527384771c4ad54cce0cb8c67a5fc"
+    },
+    {
+      "bytes": 349,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3CalculatedQuantity.java",
+      "sha256": "8179690f4f1205185da69b24218b8ce877d2dd004c640943dbe17ea967d09066"
+    },
+    {
+      "bytes": 180155,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java",
+      "sha256": "bb7da80a7da8ad380da911ae02b409c87f5f13679d76688ddf6610cde94af0b6"
+    },
+    {
+      "bytes": 5094,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnDisplayResult.java",
+      "sha256": "e5530374b416f016971bce317a338260eb4a8fe2637bd94c61e3d227b1323a00"
+    },
+    {
+      "bytes": 5620,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnDutyLedger.java",
+      "sha256": "b01655c32ae293a22f2147bc88f561581a1cde8591a29a2b8a77581dd24f0fcc"
+    },
+    {
+      "bytes": 60463,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.java",
+      "sha256": "8ffa23b9723c67dc4f51961ce3a5fc4596adcb06f83ce4424172f56e420d2ce4"
+    },
+    {
+      "bytes": 11167,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInput.java",
+      "sha256": "4cf63dbd669f75a41a57e9c30393f29b4fab5f51f289597fc33b28e77a30af82"
+    },
+    {
+      "bytes": 1857,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnOutcome.java",
+      "sha256": "9957d4be5eda3044758299c5bb64fb3381e6b8918467b68dd24bcc27498b1d96"
+    },
+    {
+      "bytes": 14883,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnProblem.java",
+      "sha256": "e90a23bcf61afa6761fb76980ff3e36cd68f5a73e1b835971fd4969f7dc2d6dd"
+    },
+    {
+      "bytes": 9648,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnProblemResolver.java",
+      "sha256": "9cffb3fe41ced6078ce0234b153fc52dd55293435f8083423df306243440bcbf"
+    },
+    {
+      "bytes": 6669,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnResult.java",
+      "sha256": "61d9b199fc7ba3550139fa056c784f957ef7f92b19bbe92e6bb030d67305ddbf"
+    },
+    {
+      "bytes": 2187,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnSpecification.java",
+      "sha256": "c68bd337818cad8b64bca0685f151c1881921b734b93170af4636cd7022247cd"
+    },
+    {
+      "bytes": 13683,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnStreamProperties.java",
+      "sha256": "9ffb720552ec5ad441c3ac4cd14758c4f186272cf5094d522ee64f8df5e27bef"
+    },
+    {
+      "bytes": 3850,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnTopology.java",
+      "sha256": "872d6b8d7edd19584ab817a6c45d27c0a7cb91d8f7e9c34d8f9a61cca899140f"
+    },
+    {
+      "bytes": 1834,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ComponentBasis.java",
+      "sha256": "66e57a981378176a1fae4a34aa44c3287904b7f2792927a2bdbb78f8d696de2c"
+    },
+    {
+      "bytes": 1958,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3CondenserComponentPhases.java",
+      "sha256": "91add18acbf0294f879cea6e89b54471c4c235fc0e0f900ebe4520b734297669"
+    },
+    {
+      "bytes": 244,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3CondenserPhaseBranch.java",
+      "sha256": "87e8509eb397365f67f626ef7426187b96e41d4bd5c7ca366a82a7610db3b21e"
+    },
+    {
+      "bytes": 7292,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3CondenserPhaseTransition.java",
+      "sha256": "c4140301c9162e4e156ce19796a9eab7fc3d3c75a6be6ac7f2a14f2d46823939"
+    },
+    {
+      "bytes": 744,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ContractDiagnostic.java",
+      "sha256": "77421b9ca7f2ff34bb8c87a63ae13e5d2a3f8df79d220c40fbdd42b26b3817cd"
+    },
+    {
+      "bytes": 271,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ControlledQuantity.java",
+      "sha256": "9de8bb612f0ebfa9d43bac4525ee79de9874e02fc83ef0542d1531ab2677b38a"
+    },
+    {
+      "bytes": 5747,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ConvergenceEvidence.java",
+      "sha256": "893b95d5bbc89580f91a239bdf45d989f1244df241cf8ae638b9d152b510d378"
+    },
+    {
+      "bytes": 23678,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3DegreeOfFreedomLedger.java",
+      "sha256": "b1f13d37a4709170050cfccdb211556a9371196822950b5bcb25c637e5af1942"
+    },
+    {
+      "bytes": 8300,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3DenseNeuralInitializer.java",
+      "sha256": "69cb59989d881e4331346a54922428074e829f25f2da93860d7804ac48520de5"
+    },
+    {
+      "bytes": 8764,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3DryMeshCoordinateMap.java",
+      "sha256": "184ec398a00c942ea80a615b8bf732c2c2b5c97c8e0b120f019a719fc713d565"
+    },
+    {
+      "bytes": 11297,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3DryMeshState.java",
+      "sha256": "5910a60a08b0e15a463adb5204c7bf72ddbbaa5e1afbbf297bef48fddeb306d1"
+    },
+    {
+      "bytes": 18058,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3EnergyShiftPredictor.java",
+      "sha256": "1caba91be26b843517be6f99a8189ffc05976e41adcd58f2d6cd0cb5ff3bdc8b"
+    },
+    {
+      "bytes": 7841,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralFeatures.java",
+      "sha256": "4966cd87e45d07f9e274f1cc0d3312c390681477917e1a251f41709cbd16d41e"
+    },
+    {
+      "bytes": 13114,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralInitializer.java",
+      "sha256": "868b82cfc5bbe2608e81a80ed7eaef5f7d3ad0ea60e3e7f1bb6a1293019e4ec0"
+    },
+    {
+      "bytes": 20816,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian.java",
+      "sha256": "226eb6da5ba5d1c1f42e6fa2d4b55f2c38d29aae055566d388ab141652ecec36"
+    },
+    {
+      "bytes": 24226,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3FreeWaterContinuation.java",
+      "sha256": "2f29a604c62484779ebd7826511257457128ff266beda9e80739865516efba24"
+    },
+    {
+      "bytes": 10519,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralFeatures.java",
+      "sha256": "ba6a4e0443abf39d1e2b962cfba6833808dd270a511a7845e371fd51055a2fe5"
+    },
+    {
+      "bytes": 12673,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralInitializer.java",
+      "sha256": "06b7006a6c802e25c1890838161513180d0278d1f4836bf6f33768063d6d95f4"
+    },
+    {
+      "bytes": 7775,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3HeatFeasibility.java",
+      "sha256": "91f0a5a1c6a2bb768b1dc582a902594ec8dc6be630c164f347093938300f3841"
+    },
+    {
+      "bytes": 16073,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3HollandExample32.java",
+      "sha256": "3a01ac1e326daa48ce7ac364a139741e49c3f148fdba62619ead70ddce25eacc"
+    },
+    {
+      "bytes": 4630,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3HybridPreconditioner.java",
+      "sha256": "a367f4086077522c6d2b64c8ea9757799fd484c560d533c8f52c68287adc466b"
+    },
+    {
+      "bytes": 1148,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3InitializationOptions.java",
+      "sha256": "984ab142ef82214365192d8c32dd17246771dc6e1125b6b9b4ab1d29f819722e"
+    },
+    {
+      "bytes": 8223,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3InputDigest.java",
+      "sha256": "1ea4d91532a2336c5b772b09a127bcc4bad7bd100ebc4f95331aa11de4943063"
+    },
+    {
+      "bytes": 1941,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3MeshResidual.java",
+      "sha256": "54a427e9feff50f4dff182e73ce92cf953c037cd41f21f8c2f15163c4f82d04c"
+    },
+    {
+      "bytes": 37393,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator.java",
+      "sha256": "3fd5839cbc13a4e685fbbaa94234e4ced7ba51de99b6e08f92739faa2a169d28"
+    },
+    {
+      "bytes": 21594,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NearestProfileInitializer.java",
+      "sha256": "4de0f8693e66d30f4d9bab40ea5266f8386788959bf76db5543a54f59d86e0ed"
+    },
+    {
+      "bytes": 4985,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralFeatures.java",
+      "sha256": "b1654459e945376e99b9ff5670b6caf15abdc8d692228ac437c86d36ab4f41e5"
+    },
+    {
+      "bytes": 891,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralInitializer.java",
+      "sha256": "33f20d1aa1721cf7e42f9a6cbcbcc261bc2928c63845e420aa25bf9d68044cb4"
+    },
+    {
+      "bytes": 3028,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralModels.java",
+      "sha256": "ea136ef2bc6693b3c83d3bfca97ce05437b7b085fb020bc21ae2eda5a6c37656"
+    },
+    {
+      "bytes": 6535,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralSeed.java",
+      "sha256": "4558ca0ab17edb381dfdfbf96076fbc74428ae2b00b1960c6f49cdb9839c660a"
+    },
+    {
+      "bytes": 1003,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NewtonTrace.java",
+      "sha256": "337a8c8c354d0295c7f597b089fb9d88ce4b752e49198ea2115b2a6a391f8b45"
+    },
+    {
+      "bytes": 8755,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NormalEquations.java",
+      "sha256": "5f2f47ddd64045c9300da51a9a582b8ef30fba18a6e99e13e6546c30fabea529"
+    },
+    {
+      "bytes": 7600,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3OperatingDomainValidator.java",
+      "sha256": "72870d5a5928b51d33f85c0c660a38152b6f7bfe3d35cf3e74dc93a5369624a3"
+    },
+    {
+      "bytes": 3723,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3PhaseAwareNeuralInitializer.java",
+      "sha256": "5068170f96f727f96d5968693164406c72e1614358644f2513edb2d9ae07eff1"
+    },
+    {
+      "bytes": 3142,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3Pumparounds.java",
+      "sha256": "25d214d7295f72f0a61538e9843455fd111c72b401d63eded4733c2f1e11d51a"
+    },
+    {
+      "bytes": 2288,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3PumparoundSpec.java",
+      "sha256": "7b8064d0ef8db55aff524e52766ff4a82cd5cb486d6a053d328f4f070059d596"
+    },
+    {
+      "bytes": 3464,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner.java",
+      "sha256": "27f34713cacad20716ef49e684af90d34316d3f2e0da6e5c6e5f49e17903279e"
+    },
+    {
+      "bytes": 1388,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SideDraws.java",
+      "sha256": "98307de2f41575c53928d82d6a2450798c2d28177cadb9efdd4b4b49f93ae020"
+    },
+    {
+      "bytes": 503,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SideDrawSpec.java",
+      "sha256": "6952c1ccf7bba5ebe280fff22f0e1076e2908b8350e4a22a1a52d845bd739242"
+    },
+    {
+      "bytes": 47439,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver.java",
+      "sha256": "3555fbf9785eb695ee3cb7a56b9a8701dc5c59c47123ffb62c30ec9393b06254"
+    },
+    {
+      "bytes": 600,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SolveControl.java",
+      "sha256": "67927500e3174956b9a0bceaf0db69cdcf4b1f888a2b1b2acdf8e9aa9371345a"
+    },
+    {
+      "bytes": 2832,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SolverDiagnostics.java",
+      "sha256": "2873858f57fb5faa768cd6dec36c98f36a0b1d59b50ba310c5fd4755af282d3a"
+    },
+    {
+      "bytes": 456,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SolverFailureCode.java",
+      "sha256": "f55f92a0fbfe21cb4113d993043803607115ca0287f0f65e71e0756857d0e905"
+    },
+    {
+      "bytes": 6330,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3StageBlockLayout.java",
+      "sha256": "8d2afc35faa2469a890e3047950050dd9eca9a79a12f8881485e55c4a43f8b4d"
+    },
+    {
+      "bytes": 7770,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3StageEquilibriumRatios.java",
+      "sha256": "9f2eaf052b856f8c9ec1c87ed89da1aef0131b2597a540cd924e457f505a1797"
+    },
+    {
+      "bytes": 1260,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SteamFeeds.java",
+      "sha256": "cd24c087d05de66e32ed2f84b7efd72c4105956b7a37a302f2ea354e0f1a0992"
+    },
+    {
+      "bytes": 628,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SteamFeedSpec.java",
+      "sha256": "b2f4d42b50fa0c053edb9d1c62e560dccf6f85564ec2eaad662443ec8acceca2"
+    },
+    {
+      "bytes": 13144,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SumRatesPreconditioner.java",
+      "sha256": "9afd4930eb85a610f163f26d2143f7bd0037a80f552faadcaaee6571e874d164"
+    },
+    {
+      "bytes": 3495,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3TruncationFallback.java",
+      "sha256": "0e3797104b287a7b9446ae88e2a9cccf68587e39c7dcab7621bb87160e6f2216"
+    },
+    {
+      "bytes": 42789,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3TruncationSupport.java",
+      "sha256": "8f1ac3e8bce2ae4f22b3f3407fc0bece489a0df1e7ad9367f20d32b690c548a6"
+    },
+    {
+      "bytes": 502,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3WaterCondenserRegime.java",
+      "sha256": "96c1da970872642e7c9a9ee2c5df66c65a9042d342cd869c2f8616c8c2e86efa"
+    },
+    {
+      "bytes": 2697,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3WaterPhaseQualification.java",
+      "sha256": "bc181bfa5034678f978339e9bfbba61987aa1bd17f78e3e35ce868bff2715ce9"
+    },
+    {
+      "bytes": 15153,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3WetTraySet.java",
+      "sha256": "278cf8f3eaa072c9d3a62fdc158b89f568e8f8d166040d5fff8b345ef929f3c0"
+    },
+    {
+      "bytes": 103,
+      "entry": "src/main/resources/assets/createcheme/blockstates/column_calculator_v3.json",
+      "sha256": "851115de130d9d2388f3a872e7578065b3860f51c489cc6cf23a5f314386bf9a"
+    },
+    {
+      "bytes": 89,
+      "entry": "src/main/resources/assets/createcheme/lang/en_us.json",
+      "sha256": "e26061655281284ace60bc8ea676d3532717c85fc5bfda514d94fb5a47a238e9"
+    },
+    {
+      "bytes": 221,
+      "entry": "src/main/resources/assets/createcheme/models/block/column_calculator_v3.json",
+      "sha256": "55b6fbfad402f069043f64633b539cbdfecda28ed76dda67b89b6d45e33a4abf"
+    },
+    {
+      "bytes": 60,
+      "entry": "src/main/resources/assets/createcheme/models/item/column_calculator_v3.json",
+      "sha256": "98198c5f2ffd43984047c8d2c4301d25a8942c0d01f71cd4d427ddd220f8411b"
+    },
+    {
+      "bytes": 4654,
+      "entry": "src/main/resources/column/v3/holland-example-3-2.json",
+      "sha256": "5d760ee63a67ba78f706beca30a2c64490cf5a717da22269532d9585deb9d178"
+    },
+    {
+      "bytes": 87,
+      "entry": "src/main/resources/data/create/tags/block/non_movable.json",
+      "sha256": "ab326bfbc82b909e0c990a4405c84dccc1f730d305d92fbec261e72fbcc72b30"
+    },
+    {
+      "bytes": 434,
+      "entry": "src/main/resources/data/createcheme/loot_table/blocks/column_calculator_v3.json",
+      "sha256": "1665cf076d3726c80111be3a22a1c6e6b9cd8c9ed9ccbee3ac9afea579876e1c"
+    },
+    {
+      "bytes": 674047,
+      "entry": "src/main/resources/data/createcheme/neural/v3-general-gen3-factorized.json",
+      "sha256": "19ed50603c2955841a9dd8e5a539aa076b1d8d59a09304b2bc0c613cc520e512"
+    },
+    {
+      "bytes": 590462,
+      "entry": "src/main/resources/data/createcheme/neural/v3-general-stage.json",
+      "sha256": "f4cab9cb22fcb0e528dbd32c76cf9f41dd3404b80838e97a105260b36c28f380"
+    },
+    {
+      "bytes": 1067600,
+      "entry": "src/main/resources/data/createcheme/neural/v3-mvp.json",
+      "sha256": "987679f550f037c5bab58d5b2294a045e91665df7602eba244a499bb8ab6ed3e"
+    },
+    {
+      "bytes": 2355813,
+      "entry": "src/main/resources/data/createcheme/neural/v3-tjl20-dry.json",
+      "sha256": "5b780bdc59fe6e4fb4e01a6311cdd2b0cee638cb6122acae131f5c99ec1b7353"
+    },
+    {
+      "bytes": 2253139,
+      "entry": "src/main/resources/data/createcheme/neural/v3-tjl20-wet.json",
+      "sha256": "2ea4f1342b7ef86966eb676ae9f1ec3126d362123f06e6833ded0366877bb1a7"
+    },
+    {
+      "bytes": 757,
+      "entry": "src/main/resources/data/createcheme/thermo/cdu17-tjl-kl1976-r2.properties",
+      "sha256": "059a1d44ecf47164f88e822b4385b34e7f3d4e9aa118f5c0c0c7998d991f83b3"
+    },
+    {
+      "bytes": 87,
+      "entry": "src/main/resources/data/minecraft/tags/block/mineable/pickaxe.json",
+      "sha256": "ab326bfbc82b909e0c990a4405c84dccc1f730d305d92fbec261e72fbcc72b30"
+    },
+    {
+      "bytes": 92,
+      "entry": "src/main/resources/pack.mcmeta",
+      "sha256": "7a766b5014214be85c9f7034bd37b4e61beea900793815ce27cb93c0d3b62fea"
+    },
+    {
+      "bytes": 7744,
+      "entry": "tools/capacity-followup/capacity_benchmark.py",
+      "sha256": "08133322b76c2624ec4a0f1c44b270e5b82a366e582b2da88a69ba0bbfde1231"
+    },
+    {
+      "bytes": 3485,
+      "entry": "tools/capacity-followup/capacity_common.py",
+      "sha256": "4bb745837cb1666a5d9f35ccf5f34ac9bd221e6f6293bb72ff9bc9fc29396027"
+    },
+    {
+      "bytes": 4528,
+      "entry": "tools/capacity-followup/capacity_export.py",
+      "sha256": "44b35d02b72e7ccb4fb902719908dde74bf981e2565f5d83e6675af96b7c5003"
+    },
+    {
+      "bytes": 4686,
+      "entry": "tools/capacity-followup/capacity_fit_all.py",
+      "sha256": "22a89047a6ef083d73278ee4f4aaccaa884361af1e43757ac65c699ba0a40cba"
+    },
+    {
+      "bytes": 2265,
+      "entry": "tools/capacity-followup/capacity_freeze.py",
+      "sha256": "a0b7523c57d4ba1622912bc1f2002f5cc343bac1af6eb8e291779ff9f4443645"
+    },
+    {
+      "bytes": 4297,
+      "entry": "tools/capacity-followup/capacity_native.py",
+      "sha256": "0b03d3ee72f8656726c3e59459e9257fa60dcd30b6d964bca7cc330514c158d5"
+    },
+    {
+      "bytes": 4153,
+      "entry": "tools/capacity-followup/capacity_preflight.py",
+      "sha256": "ddb1c72456591dc28b02138df08eeba769a4782c088dbd139ac3cc7b03027d4f"
+    },
+    {
+      "bytes": 9411,
+      "entry": "tools/capacity-followup/capacity_register.py",
+      "sha256": "06b5bf868b5e0143d06c7d3b7fa5ad3455f27f9ceb02c382527a51078cd016c7"
+    },
+    {
+      "bytes": 7258,
+      "entry": "tools/capacity-followup/capacity_train.py",
+      "sha256": "4c7117d105bf0f4ec5fce70e2bc27a6def1b440093c331af198352bbc3383973"
+    },
+    {
+      "bytes": 4368,
+      "entry": "tools/capacity-followup/generate_capacity_native.py",
+      "sha256": "210e4a59eea77b673758fd12c2f8ac39b011abd514381b8efc1ce1020d34e38d"
+    },
+    {
+      "bytes": 19762,
+      "entry": "tools/capacity-followup/java/V3CapacityEvaluationProbe.java",
+      "sha256": "083bf3399d3c95d77de8961f78fdd4537bb1e85f3c2171200601cde505c8b9b4"
+    },
+    {
+      "bytes": 15023,
+      "entry": "tools/capacity-followup/java/V3CapacityInitializer.java",
+      "sha256": "4a9ee8c7128c4a4b208844b1772980a150d45e4133d260bb5c06883fd6d513c0"
+    },
+    {
+      "bytes": 1440,
+      "entry": "tools/capacity-followup/java/V3CapacityModels.java",
+      "sha256": "5bff9233a48e6a1c903e6d229dd68b6c76345af78a18e829904a0c80ab06258c"
+    },
+    {
+      "bytes": 8022,
+      "entry": "tools/capacity-followup/java/V3CapacityParityCheck.java",
+      "sha256": "45f18af0dfbef8c0b2d71e9434feb445a91fa8db6fbc7d86b62423b5fb88768f"
+    },
+    {
+      "bytes": 6562,
+      "entry": "tools/capacity-followup/java/V3CapacityRuntimeCheck.java",
+      "sha256": "08a40b3525cb3f3a612c515294ca843838e8f92b0453887d791521c189de34f0"
+    },
+    {
+      "bytes": 7103,
+      "entry": "tools/capacity-followup/protocol.md",
+      "sha256": "d75d7ec079ae9bd3437d080b67602e520ed43994878d5ba616c48de8b7ea2625"
+    },
+    {
+      "bytes": 4569,
+      "entry": "tools/capacity-followup/test_capacity_initialization.py",
+      "sha256": "a3d7d863bcb5b5dba0f3b6fe404c8f600e767bc28ca2f0cf5edd28ef8672e37b"
+    },
+    {
+      "bytes": 1308,
+      "entry": "tools/capacity-followup/test_capacity_schedule.py",
+      "sha256": "058feb4d70bf8e827f22bc195a243c67f5259408e24815a255bbd032e7012ab6"
+    },
+    {
+      "bytes": 9123,
+      "entry": "tools/hybrid-learning/benchmark.py",
+      "sha256": "fe5e7e34da344fbefd60a150456fb7738adf623ba0a53a2cba17cd37576456f5"
+    },
+    {
+      "bytes": 3079,
+      "entry": "tools/hybrid-learning/java/V3HybridBaseline.java",
+      "sha256": "8ee7c67ca0511a568c2747290b89ece97f84efe87f41357fec15ffbdecc02a10"
+    },
+    {
+      "bytes": 1568,
+      "entry": "tools/hybrid-learning/java/V3HybridBaselineExport.java",
+      "sha256": "fae76d6eb4797c4f48961f7a2157a2954d58bcdad3d1ff09b6c6e39d7c4688b7"
+    },
+    {
+      "bytes": 19681,
+      "entry": "tools/hybrid-learning/java/V3HybridEvaluationProbe.java",
+      "sha256": "56ba8381c4238f525a1c9865a5ad9b2eb450602730f2a9841b5353ca4e260854"
+    },
+    {
+      "bytes": 1463,
+      "entry": "tools/hybrid-learning/java/V3HybridModels.java",
+      "sha256": "d31de4d661c4ef6772a654f3af9b0933591d1d870d797c202e8ed9d755e048f7"
+    },
+    {
+      "bytes": 6500,
+      "entry": "tools/hybrid-learning/java/V3HybridParityCheck.java",
+      "sha256": "80a77436ffd8a60692c8f4f810398f64e4dce5dab69314f22669f8070609c792"
+    },
+    {
+      "bytes": 14588,
+      "entry": "tools/hybrid-learning/java/V3HybridResidualInitializer.java",
+      "sha256": "c4bcb02b807e200e7294c01750aa7705f1b70d27f20ea5682e0d8e6f318e0bd7"
+    },
+    {
+      "bytes": 9439,
+      "entry": "tools/hybrid-learning/train_hybrid.py",
+      "sha256": "c144b73dcace8c05e128b972c6dc240e2031878050e9f35c006fa52772108e0b"
+    },
+    {
+      "bytes": 8328,
+      "entry": "tools/neural/checkpoint_selection.py",
+      "sha256": "2a5b583eeb70a5a0702ec93df35b7b17c7d8415dc3f63353bc7c64f4766c5b08"
+    },
+    {
+      "bytes": 34253,
+      "entry": "tools/neural/native_checkpoint_selection_v1.py",
+      "sha256": "a4626eda186bf6cd52358c7d58ddba5e87a099c377fbc5e3d8feac418a28671c"
+    },
+    {
+      "bytes": 9227,
+      "entry": "tools/neural/prepare_gen3_data.py",
+      "sha256": "5e592243f300f7dc40024ef6d8160381a25da7ddf426f767f6a63b67a91ee40e"
+    },
+    {
+      "bytes": 15675,
+      "entry": "tools/neural/prepare_generalized_evaluation.py",
+      "sha256": "70a9c4e35db2a62b915908d363956c4733887f111e07cfab8d3e08e0a958714f"
+    },
+    {
+      "bytes": 12109,
+      "entry": "tools/neural/prepare_transformer_data.py",
+      "sha256": "120cda45aba786e3af53a79370d66b9aa7dfa27e71709024412a16d048eddb78"
+    },
+    {
+      "bytes": 21818,
+      "entry": "tools/neural/train_gen3_factorized.py",
+      "sha256": "b3bd89eb6c195c9a4e3262e7ff576087c2fe49cce72c48bcb9beb59527e2fbd5"
+    },
+    {
+      "bytes": 30924,
+      "entry": "tools/neural/train_generalized.py",
+      "sha256": "ff89253c2329283ed52dc12722f7e6778193200838f2b210ace10e4662ebabf5"
+    },
+    {
+      "bytes": 11502,
+      "entry": "tools/neural/train_transformer.py",
+      "sha256": "ce5f1220ae44dab66d8cc63297903fb31f0ee15bc7bf7f63c4a7c8e934ee2b1f"
+    },
+    {
+      "bytes": 12295,
+      "entry": "tools/neural/train_transformer_accuracy.py",
+      "sha256": "18a2f3767b1421ef235b0dd8c4489937883a792c68046d4454c0421f0db6886c"
+    },
+    {
+      "bytes": 5317,
+      "entry": "tools/neural/V3BoundedEvaluation.java",
+      "sha256": "aed990ad9f09e8d381e7f70199f33bd9899c874a07af5057ecec94240ceededd"
+    },
+    {
+      "bytes": 9103,
+      "entry": "tools/neural/V3BoundedEvaluationCheck.java",
+      "sha256": "6836e73c4344aff9c12bec3219ae306db6b4918840f0d48e60b438227800ba5a"
+    },
+    {
+      "bytes": 2203,
+      "entry": "tools/neural/V3CandidateModels.java",
+      "sha256": "3ee6666a97de988c437410d3c2f2dd8b6e8ebdde88a720d30d0901296cf095ac"
+    },
+    {
+      "bytes": 13718,
+      "entry": "tools/neural/V3ColumnTransformerInitializer.java",
+      "sha256": "43e393bf811c54a1e12e370f4b3b5ff9183ee6af5e7645804ed41a388bde89d2"
+    },
+    {
+      "bytes": 18935,
+      "entry": "tools/neural/V3ConcurrentColumnEvaluationProbe.java",
+      "sha256": "2841098b8be5c1de15ad952f88e33a87aa4d5db17f99bd13c24491bc77bdc2fb"
+    },
+    {
+      "bytes": 5677,
+      "entry": "tools/neural/V3FactorizedModelParityCheck.java",
+      "sha256": "132a82b6427d7d30c6752b5a61187fe020cedd8986ee9190211f5030ff692ab8"
+    },
+    {
+      "bytes": 8025,
+      "entry": "tools/neural/V3GeneralModelParityCheck.java",
+      "sha256": "fa635f63b1daaabc25dcc6d56ccc8f679f21afb7a64c8051684685fc7d33009a"
+    },
+    {
+      "bytes": 20490,
+      "entry": "tools/neural/V3GeneralParallelCheck.java",
+      "sha256": "79fe647d846d6d5223bdbebeb0a88ab3defd4a704407dec745503b8451dc7384"
+    },
+    {
+      "bytes": 23632,
+      "entry": "tools/neural/V3GeneralTrainingProbe.java",
+      "sha256": "e4abf47119aaab57c32c48feb66aaa9448d99d66f6ce1960964616c041dbe3ef"
+    },
+    {
+      "bytes": 7449,
+      "entry": "tools/neural/V3GenerationPredictionCheck.java",
+      "sha256": "0885df69f25d851909e2f45c177a99551906e05317c2d189a492822fd384d79b"
+    },
+    {
+      "bytes": 25887,
+      "entry": "tools/neural/V3MechanisticSeedProbe.java",
+      "sha256": "86b3638c57f09c4be249e92c954070ca3502338a071f19dd082798ccd8cd49f8"
+    },
+    {
+      "bytes": 8731,
+      "entry": "tools/neural/V3MechanisticTransformerInitializer.java",
+      "sha256": "b21b5000b32390161dd9941fdae4d52a298643ccecf4b5a4ac9ff87fc7eef355"
+    },
+    {
+      "bytes": 16813,
+      "entry": "tools/neural/V3MethaneTrainingProbe.java",
+      "sha256": "05ba873baf0021afb0486034d96dde0fc675d5d63b2ad172a724781885eb8cec"
+    },
+    {
+      "bytes": 7144,
+      "entry": "tools/neural/V3NearestModelParityCheck.java",
+      "sha256": "7915c82f7b8cab8ac1f8ba3c43f124ca5b99e6d441872a9f8551395a75481426"
+    },
+    {
+      "bytes": 7843,
+      "entry": "tools/neural/V3NeuralMvpProbe.java",
+      "sha256": "f3a01dbcd9e6cd605eb2a55eecd8827f2e07bb2a69eb0993d7ad5095d9c91dd0"
+    },
+    {
+      "bytes": 5814,
+      "entry": "tools/neural/V3TransformerParityCheck.java",
+      "sha256": "bd939434b9a65eb9687179bad6f5f8d1aaf55bf9a4c10d40d8799c5e495cf8ac"
+    },
+    {
+      "bytes": 6516,
+      "entry": "tools/neural/V3WetBoundaryTeacher.java",
+      "sha256": "c45864b5cbbcbeb8c20f44f7003e6246a170324fe9dab5498a3d92b41fcd8cc8"
+    },
+    {
+      "bytes": 13702,
+      "entry": "tools/neural/V3WetQualificationProbe.java",
+      "sha256": "14c71d199d9781f802c1c10604c66a5718a462d7c431f7e659017acaa29fc9f3"
+    },
+    {
+      "bytes": 10519,
+      "entry": "tools/trace-followup/analysis_common.py",
+      "sha256": "47eb2eed0b2e483195ec194d9affeb7f9271b5fa8770516590dc58e909428bca"
+    },
+    {
+      "bytes": 2769,
+      "entry": "tools/trace-followup/common.py",
+      "sha256": "ab1f266945163b8ea88d7748edeee5ef4b0ecad8b00916688ce3cf4cd89c4552"
+    },
+    {
+      "bytes": 4051,
+      "entry": "tools/trace-followup/export_models.py",
+      "sha256": "a149fae6f31ae6053518beb01bd871d56ee3a4187bd22be85a0fef22cabbc904"
+    },
+    {
+      "bytes": 3522,
+      "entry": "tools/trace-followup/initialization.py",
+      "sha256": "06bf66d991ee3e59c92bed8ba3ffabca605b2a2a3701f269ae1c061ab53f139d"
+    },
+    {
+      "bytes": 5243,
+      "entry": "tools/trace-followup/prepare_data.py",
+      "sha256": "d0d6c5a2dca6928357d5877fce3463e041b4e0e859a98e946ed5dda4859bf5bd"
+    },
+    {
+      "bytes": 8290,
+      "entry": "tools/trace-followup/register_followup.py",
+      "sha256": "f67fd6b594b84277e69652ee3963a91cdf54e440498b99dbc6d2a7d67db2bb9f"
+    }
+  ],
+  "externalRuntime": [
+    {
+      "path": "C:\\Users\\wormz\\.gradle\\caches\\modules-2\\files-2.1\\com.google.code.gson\\gson\\2.10.1\\b3add478d4382b78ea20b1671390a858002feb6c\\gson-2.10.1.jar",
+      "sha256": "4241c14a7727c34feea6507ec801318a3d4a90f070e4525681079fb94ee4c593"
+    },
+    {
+      "path": "C:\\Program Files\\Java\\jdk-21.0.11\\bin\\java.exe",
+      "sha256": "5d0fb7c0461414c668979c4e53bdffb13cc12ec39002fd4a464736bde2caa3a6"
+    },
+    {
+      "path": "C:\\Program Files\\Java\\jdk-21.0.11\\bin\\javac.exe",
+      "sha256": "70fccdaef6071181e39a42170d876be01fbe2f4a701c2c5f19608276532884c4"
+    }
+  ],
+  "newFits": 4,
+  "plan": {
+    "path": "build/neural-capacity-followup/v1/training-plan.json",
+    "sha256": "017a3673bb3f8df1f69d4944a1ab623bc83f13cb945238b9f3be439dd37c782b"
+  },
+  "predecessors": [
+    {
+      "archive": {
+        "path": ".neural-cache/training-curation-v1/study.zip",
+        "sha256": "1a09c13f5417f036327bf1d0ce7f6a0de462b008e32faa991384f7643716d512"
+      },
+      "manifest": {
+        "path": "tools/training-curation/cache-manifest.json",
+        "sha256": "b133288119401b43eb57f14246b9f6e2e6021445272cd6a257ec93b2bd4a69d1"
+      }
+    },
+    {
+      "archive": {
+        "path": ".neural-cache/hybrid-diagnosis-v1/study.zip",
+        "sha256": "f9c973d52f25bb00a3672ec5a42cfe6c9c7308abeec3f6db4ebbda8e4dec0242"
+      },
+      "manifest": {
+        "path": "tools/hybrid-diagnosis/cache-manifest.json",
+        "sha256": "1078c6b33c95728187bab977693b134a7a3cead3575888204a9c78b4433b51d0"
+      }
+    },
+    {
+      "archive": {
+        "path": ".neural-cache/hybrid-learning-v1/results.zip",
+        "sha256": "b012b545c7b5066bb3a58ac27f201e234a33d296d2a69ca208497960b83784bc"
+      },
+      "manifest": {
+        "path": "tools/hybrid-learning/results-cache-manifest.json",
+        "sha256": "3d2cbe97a1131c8c86cc017cc7c62854242af85fa7fadad065244a6aa859d1b6"
+      }
+    },
+    {
+      "archive": {
+        "path": ".neural-cache/transformer-accuracy-v1/study.zip",
+        "sha256": "30f5eeda47de3ad2d5d9656bb470f619eb5632f11658632fb8785f44582fdfb2"
+      },
+      "manifest": {
+        "path": "tools/neural/transformer-accuracy-cache-manifest.json",
+        "sha256": "86367608b3196a1c158dde70b2327357e8924b2d11df8d0753da7df8581f888d"
+      }
+    },
+    {
+      "archive": {
+        "path": ".neural-cache/trace-followup-v1/results.zip",
+        "sha256": "aa46495c70e5f712a2493d9ae2ce4884a481045ca0ca939620c18af078568133"
+      },
+      "manifest": {
+        "path": "tools/trace-followup/cache-manifest.json",
+        "sha256": "bbd570f1e6928508ee6ce7724db13e2cda4c426f6536cec1fe0c64926a22239d"
+      }
+    },
+    {
+      "archive": {
+        "path": ".neural-cache/trace-followup-v1/registration.zip",
+        "sha256": "52e34bcc1971d5e3839e8c3165130b7143297485ec01faaec95f9cc1bc3a2a42"
+      },
+      "manifest": {
+        "path": "tools/trace-followup/registration-manifest.json",
+        "sha256": "097d8904d3da005fee95a85e147036730cc4934a0cbc258c9842bef27202716b"
+      }
+    }
+  ],
+  "productionDefaultChanged": false,
+  "revision": "capacity-registration-cache-v1"
+}

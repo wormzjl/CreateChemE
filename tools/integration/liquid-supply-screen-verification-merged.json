@@ -1,0 +1,239 @@
+{
+ "revision": "liquid-supply-screen-verification-v1",
+ "label": "merged",
+ "population": 405,
+ "shippedRatio": 0.3,
+ "wallSecondsThisRun": 151.9801869,
+ "statusHistogramBefore": {
+  "ACCEPTANCE_AUDIT_FAILURE": 4,
+  "ACCEPTED": 115,
+  "DEADLINE_EXCEEDED": 9,
+  "INFEASIBLE_SPECIFICATION": 108,
+  "LINEAR_SOLVE_FAILURE": 9,
+  "NONCONVERGENCE": 160
+ },
+ "statusHistogramAfter": {
+  "ACCEPTANCE_AUDIT_FAILURE": 4,
+  "ACCEPTED": 115,
+  "DEADLINE_EXCEEDED": 7,
+  "INFEASIBLE_SPECIFICATION": 16,
+  "LINEAR_SOLVE_FAILURE": 6,
+  "NONCONVERGENCE": 257
+ },
+ "criterion1_exactlyTheExpectedCaughtSet": {
+  "passed": true,
+  "expectedCaught": [
+   "gd-s03-w0-p0-d3-r00",
+   "gd-s10-w0-p4-d3-r00",
+   "gd-s10-w1-p1-d2-r00",
+   "gd-s24-w0-p1-d2-r00",
+   "gd-s24-w0-p1-d3-r00",
+   "gd-s24-w0-p3-d1-r00",
+   "gd-s24-w0-p3-d2-r00",
+   "gd-s24-w1-p0-d3-r00",
+   "gd-s31-w0-p0-d3-r01",
+   "gd-s45-w0-p1-d3-r00",
+   "gd-s45-w1-p1-d2-r00",
+   "gd-s45-w1-p4-d3-r00",
+   "gd-s52-w0-p0-d3-r01",
+   "gd-s52-w0-p3-d2-r00",
+   "gd-s52-w1-p2-d2-r00",
+   "gd-s59-w0-p1-d1-r00"
+  ],
+  "caught": [
+   "gd-s03-w0-p0-d3-r00",
+   "gd-s10-w0-p4-d3-r00",
+   "gd-s10-w1-p1-d2-r00",
+   "gd-s24-w0-p1-d2-r00",
+   "gd-s24-w0-p1-d3-r00",
+   "gd-s24-w0-p3-d1-r00",
+   "gd-s24-w0-p3-d2-r00",
+   "gd-s24-w1-p0-d3-r00",
+   "gd-s31-w0-p0-d3-r01",
+   "gd-s45-w0-p1-d3-r00",
+   "gd-s45-w1-p1-d2-r00",
+   "gd-s45-w1-p4-d3-r00",
+   "gd-s52-w0-p0-d3-r01",
+   "gd-s52-w0-p3-d2-r00",
+   "gd-s52-w1-p2-d2-r00",
+   "gd-s59-w0-p1-d1-r00"
+  ],
+  "missing": [],
+  "unexpected": [],
+  "detailMismatches": []
+ },
+ "criterion2_noFalsePositiveAndNothingElseMoved": {
+  "passed": true,
+  "archivedStrictCount": 110,
+  "strictNowFailing": [],
+  "strictStillAcceptedOnTheIdenticalNewtonTrajectory": 110,
+  "newtonIterationDrift": [],
+  "archivedAdvisoryStillAccepted": [
+   "gd-s17-w1-p1-d1-r00",
+   "gd-s17-w1-p2-d3-r00",
+   "gd-s17-w1-p4-d2-r00",
+   "gd-s38-w1-p2-d2-r01",
+   "gd-s59-w1-p1-d2-r00"
+  ],
+  "alreadyRetypedByBaseBranch": 108,
+  "unexpectedTransitions": [],
+  "deadlineBoundaryTransitions": [
+   {
+    "id": "gd-s59-w0-p2-d0-r00",
+    "after": "NONCONVERGENCE",
+    "rho": 0.0,
+    "archivedMilliseconds": 30000.3624,
+    "measuredMilliseconds": 28621.4785
+   },
+   {
+    "id": "gd-s59-w1-p2-d1-r01",
+    "after": "NONCONVERGENCE",
+    "rho": 0.06258534603019726,
+    "archivedMilliseconds": 30002.7677,
+    "measuredMilliseconds": 25372.9548
+   }
+  ]
+ },
+ "criterion3_timeReclaimed": {
+  "passed": true,
+  "caughtCount": 16,
+  "archivedSecondsOverCaught": 123.272,
+  "measuredSecondsOverCaught": 0.0013,
+  "reclaimedSeconds": 123.27,
+  "reclaimedPercentOfAllControlTime": 7.59,
+  "slowestCaughtMillisecondsNow": 0.2131
+ },
+ "worstProtectedRatio": 0.21759,
+ "caughtCases": [
+  {
+   "id": "gd-s24-w0-p3-d1-r00",
+   "rho": 0.526052,
+   "limitingTray": 9,
+   "controlStatus": "LINEAR_SOLVE_FAILURE",
+   "archivedMilliseconds": 20247.0403,
+   "measuredMilliseconds": 0.0897
+  },
+  {
+   "id": "gd-s45-w1-p1-d2-r00",
+   "rho": 0.325602,
+   "limitingTray": 30,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 17586.2058,
+   "measuredMilliseconds": 0.2131
+  },
+  {
+   "id": "gd-s59-w0-p1-d1-r00",
+   "rho": 2.506298,
+   "limitingTray": 17,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 15705.5433,
+   "measuredMilliseconds": 0.1595
+  },
+  {
+   "id": "gd-s10-w1-p1-d2-r00",
+   "rho": 0.427824,
+   "limitingTray": 7,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 10094.8217,
+   "measuredMilliseconds": 0.0543
+  },
+  {
+   "id": "gd-s45-w1-p4-d3-r00",
+   "rho": 0.352784,
+   "limitingTray": 36,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 9497.9813,
+   "measuredMilliseconds": 0.1226
+  },
+  {
+   "id": "gd-s24-w0-p1-d2-r00",
+   "rho": 0.398915,
+   "limitingTray": 4,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 8615.8549,
+   "measuredMilliseconds": 0.0553
+  },
+  {
+   "id": "gd-s52-w0-p0-d3-r01",
+   "rho": 0.679128,
+   "limitingTray": 42,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 7908.5782,
+   "measuredMilliseconds": 0.0487
+  },
+  {
+   "id": "gd-s24-w0-p1-d3-r00",
+   "rho": 0.30896,
+   "limitingTray": 12,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 7083.3603,
+   "measuredMilliseconds": 0.0638
+  },
+  {
+   "id": "gd-s24-w1-p0-d3-r00",
+   "rho": 0.627555,
+   "limitingTray": 17,
+   "controlStatus": "LINEAR_SOLVE_FAILURE",
+   "archivedMilliseconds": 6687.5768,
+   "measuredMilliseconds": 0.0392
+  },
+  {
+   "id": "gd-s45-w0-p1-d3-r00",
+   "rho": 0.716515,
+   "limitingTray": 22,
+   "controlStatus": "LINEAR_SOLVE_FAILURE",
+   "archivedMilliseconds": 5615.6939,
+   "measuredMilliseconds": 0.0666
+  },
+  {
+   "id": "gd-s52-w1-p2-d2-r00",
+   "rho": 0.839069,
+   "limitingTray": 7,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 3836.6295,
+   "measuredMilliseconds": 0.0475
+  },
+  {
+   "id": "gd-s24-w0-p3-d2-r00",
+   "rho": 0.531751,
+   "limitingTray": 20,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 3435.3717,
+   "measuredMilliseconds": 0.1001
+  },
+  {
+   "id": "gd-s52-w0-p3-d2-r00",
+   "rho": 0.58948,
+   "limitingTray": 25,
+   "controlStatus": "INFEASIBLE_SPECIFICATION",
+   "archivedMilliseconds": 3234.3063,
+   "measuredMilliseconds": 0.0539
+  },
+  {
+   "id": "gd-s31-w0-p0-d3-r01",
+   "rho": 0.451763,
+   "limitingTray": 13,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 1648.2134,
+   "measuredMilliseconds": 0.0634
+  },
+  {
+   "id": "gd-s10-w0-p4-d3-r00",
+   "rho": 0.478043,
+   "limitingTray": 1,
+   "controlStatus": "INFEASIBLE_SPECIFICATION",
+   "archivedMilliseconds": 1605.1685,
+   "measuredMilliseconds": 0.0997
+  },
+  {
+   "id": "gd-s03-w0-p0-d3-r00",
+   "rho": 0.692152,
+   "limitingTray": 2,
+   "controlStatus": "NONCONVERGENCE",
+   "archivedMilliseconds": 469.5006,
+   "measuredMilliseconds": 0.0716
+  }
+ ],
+ "marginOverWorstProtected": 1.379,
+ "passed": true
+}

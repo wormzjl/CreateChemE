@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.ColumnInputPresetTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:48.775Z" hostname="WORMZ-PC" time="0.385">
+  <properties/>
+  <testcase name="everySelectablePresetIsValidAndSurvivesSaving()" classname="com.wormzjl.createcheme.science.column.v3.ColumnInputPresetTest" time="0.364"/>
+  <testcase name="loadingPresetUsesTheSuppliedServerCatalogIncludingOverrides()" classname="com.wormzjl.createcheme.science.column.v3.ColumnInputPresetTest" time="0.02"/>
+  <testcase name="newCrudesKeepEditableCurrentColumnConditionsAndDistinctFeeds()" classname="com.wormzjl.createcheme.science.column.v3.ColumnInputPresetTest" time="0.001"/>
+  <system-out><![CDATA[WARN StatusConsoleListener Advanced terminal features are not available in this environment
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

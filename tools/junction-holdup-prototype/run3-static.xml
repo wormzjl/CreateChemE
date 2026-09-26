@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-25T02:13:25.703Z" hostname="WORMZ-PC" time="0.574">
+  <properties/>
+  <testcase name="coldJunctionMatrix()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe" time="0.574"/>
+  <system-out><![CDATA[JDUMP failure=Newton line search stalled at residual 0.10266605239538973 pass=0 dt=1.0
+JDUMP initial |f|max=0.11089031583358369
+JDUMP  junction=3 incomingMass=8.881784197001252E-16 T=350.0 P=102325.0 rows=[4.4408943189466754E-10, -0.11089031583358369, 1.565104516811043E-10, 0.0]
+JDUMP   edge=0 q=4.440892098500626E-16 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-2.220446049250313E-4, 1.000000000001, -7.825522584055215E-5, 0.0]
+JDUMP    fwd h=1.0E-8 [-4.39692726672547E-4, 0.9999999994736442, -1.5496648267680793E-4, 0.0]
+JDUMP    fwd h=1.0E-10 [-4.440892098500626E-4, 0.9999999439624929, -1.5643456086337687E-4, 0.0]
+JDUMP    fwd h=1.0E-12 [-4.440892098500626E-4, 1.0000056338554941, -1.6044570346287343E-4, 0.0]
+JDUMP    ctr h=1e-10 [-2.220446049250313E-4, 0.9999999439624929, -7.861839469034563E-5, 0.0]
+JDUMP   edge=1 q=4.440892098500626E-16 donorFirst=true
+JDUMP    fwd h=1.0E-6 [499999.9995559107, 1.000000000001, 176215.04457079933, 0.0]
+JDUMP    fwd h=1.0E-8 [990099.0085906058, 0.9999999994736442, 348940.6821665189, 0.0]
+JDUMP    fwd h=1.0E-10 [999900.0086668985, 0.9999999439624929, 352394.8495007737, 0.0]
+JDUMP    fwd h=1.0E-12 [999998.9987186098, 1.0000056338554941, 352429.7366067546, 0.0]
+JDUMP    ctr h=1e-10 [499952.22477949853, 0.9999999439624929, 176198.20730224415, 0.0]
+JDUMP   edge=2 q=-0.11089031583358458 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.0, 1.000000000001, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.9999999994736442, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.9999999439624929, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 1.0000056338554941, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.9999999439624929, 0.0, 0.0]
+JDUMP failed |f|max=0.10266605239538973
+JDUMP  junction=3 incomingMass=0.0 T=350.00441453579265 P=102325.00002496158 rows=[2.220446049250313E-16, -0.10264422980522152, 6.344867087691501E-5, 0.10266605239538973]
+JDUMP   edge=0 q=-3.3916808175001645E-7 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.1102230246251565E-10, 1.000000000001, -8.845734474766109E-11, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 1.000000000861423, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 1.0000056338554941, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 1.000000013351432, 0.0, 0.0]
+JDUMP   edge=1 q=-3.714238425920158E-7 donorFirst=true
+JDUMP    fwd h=1.0E-6 [385966.6952317513, 1.000000000001, 149991.5578011703, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 1.000000000861423, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 1.0000056338554941, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 1.000000013351432, 0.0, 0.0]
+JDUMP   edge=2 q=-0.10264351921329717 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.0, 1.000000000001, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.9999999994736442, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.9999999439624929, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 1.0000056338554941, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.9999999439624929, 0.0, 0.0]
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.10266605239538973; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.19322942304917; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 4.929803362641039E-6; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.33056476454185557; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.14618395380684102; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 0.24249842979850322; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.4595093613074845; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.7151210913300303; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 0.26284314916250695
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 0.28529553913676814
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 0.29351316634825064
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.08517596657056492; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.018535352740305377; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.04936255947012213; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.09238883910563966; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.14761769732167432; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 0.4310909021620044
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 4.2298724578504476E-8; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 0.40682390594632306
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 0.06458425306833626; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 0.42948857461449125
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 0.36442961932558166
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.29671391223277316; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.8365622062779223; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 0.3271665286870567
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 0.3650013335838771
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.06695673421791996; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 0.3376186076143833
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.03182477348044706; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.08495769900180301; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.15912314847877532; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.25434666003347983; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 passed=0/32
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

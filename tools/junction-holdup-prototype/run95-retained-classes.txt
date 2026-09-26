@@ -1,0 +1,42 @@
+| 5node class | bytes/island A | bytes/island B | instances/island A | instances/island B |
+|---|---|---|---|---|
+| [D | 44080 | 22464 | 249 | 99 |
+| [I | 13199 | 11111 | 153 | 114 |
+| [B | 5495 | 5381 | 22.9 | 19.9 |
+| com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics$State | 2448 | 1152 | 17 | 8 |
+| com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Pipe$Identity | 1536 | 1344 | 32 | 28 |
+| [Ljava.lang.Object; | 909 | 621 | 24 | 16 |
+| com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel$Phase | 896 | 448 | 16 | 8 |
+| org.ejml.data.DMatrixSparseCSC | 720 | 720 | 18 | 18 |
+| com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Reservoir | 640 | 0 | 16 | 0 |
+| [Z | 616 | 528 | 21 | 18 |
+| java.util.ImmutableCollections$ListN | 552 | 360 | 23 | 15 |
+| [J | 480 | 480 | 12 | 12 |
+| java.util.LinkedHashMap | 448 | 448 | 7 | 7 |
+| com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory | 440 | 0 | 11 | 0 |
+| com.wormzjl.createcheme.science.fluid.solver.PhaseLayout | 336 | 0 | 3 | 0 |
+| com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver$WorkspaceKey | 0 | 336 | 0 | 6 |
+| java.util.LinkedHashMap$Entry | 0 | 320 | 0 | 8 |
+| com.wormzjl.createcheme.science.fluid.state.SolidInventory$Moments | 0 | 240 | 0 | 6 |
+| chain50 class | bytes/island A | bytes/island B | instances/island A | instances/island B |
+|---|---|---|---|---|
+| [D | 569912 | 262600 | 2378 | 397 |
+| [I | 129528 | 96232 | 617 | 65 |
+| com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics$State | 28800 | 14400 | 200 | 100 |
+| [B | 24595 | 22623 | 54.4 | 4.4 |
+| com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel$Phase | 11200 | 5600 | 200 | 100 |
+| com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Pipe$Identity | 9408 | 7056 | 196 | 147 |
+| [Ljdk.internal.vm.FillerElement; | 8105 | 0 | 15.9 | 0 |
+| com.wormzjl.createcheme.science.fluid.state.SolidInventory$Moments | 6000 | 4000 | 150 | 100 |
+| com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory | 6000 | 2000 | 150 | 50 |
+| com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Reservoir | 6000 | 2000 | 150 | 50 |
+| com.wormzjl.createcheme.science.fluid.solver.PhaseLayout | 5600 | 0 | 50 | 0 |
+| com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson$Values | 5600 | 0 | 50 | 0 |
+| [Lcom.wormzjl.createcheme.science.thermo.PhaseSupport; | 4800 | 0 | 50 | 0 |
+| [Ljava.lang.Object; | 3991 | 2479 | 18.1 | 11.1 |
+| com.wormzjl.createcheme.science.thermo.PengRobinsonKernel$Evaluation | 3600 | 0 | 50 | 0 |
+| com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Pipe | 0 | 2352 | 0 | 49 |
+| com.wormzjl.createcheme.science.fluid.network.PipeResistance$Geometry | 0 | 2352 | 0 | 49 |
+| com.wormzjl.createcheme.science.fluid.state.SolidInventory | 0 | 1600 | 0 | 100 |
+| [J | 0 | 1328 | 0 | 7 |
+| java.util.ImmutableCollections$List12 | 0 | 1176 | 0 | 49 |

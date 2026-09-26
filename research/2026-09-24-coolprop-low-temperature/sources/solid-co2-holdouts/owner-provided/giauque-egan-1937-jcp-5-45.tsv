@@ -1,0 +1,107 @@
+# Giauque W.F., Egan C.J. (1937). Carbon Dioxide. The Heat Capacity and Vapor Pressure of the Solid. The Heat of
+# Sublimation. Thermodynamic and Spectroscopic Values of the Entropy. J. Chem. Phys. 5, 45-54. doi:10.1063/1.1749929.
+# Local copy: giauque-egan-1937-jcp-5-45.pdf (sha256 7320b9e7c12eaf3065060cd8698d841bd52f7d728b1a007ee57b6caebd76bfc0),
+# AIP copyright, owner-provided. Pages 50 to 52 (PDF pages 7 to 9). Tables I and VII read from 200-220 dpi renders,
+# Tables IV and V from the text layer, with Table V checked against a 130 dpi render.
+# Temperature scale: 0 C = 273.10 K (as printed; ICT-era scale, not ITS-90).
+# block VP  = Table I, "Vapor pressure of solid carbon dioxide", p. 50: T in K; P observed in international cm Hg
+#             (standard gravity 980.665 cm/s2); dP = P obs - P calc and dT = T obs - T calc against their eq. (1),
+#             log10 P(int. cm Hg) = -(1354.210/T) + 8.69903 + 0.0015880 T - 4.5107e-6 T^2, "solid carbon dioxide, 154 to 196 K".
+#             Normal sublimation point from eq. (1): 194.67 +- 0.05 K. The paper: "the absolute temperatures may be in
+#             error by several hundredths of a degree"; T given to 0.001 K for relative accuracy. 12 points.
+#             P_kPa is derived here (cm Hg x 1.333224), not printed.
+# block CP_OBS = Table IV, "Heat capacity of solid carbon dioxide (molecular weight, 44.00)", p. 51: T in K, approximate
+#             temperature rise dT_K of each measurement, Cp in cal(15 C)/(deg mol); 1 cal = 4.185 abs J (p. 52).
+#             41 points, 15.52 to 189.78 K. Stated accuracy +-0.2 % from 35 to 195 K, +-1 % at 20 K, +-3 % at 15 K.
+# block CP_SMOOTH = Table V, "values taken from a smooth curve through observations", p. 52: Cp in cal/(deg mol) at round
+#             T, 15 to 190 K (22 values); dev_EEH_pct = Eucken, Eucken and Hauck minus this research, %;
+#             dev_MB_pct = Maass and Barnes minus this research, %.
+# block DHSUB = Table VII, "Heat of sublimation of carbon dioxide", p. 52: calorimetric enthalpy of sublimation at 760 mm Hg
+#             and the sublimation temperature 194.67 K, cal/mol; moles sublimed and time of energy input in the extra
+#             columns. Mean 6030 +- 5 cal/mol = 25 236 +- 21 J/mol with 4.185 J/cal (conversion derived here). Superheating
+#             corrections of 0.2 to 1.6 cal/mol (Table VI) are applied. Their 6029 cal/mol from eq. (1) plus Berthelot is
+#             given "no weight" against the calorimetric value.
+# Sanity check: eq. (1) at 194.67 K gives 75.99 cm Hg (1 atm = 76.00 cm); Cp rises monotonically with T in both Cp blocks.
+# Digits as printed, one sanity check, not re-verified (owner: not looking for 100 % correct data).
+# Role: G4 pure-CO2 holdout (sublimation pressure, sublimation enthalpy target, crystal Cp). Transcribed 2026-09-25,
+# batch 2026-09-24-coolprop-low-temperature.
+block	T_K	value	unit	extra1	extra2	extra1_meaning	extra2_meaning	P_kPa_derived
+VP	154.196	1.132	cmHg_int	-0.001	+0.006	P_obs-P_calc_cmHg	T_obs-T_calc_K	1.5092
+VP	158.403	1.940	cmHg_int	-.002	+.008	P_obs-P_calc_cmHg	T_obs-T_calc_K	2.5865
+VP	162.597	3.221	cmHg_int	-.010	+.025	P_obs-P_calc_cmHg	T_obs-T_calc_K	4.2943
+VP	166.704	5.186	cmHg_int	-.002	+.003	P_obs-P_calc_cmHg	T_obs-T_calc_K	6.9141
+VP	170.691	8.039	cmHg_int	+.004	-.004	P_obs-P_calc_cmHg	T_obs-T_calc_K	10.7178
+VP	174.688	12.220	cmHg_int	+.013	-.010	P_obs-P_calc_cmHg	T_obs-T_calc_K	16.2920
+VP	178.569	17.994	cmHg_int	+.002	-.001	P_obs-P_calc_cmHg	T_obs-T_calc_K	23.9900
+VP	182.333	25.785	cmHg_int	-.007	+.003	P_obs-P_calc_cmHg	T_obs-T_calc_K	34.3772
+VP	187.356	40.718	cmHg_int	-.040	+.010	P_obs-P_calc_cmHg	T_obs-T_calc_K	54.2862
+VP	192.663	64.336	cmHg_int	-.028	+.005	P_obs-P_calc_cmHg	T_obs-T_calc_K	85.7743
+VP	194.982	77.962	cmHg_int	-.001	+.000	P_obs-P_calc_cmHg	T_obs-T_calc_K	103.9408
+VP	195.831	83.530	cmHg_int	+.002	-.000	P_obs-P_calc_cmHg	T_obs-T_calc_K	111.3642
+CP_OBS	15.52	0.606	cal/(K mol)	1.7		approx_dT_K		
+CP_OBS	17.30	0.825	cal/(K mol)	1.7		approx_dT_K		
+CP_OBS	19.05	1.081	cal/(K mol)	1.6		approx_dT_K		
+CP_OBS	21.15	1.419	cal/(K mol)	1.6		approx_dT_K		
+CP_OBS	23.25	1.791	cal/(K mol)	2.5		approx_dT_K		
+CP_OBS	25.64	2.266	cal/(K mol)	2.2		approx_dT_K		
+CP_OBS	27.72	2.676	cal/(K mol)	1.9		approx_dT_K		
+CP_OBS	29.92	3.069	cal/(K mol)	2.6		approx_dT_K		
+CP_OBS	32.79	3.555	cal/(K mol)	3.2		approx_dT_K		
+CP_OBS	35.99	4.063	cal/(K mol)	3.2		approx_dT_K		
+CP_OBS	39.43	4.603	cal/(K mol)	2.9		approx_dT_K		
+CP_OBS	43.19	5.195	cal/(K mol)	4.4		approx_dT_K		
+CP_OBS	47.62	5.794	cal/(K mol)	4.3		approx_dT_K		
+CP_OBS	52.11	6.326	cal/(K mol)	4.0		approx_dT_K		
+CP_OBS	56.17	6.765	cal/(K mol)	4.4		approx_dT_K		
+CP_OBS	60.86	7.269	cal/(K mol)	4.7		approx_dT_K		
+CP_OBS	61.26	7.302	cal/(K mol)	5.2		approx_dT_K		
+CP_OBS	66.24	7.707	cal/(K mol)	4.7		approx_dT_K		
+CP_OBS	71.22	8.047	cal/(K mol)	5.2		approx_dT_K		
+CP_OBS	76.47	8.370	cal/(K mol)	5.2		approx_dT_K		
+CP_OBS	81.94	8.703	cal/(K mol)	5.7		approx_dT_K		
+CP_OBS	87.45	8.984	cal/(K mol)	5.3		approx_dT_K		
+CP_OBS	92.71	9.189	cal/(K mol)	5.0		approx_dT_K		
+CP_OBS	97.93	9.421	cal/(K mol)	5.2		approx_dT_K		
+CP_OBS	103.26	9.671	cal/(K mol)	5.3		approx_dT_K		
+CP_OBS	108.56	9.893	cal/(K mol)	5.1		approx_dT_K		
+CP_OBS	113.91	10.07	cal/(K mol)	5.4		approx_dT_K		
+CP_OBS	119.24	10.27	cal/(K mol)	5.1		approx_dT_K		
+CP_OBS	124.58	10.44	cal/(K mol)	5.3		approx_dT_K		
+CP_OBS	130.18	10.69	cal/(K mol)	5.5		approx_dT_K		
+CP_OBS	135.74	10.88	cal/(K mol)	5.2		approx_dT_K		
+CP_OBS	141.14	11.08	cal/(K mol)	5.1		approx_dT_K		
+CP_OBS	146.48	11.27	cal/(K mol)	5.2		approx_dT_K		
+CP_OBS	151.67	11.45	cal/(K mol)	4.6		approx_dT_K		
+CP_OBS	156.72	11.64	cal/(K mol)	4.9		approx_dT_K		
+CP_OBS	162.00	11.84	cal/(K mol)	5.2		approx_dT_K		
+CP_OBS	167.62	12.07	cal/(K mol)	5.3		approx_dT_K		
+CP_OBS	173.36	12.32	cal/(K mol)	5.4		approx_dT_K		
+CP_OBS	179.12	12.57	cal/(K mol)	5.2		approx_dT_K		
+CP_OBS	184.58	12.82	cal/(K mol)	4.7		approx_dT_K		
+CP_OBS	189.78	13.05	cal/(K mol)	4.7		approx_dT_K		
+CP_SMOOTH	15	0.540	cal/(K mol)			dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	20	1.225	cal/(K mol)	-3.0		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	25	2.137	cal/(K mol)	-3.7		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	30	3.093	cal/(K mol)	-2.0		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	35	3.912	cal/(K mol)	0.0		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	40	4.690	cal/(K mol)	2.7		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	45	5.435	cal/(K mol)	3.6		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	50	6.095	cal/(K mol)			dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	60	7.178	cal/(K mol)			dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	70	7.972	cal/(K mol)			dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	80	8.582	cal/(K mol)	2.9		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	90	9.105	cal/(K mol)	3.2		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	100	9.530	cal/(K mol)	3.0		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	110	9.915	cal/(K mol)	4.1		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	120	10.30	cal/(K mol)	4.3		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	130	10.67	cal/(K mol)	4.1		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	140	11.04	cal/(K mol)	3.4		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	150	11.39	cal/(K mol)	2.8		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	160	11.77	cal/(K mol)	1.7		dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	170	12.17	cal/(K mol)	0.3	1.6	dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	180	12.61	cal/(K mol)	-0.8	3.3	dev_EEH_pct	dev_MB_pct	
+CP_SMOOTH	190	13.07	cal/(K mol)	-1.5	5.8	dev_EEH_pct	dev_MB_pct	
+DHSUB	194.67	6028	cal/mol	0.47154	200 min	moles_sublimed	time_of_energy_input	
+DHSUB	194.67	6031	cal/mol	0.23423	100 min	moles_sublimed	time_of_energy_input	
+DHSUB	194.67	6032	cal/mol	0.23466	100 min	moles_sublimed	time_of_energy_input	
+DHSUB	194.67	6030	cal/mol	mean	+-5	statistic	stated_uncertainty_cal/mol	

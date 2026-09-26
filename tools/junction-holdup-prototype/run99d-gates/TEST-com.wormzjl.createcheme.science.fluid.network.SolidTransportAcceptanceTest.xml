@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-09-26T00:49:50.447Z" hostname="WORMZ-PC" time="0.124">
+  <properties/>
+  <testcase name="highViscosityBlocksTheMixedOutletBeforeSlurryThickening()" classname="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" time="0.001"/>
+  <testcase name="aSixtyFifthPopulationClosesAFeedInsteadOfStallingTheInterval()" classname="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" time="0.064"/>
+  <testcase name="drainingSlurryClosesAtAReproducibleInteriorEvent()" classname="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" time="0.017"/>
+  <testcase name="equalParallelBranchesChooseTheSameClosuresAcrossReplays()" classname="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" time="0.003"/>
+  <testcase name="populationCountDoesNotIncreaseTheNonlinearDimension()" classname="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" time="0.004"/>
+  <testcase name="theFlaggedFeedThatCarriesTheKeysNobodyElseSuppliesIsTheOneThatCloses()" classname="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" time="0.007"/>
+  <testcase name="suspensionBoundaryIsStrictAndReversalUsesTheSameLiquidVelocity()" classname="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" time="0.0"/>
+  <testcase name="reverseFiltrationCapturesTheOtherDonorAndConservesEnergy()" classname="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" time="0.001"/>
+  <testcase name="closedParticlesRestartWhenDrivingPressureIncreases()" classname="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" time="0.003"/>
+  <testcase name="dryParticlesBlockGasButTracesStillTravelAndRetainTheirSlots()" classname="com.wormzjl.createcheme.science.fluid.network.SolidTransportAcceptanceTest" time="0.0"/>
+  <system-out><![CDATA[solid populations: 64 held, reasons={Embedded pipe error #=1, blocked with solid: POPULATION_LIMIT; pipe=10; velocity=1.5743021157464467; deposition=0.0; t=0.0=1, Embedded state error #=2}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

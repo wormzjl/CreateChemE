@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:58.143Z" hostname="WORMZ-PC" time="8.46">
+  <properties/>
+  <testcase name="[1] A, 0" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.388"/>
+  <testcase name="[2] B, 2" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="1.25"/>
+  <testcase name="[3] C, 3" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="1.079"/>
+  <testcase name="[4] D, 7" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="1.009"/>
+  <testcase name="[5] E, 3" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.647"/>
+  <testcase name="theAdmittedClosureRangeIsClosedAtBothEnds()" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.011"/>
+  <testcase name="[1] A, SUCCESS, 0, cold/stage-continuation/4-8-15-30/fine-fd/liquid-only-condenser" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.193"/>
+  <testcase name="[2] B, SUCCESS, 2, cold/stage-continuation/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/heat-1" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.555"/>
+  <testcase name="[3] C, SUCCESS, 3, cold/stage-continuation/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/steam-1/heat-3" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.58"/>
+  <testcase name="[4] D, SUCCESS, 7, cold/stage-continuation/4-8-15-30/fine-fd/heat-ramp-1.0/condenser-phase-correction/heat-1" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.617"/>
+  <testcase name="[5] E, SUCCESS, 3, cold/stage-continuation/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.347"/>
+  <testcase name="theGlobalEnergyClosureLimitIsTheSumOfTheTrayClosures()" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="1.735"/>
+  <testcase name="[1] 1.0E-8" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.013"/>
+  <testcase name="[2] 1.0E-6" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.009"/>
+  <testcase name="[3] 0.001" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.01"/>
+  <testcase name="theClosureLabelIsCanonicalAndOnlyAppearsAboveTheDefault()" classname="com.wormzjl.createcheme.science.column.v3.V3ConvergenceClosureTest" time="0.01"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

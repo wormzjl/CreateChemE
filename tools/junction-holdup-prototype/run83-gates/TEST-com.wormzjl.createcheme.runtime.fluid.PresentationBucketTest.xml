@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-09-25T07:18:28.206Z" hostname="WORMZ-PC" time="0.526">
+  <properties/>
+  <testcase name="aMenuFollowsItsDeviceToItsNewIslandsBucket()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.015"/>
+  <testcase name="firstRequestedOpeningReplaysLastBucketWithoutAnyScienceWorkOrDeadlineShift()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.006"/>
+  <testcase name="cachedReplayDoesNotConsumePendingInputRepliesOrUseANewerUnpublishedRevision()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.006"/>
+  <testcase name="aPresentationReadStopsShortOfAWakeAndNeverWakesTheIsland()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.049"/>
+  <testcase name="presentationCostsNothingPerTickUnlessABucketHasWork()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.008"/>
+  <testcase name="anInputIsAnsweredOnTheFollowingBucketAndNeverBefore()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.007"/>
+  <testcase name="scientificProgressIsIdenticalWithAndWithoutViewers()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.367"/>
+  <testcase name="openMenusReceiveOneLivePayloadPerBucketAndTheStaticPartOnlyWhenTheRevisionChanges()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.018"/>
+  <testcase name="noPublishedSnapshotOrNoActiveRequestCannotTriggerAReplayOrNewView()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.003"/>
+  <testcase name="loadedDevicesArePresentedOnTheirIslandsBucketAndUnloadedOnesNever()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.015"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

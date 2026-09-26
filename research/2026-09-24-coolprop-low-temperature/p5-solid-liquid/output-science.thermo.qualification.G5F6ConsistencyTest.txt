@@ -1,0 +1,36 @@
+===== science.thermo.qualification.G5F6ConsistencyTest.xml tests="3" skipped="0" failures="0" errors="0"
+100 K, 0.1 MPa, [0.05, 0.8, 0.1, 0.05]: fluid answer NOT_CONVERGED; crystal competition EquilibriumResult[TP CONVERGED, VAPOR_LIQUID_SOLID, 3 phases, ESTIMATED_DECLARED_ERROR, converged; createcheme:crystal_carbon_dioxide_i forms 0.049953618788505835 mol of CarbonDioxide beside a vapour and a liquid (feed (mu - mu_s)/RT = 6.485080157707994, |mu_i - mu_s|/RT = 5.950656590652486E-11 after 4 re-flashes of the reduced feed); the fluid-only answer of the feed had a product proved unstable (a third fluid phase): the crystal replaces it]
+  VAPOR_LIQUID_SOLID and VAPOR_LIQUID_SOLID: round trips 1.2e-13; the whole feed's onset 163.5273 K (SINGLE_VAPOR): above it SINGLE_VAPOR, crystal just below 6.125e-07 mol
+120 K, 0.1 MPa, [0.05, 0.8, 0.1, 0.05]: fluid answer NOT_CONVERGED; crystal competition EquilibriumResult[TP CONVERGED, VAPOR_LIQUID_SOLID, 3 phases, ESTIMATED_DECLARED_ERROR, converged; createcheme:crystal_carbon_dioxide_i forms 0.04985390104151011 mol of CarbonDioxide beside a vapour and a liquid (feed (mu - mu_s)/RT = 4.580590999754877, |mu_i - mu_s|/RT = 3.967104393768324E-12 after 5 re-flashes of the reduced feed); the fluid-only answer of the feed had a product proved unstable (a third fluid phase): the crystal replaces it]
+  VAPOR_LIQUID_SOLID and VAPOR_LIQUID_SOLID: round trips 6.0e-15; the whole feed's onset 163.5273 K (SINGLE_VAPOR): above it SINGLE_VAPOR, crystal just below 6.125e-07 mol
+120 K, 0.3 MPa, [0.05, 0.8, 0.1, 0.05]: fluid answer NOT_CONVERGED; crystal competition EquilibriumResult[TP CONVERGED, VAPOR_LIQUID_SOLID, 3 phases, ESTIMATED_DECLARED_ERROR, converged; createcheme:crystal_carbon_dioxide_i forms 0.04933989022644303 mol of CarbonDioxide beside a vapour and a liquid (feed (mu - mu_s)/RT = 3.939621510208934, |mu_i - mu_s|/RT = 1.16679540993186E-13 after 5 re-flashes of the reduced feed); the fluid-only answer of the feed had a product proved unstable (a third fluid phase): the crystal replaces it]
+  VAPOR_LIQUID_SOLID and VAPOR_LIQUID_SOLID: round trips 1.3e-12; the whole feed's onset 173.1755 K (SINGLE_VAPOR): above it SINGLE_VAPOR, crystal just below 5.396e-07 mol
+150 K, 0.3 MPa, [0.05, 0.8, 0.1, 0.05]: fluid answer NOT_CONVERGED; crystal competition EquilibriumResult[TP CONVERGED, VAPOR_LIQUID_SOLID, 3 phases, ESTIMATED_DECLARED_ERROR, converged; createcheme:crystal_carbon_dioxide_i forms 0.046236189984536824 mol of CarbonDioxide beside a vapour and a liquid (feed (mu - mu_s)/RT = 2.22490198154474, |mu_i - mu_s|/RT = 1.6335135739046039E-12 after 5 re-flashes of the reduced feed); the fluid-only answer of the feed had a product proved unstable (a third fluid phase): the crystal replaces it]
+  VAPOR_LIQUID_SOLID and VAPOR_LIQUID_SOLID: round trips 3.3e-15; the whole feed's onset 173.1755 K (SINGLE_VAPOR): above it SINGLE_VAPOR, crystal just below 5.396e-07 mol
+fluid-only answers with a third fluid phase on the grid: 4
+feed | P MPa | T_f K | fluid at T_f | TP at T_f - 3 K | crystal mol | |dmu|/RT | PH T err | UV T err | UV P err | crystal err
+[0.0, 0.998, 0.0, 0.002] | 1 | 130.4457 | SINGLE_LIQUID | LIQUID_SOLID | 0.000492788 | 0.0e+00 | 1.1e-16 | 2.7e-14 | 7.2e-12 | 2.6e-13
+[0.0, 0.998, 0.0, 0.002] | 5 | 130.4442 | SINGLE_FLUID | LIQUID_SOLID | 0.000494942 | 0.0e+00 | 2.9e-15 | 2.2e-13 | 1.6e-12 | 2.1e-12
+[0.0, 0.99, 0.0, 0.01] | 3 | 150.4960 | SINGLE_FLUID | LIQUID_SOLID | 0.00194270 | 0.0e+00 | 3.1e-15 | 2.2e-15 | 7.5e-12 | 8.2e-14
+[0.0, 0.99, 0.0, 0.01] | 8 | 150.3286 | SINGLE_FLUID | LIQUID_SOLID | 0.00197095 | 0.0e+00 | 0.0e+00 | 2.4e-15 | 7.8e-14 | 4.1e-14
+[0.0, 0.97, 0.0, 0.03] | 4 | 167.6355 | SINGLE_FLUID | LIQUID_SOLID | 0.00499953 | 4.3e-14 | 2.6e-15 | 1.5e-14 | 7.1e-13 | 8.6e-14
+[0.0, 0.97, 0.0, 0.03] | 8 | 167.1294 | SINGLE_FLUID | LIQUID_SOLID | 0.00516291 | 0.0e+00 | 9.1e-15 | 8.5e-14 | 2.7e-12 | 7.2e-13
+[0.0, 0.95, 0.0, 0.05] | 6 | 176.1853 | SINGLE_FLUID | LIQUID_SOLID | 0.00812762 | 2.0e-13 | 2.9e-15 | 4.8e-14 | 1.9e-12 | 5.4e-13
+[0.0, 0.9, 0.0, 0.1] | 9 | 187.8918 | SINGLE_FLUID | LIQUID_SOLID | 0.0171340 | 2.6e-11 | 9.3e-15 | 2.6e-13 | 6.0e-12 | 2.9e-12
+[0.05, 0.945, 0.0, 0.005] | 3 | 141.4401 | SINGLE_FLUID | LIQUID_SOLID | 0.00107119 | 5.1e-14 | 6.9e-13 | 2.0e-14 | 1.3e-12 | 6.1e-12
+[0.05, 0.93, 0.0, 0.02] | 5 | 161.2655 | SINGLE_FLUID | LIQUID_SOLID | 0.00349675 | 0.0e+00 | 7.3e-13 | 2.4e-14 | 1.9e-12 | 6.3e-12
+[0.1, 0.88, 0.0, 0.02] | 7 | 161.5076 | SINGLE_FLUID | LIQUID_SOLID | 0.00350040 | 0.0e+00 | 7.5e-13 | 2.9e-15 | 3.3e-14 | 6.3e-12
+[0.0, 0.891, 0.099, 0.01] | 2 | 149.2919 | SINGLE_FLUID | LIQUID_SOLID | 0.00201279 | 0.0e+00 | 4.4e-15 | 3.1e-15 | 7.9e-13 | 8.1e-14
+[0.0, 0.855, 0.095, 0.05] | 4 | 174.1805 | SINGLE_FLUID | LIQUID_SOLID | 0.00845742 | 1.6e-13 | 2.2e-13 | 0.0e+00 | 2.5e-13 | 1.9e-12
+[0.0, 0.5, 0.45, 0.05] | 2 | 171.7835 | SINGLE_FLUID | LIQUID_SOLID | 0.00899770 | 1.2e-13 | 2.4e-15 | 1.2e-14 | 1.3e-12 | 4.1e-14
+[0.0, 0.3, 0.6, 0.1] | 2 | 183.3365 | SINGLE_FLUID | LIQUID_SOLID | 0.0181676 | 7.1e-12 | 1.6e-12 | 3.9e-13 | 4.5e-11 | 1.6e-11
+[0.0, 0.0, 0.9, 0.1] | 1 | 184.4623 | SINGLE_LIQUID | LIQUID_SOLID | 0.0181323 | 5.9e-12 | 4.4e-16 | 1.9e-15 | 8.8e-12 | 9.5e-14
+[0.0, 0.0, 0.7, 0.3] | 3 | 201.9835 | SINGLE_FLUID | LIQUID_SOLID | 0.0754010 | 0.0e+00 | 1.4e-12 | 9.7e-15 | 8.1e-13 | 1.8e-11
+[0.99, 0.0, 0.0, 0.01] | 7 | 174.9643 | SINGLE_FLUID | VAPOR_SOLID | 0.00209703 | 0.0e+00 | 7.1e-14 | 3.0e-13 | 1.1e-12 | 3.7e-12
+[0.95, 0.0, 0.0, 0.05] | 9 | 196.6175 | SINGLE_FLUID | VAPOR_SOLID | 0.00916071 | 3.6e-14 | 2.9e-12 | 6.7e-16 | 1.7e-15 | 3.1e-11
+[0.0, 0.1, 0.5, 0.4] | 5 | 205.1845 | SINGLE_FLUID | LIQUID_SOLID | 0.125071 | 1.5e-11 | 5.6e-12 | 1.9e-12 | 1.7e-10 | 8.4e-11
+20 liquids: conservation 1.7e-16 (bound 1e-13), |mu - mu_s|/RT 2.6e-11 (1e-9), round trips 1.7e-10 (1e-9), reversal 0.0e+00 (1e-12)
+P 1.0 MPa: engine T3 149.208999 K (x 0.009049, y 0.001061); bisection at T3: P 1000000.013 Pa (x 0.009049, y 0.001061)
+P 2.0 MPa: engine T3 166.512507 K (x 0.027316, y 0.005777); bisection at T3: P 2000000.032 Pa (x 0.027316, y 0.005777)
+P 3.0 MPa: engine T3 179.112252 K (x 0.054316, y 0.017126); bisection at T3: P 3000000.063 Pa (x 0.054316, y 0.017126)
+

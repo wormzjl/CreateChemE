@@ -1,0 +1,62 @@
+    /**
+     * The viewers profile's presentation readout over the measurement window: deliveries per menu, packets and view
+     * builds per 100 ticks per consumer, bucket flushes, and every scripted edit with its reply: the tick it was
+     * received, the first delivery after it (which must carry the reply), the latency in ticks and the reply.
+     */
+    private static Map<String,Object> presentation(Run r) {
+        long start=r.measureStartTick,end=r.world.onlineTick();double hundreds=(end-start)/100.0;
+        var result=new LinkedHashMap<String,Object>();
+        result.put("note","Presentation over the measurement window (online ticks start, end]. Consumers are the open menus and the loaded, bound devices. An edit's reply must be on the first delivery its menu receives after the tick the edit arrived in; an ACCEPTED edit's event must later be reported Applied. Latency is the delivery tick minus the arrival tick.");
+        result.put("windowStartTick",start);result.put("windowEndTick",end);result.put("windowTicks",end-start);
+        var stats=r.world.presentationStats();int menus=r.viewerMenus.size();int loaded=stats.loadedDevices();
+        result.put("openMenus",stats.menus());result.put("loadedDevices",loaded);result.put("dirtyDevicesAtEnd",stats.dirtyDevices());
+        java.util.function.ToLongFunction<String> total=name->r.counterTotals[r.counterNames.indexOf(name)];
+        long live=0,statics=0,offBucket=0;var perMenu=new ArrayList<Map<String,Object>>();
+        var logs=new HashMap<Integer,List<FluidPresentation.Delivery>>();
+        for(int i=0;i<menus;i++) {
+            var m=r.viewerMenus.get(i);var log=r.world.deliveries(m.menu());logs.put(i,log);
+            var window=log.stream().filter(d->d.tick()>start&&d.tick()<=end).toList();long s=window.stream().filter(FluidPresentation.Delivery::withStatic).count();
+            live+=window.size();statics+=s;for(var d:log)if(Math.floorMod(d.tick(),100L)!=d.bucket())offBucket++;
+            var row=new LinkedHashMap<String,Object>();row.put("network",m.target().network());row.put("device",m.target().device());row.put("kind",m.target().kind().name());row.put("role",m.target().role());
+            row.put("deliveriesInWindow",window.size());row.put("staticInWindow",s);row.put("deliveriesPer100Ticks",window.size()/hundreds);
+            row.put("buckets",window.stream().map(FluidPresentation.Delivery::bucket).distinct().toList());row.put("totalDeliveries",log.size());row.put("firstDeliveryTick",log.isEmpty()?null:log.getFirst().tick());
+            row.put("lastStatus",log.isEmpty()?null:log.getLast().status());
+            perMenu.add(row);
+        }
+        result.put("menus",perMenu);
+        result.put("livePacketsPer100TicksPerMenu",live/hundreds/menus);result.put("staticPacketsPer100TicksPerMenu",statics/hundreds/menus);
+        result.put("menuPacketsPer100TicksPerMenu",total.applyAsLong("menuPackets")/hundreds/menus);
+        result.put("viewBuildsPer100TicksPerConsumer",total.applyAsLong("viewBuilds")/hundreds/(menus+loaded));
+        result.put("devicePresentationsPer100TicksPerLoadedDevice",loaded==0?null:total.applyAsLong("devicePresentations")/hundreds/loaded);
+        result.put("bucketFlushes",total.applyAsLong("bucketFlushes"));result.put("bucketFlushesPer100Ticks",total.applyAsLong("bucketFlushes")/hundreds);
+        result.put("deliveriesOffTheirBucket",offBucket);
+        var edits=new ArrayList<Map<String,Object>>();var latencies=new ArrayList<Double>();var histogram=new TreeMap<Long,Long>();
+        long unanswered=0,notOnFollowingBucket=0,wrongReply=0,immediate=0,neverApplied=0;var replies=new TreeMap<String,Long>();
+        for(var edit:r.scriptedEdits) {
+            var log=logs.get(edit.menu());var after=log.stream().filter(d->d.tick()>edit.receivedTick()).toList();
+            var row=new LinkedHashMap<String,Object>();row.put("network",edit.network());row.put("role",edit.role());row.put("receivedTick",edit.receivedTick());row.put("revision",edit.revision());
+            immediate+=log.stream().filter(d->d.tick()==edit.receivedTick()&&!d.reply().isEmpty()).count();
+            if(after.isEmpty()){unanswered++;row.put("reply",null);edits.add(row);continue;}
+            var first=after.getFirst();String reply=first.reply();long latency=first.tick()-edit.receivedTick();
+            row.put("replyTick",first.tick());row.put("latencyTicks",latency);row.put("reply",reply);
+            if(reply.isEmpty())notOnFollowingBucket++;
+            boolean expected=switch(edit.role()){case "ACCEPTED"->reply.startsWith(FluidPresentation.QUEUED)||reply.equals(FluidPresentation.APPLIED);
+                case "INVALID"->reply.equals(FluidPresentation.REFUSED+"Controls are outside the supported range");default->reply.startsWith(FluidPresentation.REFUSED);};
+            if(!expected)wrongReply++;
+            if(edit.role().equals("ACCEPTED")) {
+                var applied=after.stream().filter(d->d.reply().contains(FluidPresentation.APPLIED)).findFirst();
+                row.put("appliedReplyTick",applied.map(FluidPresentation.Delivery::tick).orElse(null));if(applied.isEmpty())neverApplied++;
+            }
+            replies.merge(reply.replaceAll("\\d+","#"),1L,Long::sum);
+            latencies.add((double)latency);histogram.merge(latency/10*10,1L,Long::sum);edits.add(row);
+        }
+        result.put("edits",edits);result.put("editCount",r.scriptedEdits.size());result.put("replyTexts",replies);
+        result.put("latencyTicks",statistics(latencies));result.put("latencyHistogramTenTickBins",histogram);
+        result.put("latencyMinimumTicks",latencies.stream().mapToDouble(Double::doubleValue).min().orElse(-1));
+        result.put("unanswered",unanswered);result.put("repliesNotOnTheFollowingBucket",notOnFollowingBucket);result.put("wrongReplies",wrongReply);
+        result.put("repliesAtTheInputTick",immediate);result.put("acceptedEditsNeverApplied",neverApplied);
+        double perMenu100=live/hundreds/menus;
+        boolean passed=unanswered==0&&notOnFollowingBucket==0&&wrongReply==0&&immediate==0&&neverApplied==0&&offBucket==0&&perMenu100>=.95&&perMenu100<=1.05&&!r.scriptedEdits.isEmpty();
+        result.put("passed",passed);r.presentationPassed=passed;
+        return result;
+    }

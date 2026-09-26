@@ -1,0 +1,440 @@
+{
+  "revision": "worktree-artifact-organization-v1",
+  "createdUtc": "2026-09-11T09:42:43.3533493Z",
+  "sourceWorktree": "D:/Minecraft/Modding/1.21/CreateChemE",
+  "sourceBranch": "main",
+  "destinationWorktree": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE",
+  "destinationBranch": "codex/v4-transformer-investigation",
+  "relocatedRoot": ".neural-cache/relocated-main-20260911",
+  "operation": "Moved untracked cache tree; preserved every file byte; canonical study caches unchanged",
+  "fileCount": 71,
+  "canonicalDuplicates": 71,
+  "files": [
+    {
+      "relativePath": "gen2-1a4a01d/manifest.json",
+      "bytes": 18121,
+      "sha256": "422e31c0edd00f2652506bb9a312a02020d8dc2e9d0d801f8bdf4f41a3f95eaa",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/model.json",
+      "bytes": 590462,
+      "sha256": "f4cab9cb22fcb0e528dbd32c76cf9f41dd3404b80838e97a105260b36c28f380",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/provenance/generalized_design.py",
+      "bytes": 24849,
+      "sha256": "b8b43692586657b53031a93805915edb4c2bdde92f4db48a821e0b59c4144df3",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/provenance/generalized-case-map.jsonl.gz",
+      "bytes": 3367762,
+      "sha256": "814800f126804c51a15d6ec6df41bfcb95b1a485cddbbf5f371a2dc739f7baf0",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/provenance/generalized-deployment.json",
+      "bytes": 1498,
+      "sha256": "817f0d5f330bf7947ed7226ad405cf5f96377ebdf5ba7d104191924b9161a51e",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/provenance/generalized-model-card.json",
+      "bytes": 421395,
+      "sha256": "7e8800d7160da54d27b484c39b72b672091a35c6684ea8a07d182bf3082a02ea",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/provenance/generalized-selection.json",
+      "bytes": 4996,
+      "sha256": "986493803504b8249082b56032125a589ee659c6b151f3c22a1c9866c6c418b8",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/provenance/train_generalized.py",
+      "bytes": 30434,
+      "sha256": "ca5c50acaf83d9bf9481b95675d3a07475141510d4eb536915406dafff91f10e",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/final-junit-additional.json",
+      "bytes": 152,
+      "sha256": "c20c1463f0c97ee55258041201021bdda581415a5b60567a3efc0de8cdfaa1b9",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/final-junit-main.json",
+      "bytes": 1417,
+      "sha256": "d7654fb0ad00d2effe7c259d4e4f2c3d10ee09de2c50420435b3851221af5907",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/parallel-check.json",
+      "bytes": 30395,
+      "sha256": "477c8ac197f114d058f7ccdff2419ed17a87a2f7bb4bfb7ff179c3b707065cfd",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/analysis/summary-cases.csv",
+      "bytes": 4468322,
+      "sha256": "e3f1a331a63b2e59bb18af7926bac3048c85505cfbaf93235eabce5f73aae6f8",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/analysis/summary-zones.csv",
+      "bytes": 48784,
+      "sha256": "0b79f722db0d7591ab09d381aac2205a43c4335db3daf22fc81783872fa14351",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/analysis/summary.json",
+      "bytes": 392952,
+      "sha256": "986ab6c061b393e3c0675cd40e3fa87b0ae692d46d29d716f6dc52e3c06701e8",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/analysis/summary.md",
+      "bytes": 4393,
+      "sha256": "b6dddc0f733e9d5cdc0250d3d8930fd98fe8c864ec6cc74c4404e951940f78ce",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/analysis/test-only.json",
+      "bytes": 107385,
+      "sha256": "9c38ce374d451c56b5e0916c4a28ef08fb8a43cfd62d7c65894ae9497556d799",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/benchmark/evaluation.jsonl",
+      "bytes": 2739022,
+      "sha256": "c19e473cf45c0d9f49dee9557d4e05fcaf09b01e7a161b848d6d153a53ec23dc",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/benchmark/memory.json",
+      "bytes": 590,
+      "sha256": "b36c25651caa2a3b00b4e768f2e9dc41ccd12e6841613a5d29a012c8d2425e1c",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/benchmark/run.json",
+      "bytes": 1643,
+      "sha256": "61e3c6db2a8a951a80998b3d8e227b7481039c7854a377bc950b900f33ec446d",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/design/candidate-matrix.jsonl",
+      "bytes": 10874974,
+      "sha256": "8cbfe6bf4c3d21162e8430e3081d5186a9a82130187e4e2f94b338184a943616",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/design/design.json",
+      "bytes": 7166,
+      "sha256": "6117c85bba1e670812a9d44af35071d9510c69e54983e11f8462771eef13293c",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/design/exclusions.jsonl",
+      "bytes": 68076,
+      "sha256": "568f1017c38e7c6190bd70bdd45ca548eb1d5e38f18df4410abae9c572e2de0a",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/design/matrix.jsonl",
+      "bytes": 10811470,
+      "sha256": "6ef7051a3a42383c3c113ade4d5b4421fa6a6ffc819757078e10f4eb22a8b5e7",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/design/pilot.jsonl",
+      "bytes": 76357,
+      "sha256": "c80ac9e0722e8d9aec9b8043bc82e096ee5271bc1d59207221ca11583ac1d8f4",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation/evaluation.jsonl",
+      "bytes": 23178222,
+      "sha256": "df54b2f307591cec44ca73cc53c80d062bd069d9edd1dca9a7a48706af106423",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation/run.json",
+      "bytes": 1629,
+      "sha256": "635c87e52c61f93c393142cbd3483b6a61de8fe5b9e2e802b209ab2801966ce5",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/benchmark-design.jsonl",
+      "bytes": 259560,
+      "sha256": "300c1d06b5ba29bc4d6ccd5da5076b3479376bb670277a027dd7065db4d0dc6b",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/benchmark-source.jsonl",
+      "bytes": 722853,
+      "sha256": "73156d54e1d76db91ce5f36f837df5893c5a431e4a7021a0c01b7805059ee2e2",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/design-freeze.json",
+      "bytes": 4179,
+      "sha256": "5359effd024612fec690a8c26a66ec2deac318ae40248c73842757d7f93690ca",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/evaluation-design.jsonl",
+      "bytes": 3234176,
+      "sha256": "02b8625b9ec92cab0278eb4f85d0821fe6850080bf313160faf090b710a390bc",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/evaluation-source.jsonl",
+      "bytes": 13825309,
+      "sha256": "b96b0850eaf6931adee3544ddf08d1181fdc8a9a5e8e5609cc28001899613760",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/failure-source.jsonl",
+      "bytes": 8503453,
+      "sha256": "d47ea5e5ec02f17a0e66b98c5717b7eef98ecb805d7f43c6f2cfb3b43f2777ca",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/matrix-failures-source.jsonl",
+      "bytes": 8428279,
+      "sha256": "2cd96ad6abf5efe5a69a25224188496b6f896628246030134ab397eb7f6bd319",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/prior-failures.jsonl",
+      "bytes": 75174,
+      "sha256": "fe137b18039b95cfc50cab9a8b42b5f0fdded5bc64b69bea15e3e3e5c1e3d54a",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/sources-freeze.json",
+      "bytes": 1571,
+      "sha256": "2c168bf8bffd3fd82a2d521d8c349c868881b52deb1acc14625672c8c750f40e",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/test-design.jsonl",
+      "bytes": 1594965,
+      "sha256": "e0201e505c7e79d9de6d2c23cb7d1c99ba42a71ce27c38043a58327fc45dac2d",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/test-source.jsonl",
+      "bytes": 3921925,
+      "sha256": "26840158fbec4eca1514c2c266e62a351178aae1eaca49e6da83c18ab323c813",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/unsupported-prior-failures.jsonl",
+      "bytes": 8270,
+      "sha256": "a2b227c06c0fc06d2b5dd46e5fcf97209db28039d7fea04091daa933976b8604",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/validation-design.jsonl",
+      "bytes": 1639211,
+      "sha256": "e15db6a9dd5bfd91b517c91b7ddc30422e1d8dad085a753c72564cfb8895aa48",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/evaluation-inputs/validation-source.jsonl",
+      "bytes": 3752912,
+      "sha256": "fc9256b6533bee2d2dadf584f70e9e7c3607ec2acea5c9ed6dcf10c3164dc929",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/model-v1/general-feature-parity.json",
+      "bytes": 14322,
+      "sha256": "f1f1c0093c68204bc160dc53a06b52625e65b07551fb6ef241e1a2d5b384f8f3",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/model-v1/general-model.json",
+      "bytes": 590462,
+      "sha256": "f4cab9cb22fcb0e528dbd32c76cf9f41dd3404b80838e97a105260b36c28f380",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/model-v1/general-raw-predictions.jsonl",
+      "bytes": 59706,
+      "sha256": "329a13bd1c0231a4c9f4a3425be2e0fac21ce0cf849d99c0412414e99893eed4",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/model-v1/general-training.json",
+      "bytes": 16334,
+      "sha256": "b5f70d926c0688ccb322af277b4fdc70fad6489eb8d2064df7b3c0ca2f0a4aff",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/model-v1/java-parity.json",
+      "bytes": 25508,
+      "sha256": "5ba2304ceea61a868a3e7846fa3cc6341083f65c087cdc5884f6c2106448e239",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/model-v1/parity-report.json",
+      "bytes": 874,
+      "sha256": "e66b437b9fc827466fb1c3037434c6ef0474da43d4a4f15a9dd1e2fc911452e3",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/model-v2/general-feature-parity.json",
+      "bytes": 14322,
+      "sha256": "f1f1c0093c68204bc160dc53a06b52625e65b07551fb6ef241e1a2d5b384f8f3",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/model-v2/general-model.json",
+      "bytes": 1452058,
+      "sha256": "0f08891255399692666bc2434b99f95697ceded894cb91adca6f9df6d7702a46",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/model-v2/general-raw-predictions.jsonl",
+      "bytes": 59717,
+      "sha256": "2fbfa0c6697106b8ed4f525977299ff40f9c9ec8faf783007bcd3f870d29a62d",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/model-v2/general-training.json",
+      "bytes": 17829,
+      "sha256": "763d029570d3e23af57d7d30222d8d1ee17336effe85b1fdd9e7428810c93f4a",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/profile-current/evaluation.jsonl",
+      "bytes": 1170360,
+      "sha256": "23050d59994c6cae7fbca8530adf4116b32e7fc3d3c5a0b7c2e6a6c529f0c0e9",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/profile-current/memory.json",
+      "bytes": 586,
+      "sha256": "bbdbe30d59dac1fa654ee29396dd2bcd1b5b7f966be93b0776a0e24da3e2f956",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/profile-current/run.json",
+      "bytes": 1475,
+      "sha256": "70c90d4d41d767d20c0afa376b407ce224e7a0bfbbc8d5969e3ca91f75f29c9b",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/profile-neural/evaluation.jsonl",
+      "bytes": 709912,
+      "sha256": "ea9b8cbea2fd778aa80358c9eb3b8154025e16ac09f7a9b73102ac8fc4f20452",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/profile-neural/memory.json",
+      "bytes": 587,
+      "sha256": "70f34e3dc1f3dbc9622abf6e7b74c784059fe3fbe0732bce5e72da28d6b107a9",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/profile-neural/run.json",
+      "bytes": 1597,
+      "sha256": "cf0a4254ea16d87800ddd533f44edfe9e51ae67b8ef610832d58f21b3cc0fe1b",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/v2/cases.jsonl",
+      "bytes": 41330526,
+      "sha256": "484645e51ab1b3d17da7e91c52db647b591bc4fd176f7f0331b6838118f9b961",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/v2/memory.json",
+      "bytes": 591,
+      "sha256": "1465011c7ce97a2335b3cacaf49a6556d148299a894fc4612c931b546812a532",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/v2/run.json",
+      "bytes": 1412,
+      "sha256": "5c7201beb8ba6089e3b01a5cdad33f8633ec4a0fe81de7f7df86f435f642d9c4",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/validation-v1/evaluation.jsonl",
+      "bytes": 4640266,
+      "sha256": "aa252f37e42069c6062ab5f425d03c59aca22b89f67d7ce720ba69ad6d80f480",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/validation-v1/run.json",
+      "bytes": 1594,
+      "sha256": "6beaa52a166f918dd7802c89639ef25932c3acf881e035ac6cd49530738e3025",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/validation-v1/summary-cases.csv",
+      "bytes": 2667591,
+      "sha256": "6a3292aada3561911621fd946bffcd4d4aa3e3bb0d09527db0c9d3fa72b4cafb",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/validation-v1/summary-zones.csv",
+      "bytes": 25434,
+      "sha256": "8cc3c203088f0d1b3dc7a93a241ac3eb2cab23c8c784839f556f50a9312c07cb",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/validation-v1/summary.json",
+      "bytes": 192411,
+      "sha256": "ceebb73dbdb5d86852d21915e04a278414f9c6ec1fb9e0fd63073086d6c709e4",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/validation-v1/summary.md",
+      "bytes": 2375,
+      "sha256": "7586cff91b87fff779e394fa58f4325e9b1ddbedd5255d07169848024d8b471c",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/validation-v1-32/evaluation.jsonl",
+      "bytes": 4610351,
+      "sha256": "a64beb8e86689aa18ada2e76afcec25b4b267d4760c9d9127abf9f299e0deff5",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/validation-v1-32/run.json",
+      "bytes": 1623,
+      "sha256": "9e8b639de087e82e0d8006c83ee015190fe1ef49eaa47b88873439419771a84a",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/validation-v2/evaluation.jsonl",
+      "bytes": 4360602,
+      "sha256": "f4119891ca0576bb417c31891e2c182aceb4f67a4c259804e3349760c96aa332",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen2-1a4a01d/study/validation-v2/run.json",
+      "bytes": 1595,
+      "sha256": "8ea90a9c99e4398e9a84b08e624980ccbd6027337aca1ce7db892c4e9c79690f",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen3-19ed5060/manifest.json",
+      "bytes": 30787,
+      "sha256": "2a93c8a72f593eaa07181e4d2a5984cfd3d5abd059cec7938a4f9ea5a9989b07",
+      "matchesCanonicalCopy": true
+    },
+    {
+      "relativePath": "gen3-19ed5060/study.zip",
+      "bytes": 74991549,
+      "sha256": "e34bcfb4914e02a5cc5deb390cb514662e13ebd5645aa1e2583790adc780fb77",
+      "matchesCanonicalCopy": true
+    }
+  ]
+}

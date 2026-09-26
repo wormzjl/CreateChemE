@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "crude_pc06",
+  "kind": "petroleum_fraction",
+  "translation_key": "material.createcheme.crude_pc06",
+  "fallback": "Crude oil",
+  "cut": {
+    "estimated": true,
+    "derivation": "adjacent_nbp_midpoints",
+    "series": "crude-tia-juana-r1",
+    "lower_kelvin": 553.4948641434172,
+    "upper_kelvin": 602.2990231445796
+  },
+  "appearance": {
+    "color": "#AE9C6B",
+    "transparency": 0.306,
+    "estimated": true
+  }
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3NeuralInitializationTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:19.101Z" hostname="WORMZ-PC" time="2.533">
+  <properties/>
+  <testcase name="globalCancellationEscapesWithoutBackup()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralInitializationTest" time="0.0"/>
+  <testcase name="missingModelHonorsForcedModeAndCurrentBackup()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralInitializationTest" time="0.004"/>
+  <testcase name="exactAcceptedSnapshotTransfersThroughNativeCorrection()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralInitializationTest" time="0.004"/>
+  <testcase name="theProgressCorrectionRuleIsInertUntilItsTestsCanFire()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralInitializationTest" time="0.005"/>
+  <testcase name="predictedWetAndLegacyDryProduceDifferentConsistentLedgers()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralInitializationTest" time="0.0"/>
+  <testcase name="localNeuralBudgetDoesNotCancelClassicalBackup()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralInitializationTest" time="0.003"/>
+  <testcase name="forcedCurrentNeverTouchesModelAndMatchesLegacy()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralInitializationTest" time="0.004"/>
+  <testcase name="theZeroPhaseDecoderFloorOnlyFillsPhasesTheBranchAllows()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralInitializationTest" time="0.0"/>
+  <testcase name="exhaustedBudgetPublishesTheInFlightIterationCount()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralInitializationTest" time="2.51"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

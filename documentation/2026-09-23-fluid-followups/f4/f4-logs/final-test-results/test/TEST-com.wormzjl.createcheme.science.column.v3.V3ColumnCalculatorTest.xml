@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:53.734Z" hostname="WORMZ-PC" time="3.824">
+  <properties/>
+  <testcase name="registeredPrBinaryPilotPublishesOnlyAFreshlyAuditedSuccess()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.06"/>
+  <testcase name="registeredPilotWithEightyKmolPerHourSteamAtSeventyCelsiusPublishesWaterInBothPhases()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.653"/>
+  <testcase name="cooperativeCancellationEscapesInsteadOfBecomingAScientificFailure()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.016"/>
+  <testcase name="fiftyCelsiusPartialCondenserSeedIncludesEthaneInLiquidAndEquilibriumBalances()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.018"/>
+  <testcase name="registeredPilotWithSumpSteamPublishesAuditedWetVapor()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.589"/>
+  <testcase name="[1] 323.15, 0.0" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.202"/>
+  <testcase name="[2] 328.15, 0.0" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.212"/>
+  <testcase name="[3] 323.15, 0.1" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.224"/>
+  <testcase name="registeredPilotWithIntermediateSumpSteamTemperaturePublishesMixedWaterVapor()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.513"/>
+  <testcase name="productionCalculatorUsesTheCertifiedStageContinuationForThirtyStageRealCrude()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.255"/>
+  <testcase name="unknownPropertyPackageIsAStableTypedFailure()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.015"/>
+  <testcase name="registeredPilotWithWaterLimitedSumpSteamPublishesMixedOverheadVapor()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.529"/>
+  <testcase name="registeredPilotWithSumpSteamAndColdCondenserPublishesFreeWater()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnCalculatorTest" time="0.523"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

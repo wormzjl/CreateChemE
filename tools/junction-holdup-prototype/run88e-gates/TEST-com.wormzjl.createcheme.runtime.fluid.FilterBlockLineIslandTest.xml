@@ -1,0 +1,2039 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-25T15:39:13.186Z" hostname="WORMZ-PC" time="1.226">
+  <properties/>
+  <testcase name="filterLineToATankKeepsIntegratingOnceTheTankIsFull()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="1.226">
+    <failure message="org.opentest4j.AssertionFailedError: HELD at interval 21/40 (t=100 s): Substep refinement exhausted: Newton line search stalled at residual 8.094721377431096E-4; active-set pass=0&#10;  node[0] id=1 GENERATOR P=300000.0 liquid=1.0 vapour=0.0 solidKg=0.0&#10;  node[1] id=3 JUNCTION P=300000.00000136485 liquid=0.9999999999999718 vapour=0.0 solidKg=0.0&#10;  node[2] id=5 RESERVOIR P=300000.0001122488 liquid=0.6587374953181114 vapour=0.3412625052971882 solidKg=0.0&#10;  node[3] id=-3 JUNCTION P=300000.0001108828 liquid=0.9999999999970751 vapour=0.0 solidKg=0.0&#10;  pipe id=8261561421756122062 0-&gt;1 Passive filter=false&#10;  pipe id=3932769516861099846 3-&gt;2 Passive filter=false&#10;  pipe id=-9223372036854775805 1-&gt;3 Passive filter=true ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: HELD at interval 21/40 (t=100 s): Substep refinement exhausted: Newton line search stalled at residual 8.094721377431096E-4; active-set pass=0
+  node[0] id=1 GENERATOR P=300000.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[1] id=3 JUNCTION P=300000.00000136485 liquid=0.9999999999999718 vapour=0.0 solidKg=0.0
+  node[2] id=5 RESERVOIR P=300000.0001122488 liquid=0.6587374953181114 vapour=0.3412625052971882 solidKg=0.0
+  node[3] id=-3 JUNCTION P=300000.0001108828 liquid=0.9999999999970751 vapour=0.0 solidKg=0.0
+  pipe id=8261561421756122062 0-&gt;1 Passive filter=false
+  pipe id=3932769516861099846 3-&gt;2 Passive filter=false
+  pipe id=-9223372036854775805 1-&gt;3 Passive filter=true ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest.filterLineToATankKeepsIntegratingOnceTheTankIsFull(FilterBlockLineIslandTest.java:284)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[BETRACE t=0.0 step=0.05 ok=false change=0.6623096938531149 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.3366507111728919 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.17070123612142163 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.0862343739368192 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.04957197591538725 transitions=0
+BETRACE t=0.0 step=0.1210187668531867 ok=false change=0.022357063009843255 transitions=0
+BETRACE t=0.0 step=0.7074986453264063 ok=false change=0.02302877120692715 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=4.4045348971750355E-10 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=2.5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.25 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.3125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.15625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.078125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.0390625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.01953125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.009765625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.0048828125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.00244140625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.001220703125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=6.103515625E-4 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=3.0517578125E-4 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.52587890625E-4 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=7.62939453125E-5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=3.814697265625E-5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.9073486328125E-5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=9.5367431640625E-6 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=4.76837158203125E-6 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=2.384185791015625E-6 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.1920928955078125E-6 ok=false change=1.9536450656131325E-10 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.960464477539062E-7 ok=true change=1.9536431253577692E-10 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=0.6729931128988615 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.34135315041599756 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.17277998540958153 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.0871731155347648 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.04950471930354953 transitions=0
+BETRACE t=0.0 step=0.16734415530102162 ok=false change=0.031125744740904578 transitions=0
+BETRACE t=0.0 step=1.1430394653786384 ok=false change=0.02330191918781256 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=6.648226796777131E-11 transitions=1 e0:PASSIVE->CLOSED
+(i-b) generator at 150000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 150000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=150000.00006267117 mass=309.92017806305756  control tank P=150000.00000008603 mass=309.920177790391
+BETRACE t=0.0 step=0.05 ok=false change=0.9848259253650876 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.49643662334260286 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.2501243531445972 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.12583380870621858 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.06318604438581814 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.051431359994153714 transitions=0
+JDUMP failure=Newton line search stalled at residual 0.20856038519879694 pass=0 dt=7.8125E-4
+JDUMP initial |f|max=0.40910939496306686
+JDUMP  row 5 node 2 RESERVOIR local 2 f=0.40910939496306686
+JDUMP  row 12 edge 1 hydraulic/cap f=0.28552145028511716
+JDUMP  row 11 edge 0 hydraulic/cap f=-0.20785354971488287
+JDUMP  row 13 edge 2 hydraulic/cap f=-0.10372953639319701
+JDUMP  row 6 node 2 RESERVOIR local 3 f=0.0232302440002381
+JDUMP  row 4 node 2 RESERVOIR local 1 f=-0.0013787566724527307
+JDUMP  node 0 GENERATOR z=-59.0 P=200000.0 T=298.15 rho=996.1066624570072
+JDUMP  node 1 JUNCTION z=-59.0 P=200000.0 T=298.15 rho=996.1066624570072
+JDUMP  node 2 RESERVOIR z=-59.0 P=101325.0 T=298.15 rho=1.1360630426062865
+JDUMP  node 3 JUNCTION z=-59.0 P=200000.0 T=298.15 rho=996.1066624570072
+JDUMP  edge 0 0->1 q=23.219338620239167 mode=PASSIVE closed=false capFlow=195.5850858104239
+JDUMP  edge 1 3->2 q=23.219338620239167 mode=PASSIVE closed=false capFlow=195.5850858104239
+JDUMP  edge 2 1->3 q=23.219338620239167 mode=PASSIVE closed=false capFlow=195.5850858104239
+JDUMP  junction=1 incomingMass=23.219338620239167 T=298.15 P=200000.0 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=0 q=23.219338620239167 donorFirst=true
+JDUMP    fwd h=1.0E-6 [1.0000000010279564, 2.360015393363391E-6, 0.0]
+JDUMP    fwd h=1.0E-8 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.999982319171977, 0.0, 0.0]
+JDUMP   edge=2 q=23.219338620239167 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0000000010279564, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=23.219338620239167 T=298.15 P=200000.0 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=23.219338620239167 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0000000010279564, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP   edge=2 q=23.219338620239167 donorFirst=true
+JDUMP    fwd h=1.0E-6 [1.0000000010279564, 2.360015393363391E-6, 0.0]
+JDUMP    fwd h=1.0E-8 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.999982319171977, 0.0, 0.0]
+JDUMP failed |f|max=0.20856038519879694
+JDUMP  row 5 node 2 RESERVOIR local 2 f=0.20856038519879694
+JDUMP  row 12 edge 1 hydraulic/cap f=0.1516592600768114
+JDUMP  row 11 edge 0 hydraulic/cap f=-0.10804359068124217
+JDUMP  row 13 edge 2 hydraulic/cap f=-0.0579481244218641
+JDUMP  row 9 node 3 JUNCTION local 1 f=0.012816472850280574
+JDUMP  row 6 node 2 RESERVOIR local 3 f=0.011396182142416
+JDUMP  node 0 GENERATOR z=-59.0 P=200000.0 T=298.15 rho=996.1066624570072
+JDUMP  node 1 JUNCTION z=-59.0 P=177833.94657925126 T=298.1551931126583 rho=996.083242561375
+JDUMP  node 2 RESERVOIR z=-59.0 P=94021.66871351468 T=273.1600007757141 rho=1.1503569460949468
+JDUMP  node 3 JUNCTION z=-59.0 P=168129.57786763733 T=298.15766555237144 rho=996.0729380088413
+JDUMP  edge 0 0->1 q=23.83503018605038 mode=PASSIVE closed=false capFlow=195.5850858104239
+JDUMP  edge 1 3->2 q=23.83503018605038 mode=PASSIVE closed=false capFlow=195.5784640305111
+JDUMP  edge 2 1->3 q=23.83503018605038 mode=PASSIVE closed=false capFlow=195.58048732466972
+JDUMP  junction=1 incomingMass=23.83503018605038 T=298.1551931126583 P=177833.94657925126 rows=[0.0, 0.005990039945509615, 0.0]
+JDUMP   edge=0 q=23.83503018605038 donorFirst=true
+JDUMP    fwd h=1.0E-6 [1.0000000010279564, 4.776257514493842E-7, 0.0]
+JDUMP    fwd h=1.0E-8 [1.000000082740371, 4.776561091102138E-7, 0.0]
+JDUMP    fwd h=1.0E-10 [0.999982319171977, 4.77048955893622E-7, 0.0]
+JDUMP    fwd h=1.0E-12 [0.9983125437429408, 8.673617379884035E-7, 0.0]
+JDUMP    ctr h=1e-10 [0.999982319171977, 4.77048955893622E-7, 0.0]
+JDUMP   edge=2 q=23.83503018605038 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0000000010279564, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=23.83503018605038 T=298.15766555237144 P=168129.57786763733 rows=[0.0, 0.012816472850280574, 0.0]
+JDUMP   edge=1 q=23.83503018605038 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0000000010279564, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP   edge=2 q=23.83503018605038 donorFirst=true
+JDUMP    fwd h=1.0E-6 [1.0000000010279564, 1.0219429469326968E-6, 0.0]
+JDUMP    fwd h=1.0E-8 [1.000000082740371, 1.0220990720455347E-6, 0.0]
+JDUMP    fwd h=1.0E-10 [0.999982319171977, 1.0234868508263162E-6, 0.0]
+JDUMP    fwd h=1.0E-12 [0.9983125437429408, 1.734723475976807E-6, 0.0]
+JDUMP    ctr h=1e-10 [0.999982319171977, -0.011799632451681141, 0.0]
+BETRACE t=0.0 step=0.1652139017848923 ok=false change=0.03126000293713125 transitions=0
+BETRACE t=0.0 step=0.2601522270695116 ok=false change=0.023215767293826316 transitions=0
+BETRACE t=0.0 step=0.5665573962708436 ok=false change=0.0303652076984989 transitions=0
+BETRACE t=0.0 step=0.6117620121825036 ok=false change=0.021038960883553778 transitions=0
+BETRACE t=0.0 step=1.3247268349713326 ok=false change=0.026844646070538793 transitions=0
+BETRACE t=0.0 step=2.1881626369087197 ok=false change=0.021543338327086027 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=4.298983549342293E-10 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=2.5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.25 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.3125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.15625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.078125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.0390625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.01953125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.009765625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.0048828125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.00244140625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.001220703125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=6.103515625E-4 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=3.0517578125E-4 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.52587890625E-4 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=7.62939453125E-5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=3.814697265625E-5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.9073486328125E-5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=9.5367431640625E-6 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=4.76837158203125E-6 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=2.384185791015625E-6 ok=false change=6.826492605762876E-10 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.1920928955078125E-6 ok=false change=6.826491150571353E-10 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.960464477539062E-7 ok=true change=6.826491150571353E-10 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=0.955981187081578 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.4815098529388034 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.24241016377613483 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.12187007736621182 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.06116536427113699 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.05159921180272703 transitions=0
+BETRACE t=0.0 step=0.10968096616591062 ok=false change=0.020886663313178816 transitions=0
+BETRACE t=0.0 step=0.2503089295229754 ok=false change=0.022667986655117232 transitions=0
+BETRACE t=0.0 step=0.5876361215269786 ok=false change=0.021255258798936413 transitions=0
+BETRACE t=0.0 step=2.0458056877181754 ok=false change=0.02159184011578359 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=4.235077360095398E-10 transitions=1 e0:PASSIVE->CLOSED
+(i-b) generator at 200000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 200000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=200000.00021744936 mass=484.5403334809485  control tank P=200000.0000006999 mass=484.5403330712963
+BETRACE t=0.0 step=0.05 ok=false change=1.2356503145410178 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.6210816659922987 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.312165158730828 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.15677507091629425 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.07864030603053666 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.05018782498931133 transitions=0
+JDUMP failure=Newton line search stalled at residual 0.3045454748228445 pass=0 dt=7.8125E-4
+JDUMP initial |f|max=0.5065270036330527
+JDUMP  row 5 node 2 RESERVOIR local 2 f=0.5065270036330527
+JDUMP  row 12 edge 1 hydraulic/cap f=0.3387850164046475
+JDUMP  row 11 edge 0 hydraulic/cap f=-0.2559149835953525
+JDUMP  row 13 edge 2 hydraulic/cap f=-0.10321575362691317
+JDUMP  row 6 node 2 RESERVOIR local 3 f=0.028590542934144425
+JDUMP  row 4 node 2 RESERVOIR local 1 f=-0.0020022768304289187
+JDUMP  node 0 GENERATOR z=-59.0 P=250000.0 T=298.15 rho=996.1564690352842
+JDUMP  node 1 JUNCTION z=-59.0 P=250000.0 T=298.15 rho=996.1564690352842
+JDUMP  node 2 RESERVOIR z=-59.0 P=101325.0 T=298.15000000000003 rho=1.1339790013454887
+JDUMP  node 3 JUNCTION z=-59.0 P=250000.0 T=298.15 rho=996.1564690352842
+JDUMP  edge 0 0->1 q=28.881857699551336 mode=PASSIVE closed=false capFlow=195.59486530919983
+JDUMP  edge 1 3->2 q=28.881857699551336 mode=PASSIVE closed=false capFlow=195.59486530919983
+JDUMP  edge 2 1->3 q=28.881857699551336 mode=PASSIVE closed=false capFlow=195.59486530919983
+JDUMP  junction=1 incomingMass=28.881857699551336 T=298.15 P=250000.0 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=0 q=28.881857699551336 donorFirst=true
+JDUMP    fwd h=1.0E-6 [1.0000000010279564, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.999982319171977, 0.0, 0.0]
+JDUMP   edge=2 q=28.881857699551336 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0000000010279564, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=28.881857699551336 T=298.15 P=250000.0 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=28.881857699551336 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0000000010279564, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP   edge=2 q=28.881857699551336 donorFirst=true
+JDUMP    fwd h=1.0E-6 [1.0000000010279564, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.999982319171977, 0.0, 0.0]
+JDUMP failed |f|max=0.3045454748228445
+JDUMP  row 5 node 2 RESERVOIR local 2 f=0.3045454748228445
+JDUMP  row 12 edge 1 hydraulic/cap f=0.2067834643131643
+JDUMP  row 11 edge 0 hydraulic/cap f=-0.15509114828396292
+JDUMP  row 13 edge 2 hydraulic/cap f=-0.06447534011722239
+JDUMP  row 6 node 2 RESERVOIR local 3 f=0.01691683146267131
+JDUMP  row 9 node 3 JUNCTION local 1 f=0.008667366243730617
+JDUMP  node 0 GENERATOR z=-59.0 P=250000.0 T=298.15 rho=996.1564690352842
+JDUMP  node 1 JUNCTION z=-59.0 P=222328.6005744641 T=298.1563447769616 rho=996.1272666247771
+JDUMP  node 2 RESERVOIR z=-59.0 P=94006.13295020984 T=273.16000273809703 rho=1.148035354218922
+JDUMP  node 3 JUNCTION z=-59.0 P=212148.56390000612 T=298.1587944026673 rho=996.1164936591705
+JDUMP  edge 0 0->1 q=29.43921958149851 mode=PASSIVE closed=false capFlow=195.59486530919983
+JDUMP  edge 1 3->2 q=29.43921958149851 mode=PASSIVE closed=false capFlow=195.58701616245463
+JDUMP  edge 2 1->3 q=29.43921958149851 mode=PASSIVE closed=false capFlow=195.58913142930507
+JDUMP  junction=1 incomingMass=29.43921958149851 T=298.1563447769616 P=222328.6005744641 rows=[0.0, 0.004554327183021065, 0.0]
+JDUMP   edge=0 q=29.43921958149851 donorFirst=true
+JDUMP    fwd h=1.0E-6 [1.0000000010279564, 3.629666012194832E-7, 0.0]
+JDUMP    fwd h=1.0E-8 [1.000000082740371, 3.629908873481469E-7, 0.0]
+JDUMP    fwd h=1.0E-10 [0.999982319171977, 3.642919299551295E-7, 0.0]
+JDUMP    fwd h=1.0E-12 [0.9983125437429408, 8.673617379884035E-7, 0.0]
+JDUMP    ctr h=1e-10 [0.999982319171977, 3.642919299551295E-7, 0.0]
+JDUMP   edge=2 q=29.43921958149851 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0000000010279564, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=29.43921958149851 T=298.1587944026673 P=212148.56390000612 rows=[0.0, 0.008667366243730617, 0.0]
+JDUMP   edge=1 q=29.43921958149851 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0000000010279564, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-0.9983125437429408, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-0.999982319171977, 0.0, 0.0]
+JDUMP   edge=2 q=29.43921958149851 donorFirst=true
+JDUMP    fwd h=1.0E-6 [1.0000000010279564, -1.6705352379187133E-6, 0.0]
+JDUMP    fwd h=1.0E-8 [1.000000082740371, -2.3543927224478622E-4, 0.0]
+JDUMP    fwd h=1.0E-10 [0.999982319171977, 6.938893903907228E-7, 0.0]
+JDUMP    fwd h=1.0E-12 [0.9983125437429408, -2.36129692188225, 0.0]
+JDUMP    ctr h=1e-10 [0.999982319171977, 6.938893903907228E-7, 0.0]
+BETRACE t=0.0 step=0.23677301139020476 ok=false change=0.02143028054173675 transitions=0
+BETRACE t=0.0 step=0.8717881943682649 ok=false change=0.029024342750711463 transitions=0
+BETRACE t=0.0 step=1.023914401335359 ok=false change=0.0218217029012194 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=4.1916070044711117E-10 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=2.5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.25 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.3125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.15625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.078125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.0390625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.01953125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.009765625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.0048828125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.00244140625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.001220703125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=6.103515625E-4 ok=false change=1.0259147963056223E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=3.0517578125E-4 ok=false change=1.0259146798903003E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.52587890625E-4 ok=false change=1.0259147963056223E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=7.62939453125E-5 ok=false change=1.0259140978136914E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=3.814697265625E-5 ok=false change=1.0259146798903003E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.9073486328125E-5 ok=false change=1.0259147963056223E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=9.5367431640625E-6 ok=false change=1.0259140978136914E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=4.76837158203125E-6 ok=false change=1.0259146798903003E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=2.384185791015625E-6 ok=false change=1.0259147963056223E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.1920928955078125E-6 ok=false change=1.0259136321524043E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.960464477539062E-7 ok=true change=1.0259144470596569E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=1.174722999507771 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.5902121849300989 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.2965121229288823 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.14884823348792928 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.07463783002457917 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.050506585738087834 transitions=0
+BETRACE t=0.0 step=0.33882388201496266 ok=false change=0.03104469653879607 transitions=0
+BETRACE t=0.0 step=0.42800641595993455 ok=false change=0.02408329385787186 transitions=0
+BETRACE t=0.0 step=0.8391028308505826 ok=false change=0.02035981327742752 transitions=0
+JDUMP gate-newton |f|max=8.041739442904134E-10
+JDUMP  row 2 node 1 RESERVOIR local 2 f=8.041739442904134E-10
+JDUMP  row 1 node 1 RESERVOIR local 1 f=-7.632626932839127E-10
+JDUMP  row 0 node 1 RESERVOIR local 0 f=4.908490739614468E-10
+JDUMP  row 6 edge 0 hydraulic/cap f=4.58361814818925E-11
+JDUMP  row 4 node 1 RESERVOIR local 4 f=1.8688162128735713E-11
+JDUMP  row 3 node 1 RESERVOIR local 3 f=-8.204437129677444E-12
+JDUMP  node 0 GENERATOR z=-59.0 P=250000.0 T=298.15 rho=996.1564690352842
+JDUMP  node 1 RESERVOIR z=-59.0 P=249999.9739212352 T=298.20113884477394 rho=588.4547335119127
+JDUMP  edge 0 0->1 q=0.0011189101207606193 mode=PASSIVE closed=false capFlow=195.59486530919983
+JDUMP gate-reconstructed |f|max=3.9265147729412745E-7
+JDUMP  row 4 node 1 RESERVOIR local 4 f=3.9265147729412745E-7
+JDUMP  row 3 node 1 RESERVOIR local 3 f=-1.603907704428309E-7
+JDUMP  row 5 node 1 RESERVOIR local 5 f=4.993776031155212E-9
+JDUMP  row 2 node 1 RESERVOIR local 2 f=6.7858360753111E-11
+JDUMP  row 6 edge 0 hydraulic/cap f=4.58361814818925E-11
+JDUMP  row 1 node 1 RESERVOIR local 1 f=1.114535866188286E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=250000.0 T=298.15 rho=996.1564690352842
+JDUMP  node 1 RESERVOIR z=-59.0 P=249999.9739212352 T=298.20113884477394 rho=588.4548278898092
+JDUMP  edge 0 0->1 q=0.0011189101207606193 mode=PASSIVE closed=false capFlow=195.59486530919983
+(i-b) generator at 250000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 250000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=250000.00033505136 mass=588.4549371300627  control tank P=249999.99999995425 mass=588.454936860048
+BETRACE t=0.0 step=0.05 ok=false change=1.4480925355785808 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.726820337008571 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.3648425925064618 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.18305489346451612 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.09176665358030954 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.049167188100383 transitions=0
+BETRACE t=0.0 step=1.0910850614639747 ok=false change=0.02580162457919366 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=5.319113067879924E-10 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=2.5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.25 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.3125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.15625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.078125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.0390625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.01953125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.009765625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.0048828125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.00244140625 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.001220703125 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=6.103515625E-4 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=3.0517578125E-4 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.52587890625E-4 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=7.62939453125E-5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=3.814697265625E-5 ok=false change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=1.9073486328125E-5 ok=false change=1.7816410393307155E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=9.5367431640625E-6 ok=false change=1.781640069203034E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=4.76837158203125E-6 ok=false change=1.7816387110242799E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=2.384185791015625E-6 ok=false change=1.781640069203034E-9 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+JDUMP failure=Newton line search stalled at residual 1.5439455752241317E-9 pass=0 dt=1.1920928955078125E-6
+JDUMP initial |f|max=1.698340132715669E-8
+JDUMP  row 10 node 3 JUNCTION local 1 f=-1.698340132715669E-8
+JDUMP  row 1 node 1 JUNCTION local 1 f=7.719727876120659E-9
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 7.719727876120659E-9, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -0.0015439455752233795, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, -0.15439455752241238, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -1.698340132715669E-8, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -2.0712602538327813E-15, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, -1.9852334701272664E-15, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=1.5439455752241317E-9
+JDUMP  row 1 node 1 JUNCTION local 1 f=-1.5439455752241317E-9
+JDUMP  row 7 node 2 RESERVOIR local 4 f=2.8865798640254027E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 6 node 2 RESERVOIR local 3 f=-1.1102230246251565E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.14999999989567 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441754
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.14999999989567 P=300000.00000136485 rows=[0.0, -1.5439455752241317E-9, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -0.0015439455752245081, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, -0.15439455752241357, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 3.0878911504482634E-9 pass=0 dt=5.960464477539062E-7
+JDUMP initial |f|max=3.396680265431338E-8
+JDUMP  row 10 node 3 JUNCTION local 1 f=-3.396680265431338E-8
+JDUMP  row 1 node 1 JUNCTION local 1 f=1.5439455752241318E-8
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 1.5439455752241318E-8, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 9.396771758602394E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 6.617444900424221E-16, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -3.396680265431338E-8, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0030878911503902395, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, -1.9852334701272664E-15, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=3.0878911504482634E-9
+JDUMP  row 1 node 1 JUNCTION local 1 f=-3.0878911504482634E-9
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -3.0878911504482634E-9, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -1.881835893558138E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, -1.6543612251060553E-16, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.003087891150392314, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 6.175782300896527E-9 pass=0 dt=2.980232238769531E-7
+JDUMP initial |f|max=6.793360530862677E-8
+JDUMP  row 10 node 3 JUNCTION local 1 f=-6.793360530862677E-8
+JDUMP  row 1 node 1 JUNCTION local 1 f=3.0878911504482635E-8
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 3.0878911504482635E-8, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 9.396771758602394E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 6.617444900424221E-16, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -6.793360530862677E-8, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -2.064642808932357E-15, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.6175782300784237, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=6.175782300896527E-9
+JDUMP  row 1 node 1 JUNCTION local 1 f=-6.175782300896527E-9
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -6.175782300896527E-9, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -1.8776999904953728E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, -2.481541837659083E-16, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.6175782300784254, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 1.2351564601793053E-8 pass=0 dt=1.4901161193847656E-7
+JDUMP initial |f|max=1.3586721061725353E-7
+JDUMP  row 10 node 3 JUNCTION local 1 f=-1.3586721061725353E-7
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.175782300896527E-8
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 6.175782300896527E-8, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 9.396771758602394E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 1.3234889800848443E-15, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -1.3586721061725353E-7, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -2.064642808932357E-15, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 1.2351564601568474, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=1.2351564601793053E-8
+JDUMP  row 1 node 1 JUNCTION local 1 f=-1.2351564601793053E-8
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -1.2351564601793053E-8, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -1.885971796620903E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, -1.6543612251060553E-16, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 1.2351564601568503, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 2.4703129203586107E-8 pass=0 dt=7.450580596923828E-8
+JDUMP initial |f|max=2.7173442123450706E-7
+JDUMP  row 10 node 3 JUNCTION local 1 f=-2.7173442123450706E-7
+JDUMP  row 1 node 1 JUNCTION local 1 f=1.2351564601793054E-7
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 1.2351564601793054E-7, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 9.26442286059391E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, -2.47031292035861, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -2.7173442123450706E-7, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.02470312920313515, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, -5.293955920339377E-15, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=2.4703129203586107E-8
+JDUMP  row 1 node 1 JUNCTION local 1 f=-2.4703129203586107E-8
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -2.4703129203586107E-8, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -1.885971796620903E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, -2.4703129203586114, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.024703129203137195, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 4.9406258407172214E-8 pass=0 dt=3.725290298461914E-8
+JDUMP initial |f|max=5.434688424690141E-7
+JDUMP  row 10 node 3 JUNCTION local 1 f=-5.434688424690141E-7
+JDUMP  row 1 node 1 JUNCTION local 1 f=2.470312920358611E-7
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 2.470312920358611E-7, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 9.529120656610879E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -5.434688424690141E-7, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -2.117582368135751E-15, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=4.9406258407172214E-8
+JDUMP  row 1 node 1 JUNCTION local 1 f=-4.9406258407172214E-8
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -4.9406258407172214E-8, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -1.9190590211230242E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 9.881251681434443E-8 pass=0 dt=1.862645149230957E-8
+JDUMP initial |f|max=1.0869376849380282E-6
+JDUMP  row 10 node 3 JUNCTION local 1 f=-1.0869376849380282E-6
+JDUMP  row 1 node 1 JUNCTION local 1 f=4.940625840717222E-7
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 4.940625840717222E-7, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 9.529120656610879E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -1.0869376849380282E-6, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -2.117582368135751E-15, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=9.881251681434443E-8
+JDUMP  row 1 node 1 JUNCTION local 1 f=-9.881251681434443E-8
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -9.881251681434443E-8, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -1.9852334701272664E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 1.9762503362868886E-7 pass=0 dt=9.313225746154785E-9
+JDUMP initial |f|max=2.1738753698760565E-6
+JDUMP  row 10 node 3 JUNCTION local 1 f=-2.1738753698760565E-6
+JDUMP  row 1 node 1 JUNCTION local 1 f=9.881251681434443E-7
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 9.881251681434443E-7, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 8.470329472543003E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -2.1738753698760565E-6, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.19762503362509432, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=1.9762503362868886E-7
+JDUMP  row 1 node 1 JUNCTION local 1 f=-1.9762503362868886E-7
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -1.9762503362868886E-7, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -1.852884572118782E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.19762503362509623, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 3.952500672573777E-7 pass=0 dt=4.6566128730773926E-9
+JDUMP initial |f|max=4.347750739752113E-6
+JDUMP  row 10 node 3 JUNCTION local 1 f=-4.347750739752113E-6
+JDUMP  row 1 node 1 JUNCTION local 1 f=1.9762503362868887E-6
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 1.9762503362868887E-6, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -0.395250067257377, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -4.347750739752113E-6, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -2.541098841762901E-15, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=3.952500672573777E-7
+JDUMP  row 1 node 1 JUNCTION local 1 f=-3.952500672573777E-7
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -3.952500672573777E-7, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -0.39525006725737816, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 7.905001345147554E-7 pass=0 dt=2.3283064365386963E-9
+JDUMP initial |f|max=8.695501479504226E-6
+JDUMP  row 10 node 3 JUNCTION local 1 f=-8.695501479504226E-6
+JDUMP  row 1 node 1 JUNCTION local 1 f=3.952500672573777E-6
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 3.952500672573777E-6, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 8.470329472543003E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -8.695501479504226E-6, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -1.6940658945086007E-15, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=7.905001345147554E-7
+JDUMP  row 1 node 1 JUNCTION local 1 f=-7.905001345147554E-7
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -7.905001345147554E-7, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -2.1175823681357508E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 1.5810002690295108E-6 pass=0 dt=1.1641532182693481E-9
+JDUMP initial |f|max=1.7391002959008452E-5
+JDUMP  row 10 node 3 JUNCTION local 1 f=-1.7391002959008452E-5
+JDUMP  row 1 node 1 JUNCTION local 1 f=7.905001345147555E-6
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 7.905001345147555E-6, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 1.6940658945086007E-15, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -1.7391002959008452E-5, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 1.5810002690007647, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=1.5810002690295108E-6
+JDUMP  row 1 node 1 JUNCTION local 1 f=-1.5810002690295108E-6
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -1.5810002690295108E-6, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -2.1175823681357508E-16, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 1.5810002690007685, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 3.1620005380590217E-6 pass=0 dt=5.820766091346741E-10
+JDUMP initial |f|max=3.4782005918016904E-5
+JDUMP  row 10 node 3 JUNCTION local 1 f=-3.4782005918016904E-5
+JDUMP  row 1 node 1 JUNCTION local 1 f=1.581000269029511E-5
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 1.581000269029511E-5, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -3.162000538059021, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -3.4782005918016904E-5, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -6.776263578034403E-15, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=3.1620005380590217E-6
+JDUMP  row 1 node 1 JUNCTION local 1 f=-3.1620005380590217E-6
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -3.1620005380590217E-6, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, -3.1620005380590226, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 6.324001076118043E-6 pass=0 dt=2.9103830456733704E-10
+JDUMP initial |f|max=6.956401183603381E-5
+JDUMP  row 10 node 3 JUNCTION local 1 f=-6.956401183603381E-5
+JDUMP  row 1 node 1 JUNCTION local 1 f=3.162000538059022E-5
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 3.162000538059022E-5, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -6.956401183603381E-5, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=6.324001076118043E-6
+JDUMP  row 1 node 1 JUNCTION local 1 f=-6.324001076118043E-6
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -6.324001076118043E-6, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 1.2648002152236087E-5 pass=0 dt=1.4551915228366852E-10
+JDUMP initial |f|max=1.3912802367206762E-4
+JDUMP  row 10 node 3 JUNCTION local 1 f=-1.3912802367206762E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.324001076118044E-5
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 6.324001076118044E-5, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -1.3912802367206762E-4, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=1.2648002152236087E-5
+JDUMP  row 1 node 1 JUNCTION local 1 f=-1.2648002152236087E-5
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -1.2648002152236087E-5, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 2.5296004304472174E-5 pass=0 dt=7.275957614183426E-11
+JDUMP initial |f|max=2.7825604734413523E-4
+JDUMP  row 10 node 3 JUNCTION local 1 f=-2.7825604734413523E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=1.2648002152236087E-4
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 1.2648002152236087E-4, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -2.7825604734413523E-4, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=2.5296004304472174E-5
+JDUMP  row 1 node 1 JUNCTION local 1 f=-2.5296004304472174E-5
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -2.5296004304472174E-5, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 5.059200860894435E-5 pass=0 dt=3.637978807091713E-11
+JDUMP initial |f|max=5.565120946882705E-4
+JDUMP  row 10 node 3 JUNCTION local 1 f=-5.565120946882705E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=2.5296004304472175E-4
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 2.5296004304472175E-4, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -5.565120946882705E-4, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=5.059200860894435E-5
+JDUMP  row 1 node 1 JUNCTION local 1 f=-5.059200860894435E-5
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -5.059200860894435E-5, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 1.011840172178887E-4 pass=0 dt=1.8189894035458565E-11
+JDUMP initial |f|max=0.001113024189376541
+JDUMP  row 10 node 3 JUNCTION local 1 f=-0.001113024189376541
+JDUMP  row 1 node 1 JUNCTION local 1 f=5.059200860894435E-4
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 5.059200860894435E-4, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -0.001113024189376541, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=1.011840172178887E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=-1.011840172178887E-4
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -1.011840172178887E-4, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 2.023680344357774E-4 pass=0 dt=9.094947017729282E-12
+JDUMP initial |f|max=0.002226048378753082
+JDUMP  row 10 node 3 JUNCTION local 1 f=-0.002226048378753082
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.001011840172178887
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 0.001011840172178887, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -0.002226048378753082, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=2.023680344357774E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=-2.023680344357774E-4
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -2.023680344357774E-4, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 4.047360688715548E-4 pass=0 dt=4.547473508864641E-12
+JDUMP initial |f|max=0.004452096757506164
+JDUMP  row 10 node 3 JUNCTION local 1 f=-0.004452096757506164
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.002023680344357774
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 0.002023680344357774, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -0.004452096757506164, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=4.047360688715548E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=-4.047360688715548E-4
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -4.047360688715548E-4, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failure=Newton line search stalled at residual 8.094721377431096E-4 pass=0 dt=2.2737367544323206E-12
+JDUMP initial |f|max=0.008904193515012327
+JDUMP  row 10 node 3 JUNCTION local 1 f=-0.008904193515012327
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.004047360688715548
+JDUMP  row 7 node 2 RESERVOIR local 4 f=9.330451962252003E-10
+JDUMP  row 6 node 2 RESERVOIR local 3 f=6.15299589057372E-10
+JDUMP  row 8 node 2 RESERVOIR local 5 f=9.900929092139869E-12
+JDUMP  row 5 node 2 RESERVOIR local 2 f=7.341740907403073E-16
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998963 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.0001122488 T=298.2154742177129 rho=657.3805256396894
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.1499999891394 rho=996.206278106866
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529753506
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998963 P=300000.00000136485 rows=[0.0, 0.004047360688715548, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.1499999891394 P=300000.0001108828 rows=[0.0, -0.008904193515012327, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP failed |f|max=8.094721377431096E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=-8.094721377431096E-4
+JDUMP  row 7 node 2 RESERVOIR local 4 f=1.7763568394002489E-15
+JDUMP  row 8 node 2 RESERVOIR local 5 f=-1.9402553595994416E-16
+JDUMP  row 5 node 2 RESERVOIR local 2 f=-1.4683481814806147E-16
+JDUMP  row 0 node 1 JUNCTION local 0 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 JUNCTION z=-59.0 P=300000.00000136485 T=298.1499999998955 rho=996.2062781039803
+JDUMP  node 2 RESERVOIR z=-59.0 P=300000.00064674043 T=298.21547421774153 rho=657.3805260441753
+JDUMP  node 3 JUNCTION z=-59.0 P=300000.0001108828 T=298.14999998914055 rho=996.2062781068657
+JDUMP  edge 0 0->1 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696293
+JDUMP  edge 1 3->2 q=0.0 mode=PASSIVE closed=true capFlow=195.604645297535
+JDUMP  edge 2 1->3 q=0.0 mode=PASSIVE closed=true capFlow=195.60464529696844
+JDUMP  junction=1 incomingMass=0.0 T=298.1499999998955 P=300000.00000136485 rows=[0.0, -8.094721377431096E-4, 0.0]
+JDUMP   edge=0 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP  junction=3 incomingMass=0.0 T=298.14999998914055 P=300000.0001108828 rows=[0.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+JDUMP   edge=2 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [0.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [0.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [0.0, 0.0, 0.0]
+BETRACE t=0.0 step=0.05 ok=false change=1.3595724188013403 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.6822203431698447 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.34235042069564864 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.17171565081325899 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.08605897431927748 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.049607480165344886 transitions=0
+BETRACE t=0.0 step=0.16185756515829883 ok=false change=0.031227117418491677 transitions=0
+BETRACE t=0.0 step=0.2540606200083535 ok=false change=0.023476510203986962 transitions=0
+BETRACE t=0.0 step=0.543980874754424 ok=false change=0.030599529011351958 transitions=0
+BETRACE t=0.0 step=0.7725148081228285 ok=false change=0.03164048189619102 transitions=0
+BETRACE t=0.0 step=0.9549362844755706 ok=false change=0.028193202755258325 transitions=0
+JDUMP gate-newton |f|max=6.679643106215416E-10
+JDUMP  row 2 node 1 RESERVOIR local 2 f=6.679643106215416E-10
+JDUMP  row 1 node 1 RESERVOIR local 1 f=-6.235953001639434E-10
+JDUMP  row 0 node 1 RESERVOIR local 0 f=4.010302269041549E-10
+JDUMP  row 6 edge 0 hydraulic/cap f=2.5673267478251715E-11
+JDUMP  row 4 node 1 RESERVOIR local 4 f=2.3101964785343258E-11
+JDUMP  row 3 node 1 RESERVOIR local 3 f=-8.60189697249325E-12
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 RESERVOIR z=-59.0 P=299999.9580038838 T=298.2154742508278 rho=657.3803558958334
+JDUMP  edge 0 0->1 q=0.0018023961219484743 mode=PASSIVE closed=false capFlow=195.60464529696293
+JDUMP gate-reconstructed |f|max=3.5833431574450823E-7
+JDUMP  row 4 node 1 RESERVOIR local 4 f=3.5833431574450823E-7
+JDUMP  row 3 node 1 RESERVOIR local 3 f=-1.2166253693379758E-7
+JDUMP  row 5 node 1 RESERVOIR local 5 f=3.801033549321052E-9
+JDUMP  row 2 node 1 RESERVOIR local 2 f=6.643869238948373E-11
+JDUMP  row 6 edge 0 hydraulic/cap f=2.5673267478251715E-11
+JDUMP  row 0 node 1 RESERVOIR local 0 f=-1.9484559823626916E-19
+JDUMP  node 0 GENERATOR z=-59.0 P=300000.0 T=298.15 rho=996.2062781039522
+JDUMP  node 1 RESERVOIR z=-59.0 P=299999.9580038838 T=298.2154742508278 rho=657.3804358687512
+JDUMP  edge 0 0->1 q=0.0018023961219484743 mode=PASSIVE closed=false capFlow=195.60464529696293
+(i-b) generator at 300000 Pa-pipe-filter-pipe-tank, clear: HELD at interval 21/40 (t=100 s): Substep refinement exhausted: Newton line search stalled at residual 8.094721377431096E-4; active-set pass=0
+  node[0] id=1 GENERATOR P=300000.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[1] id=3 JUNCTION P=300000.00000136485 liquid=0.9999999999999718 vapour=0.0 solidKg=0.0
+  node[2] id=5 RESERVOIR P=300000.0001122488 liquid=0.6587374953181114 vapour=0.3412625052971882 solidKg=0.0
+  node[3] id=-3 JUNCTION P=300000.0001108828 liquid=0.9999999999970751 vapour=0.0 solidKg=0.0
+  pipe id=8261561421756122062 0->1 Passive filter=false
+  pipe id=3932769516861099846 3->2 Passive filter=false
+  pipe id=-9223372036854775805 1->3 Passive filter=true
+(control) generator at 300000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=300000.0001122488 mass=657.3805260441753  control tank P=299999.99999997765 mass=657.3805254462059
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

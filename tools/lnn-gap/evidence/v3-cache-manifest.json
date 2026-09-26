@@ -1,0 +1,46 @@
+{
+ "committedEvidence": [
+  {
+   "path": "tools/lnn-gap/evidence/v3-validation-case-evidence.jsonl.gz",
+   "sha256": "04af6436b9c8c536d21d12442b75f1154be983a2a197cae719488f0227c9471e"
+  },
+  {
+   "path": "tools/lnn-gap/evidence/v3-validation-analysis.json",
+   "sha256": "e3571f6e9c0a061ee1711d0861d6b0272e8a5b1730118f3adc5690ffeb2da416"
+  },
+  {
+   "path": "tools/lnn-gap/evidence/v3-preflight-parity.json",
+   "sha256": "eede6f7588db6a24d378702793f8247e317562d20b6fc528871a96cab3d83757"
+  },
+  {
+   "path": "tools/lnn-gap/evidence/v3-study-plan.json",
+   "sha256": "2bed6d0857bb9ac7186e3e83212bf2dfed8522249d609167ddb03329ba4dc09b"
+  }
+ ],
+ "nativeCore": {
+  "path": "build/lnn-gap/v3/native-core-build.json",
+  "sha256": "3c416a652e768d4e91f2c27452d442b823466ff3b3b435df56779bb200605899"
+ },
+ "note": "Raw evaluation journals are bound by hash here and are not committed.",
+ "revision": "lnn-gap-seal-v1",
+ "round": "v3",
+ "runs": [
+  {
+   "path": "build/lnn-gap/v3/validation/block-1/E5/run.json",
+   "sha256": "ba23e4de02bc1f9513aaa5f8c244cf9285adcabefda770bb3bbd60da166c716e"
+  },
+  {
+   "path": "build/lnn-gap/v3/validation/block-1/baseline/run.json",
+   "sha256": "737aa6f90bb6971f5c6a9e0dfc33e32135698d3b837f857ec35641c8feae137c"
+  },
+  {
+   "path": "build/lnn-gap/v3/validation/block-2/E5/run.json",
+   "sha256": "f3289b715bfe2f0f213ee2516bb736e600e92226cbb68f3e47329cdce20840c6"
+  },
+  {
+   "path": "build/lnn-gap/v3/validation/block-2/baseline/run.json",
+   "sha256": "75fd7bcace9c0d20d5e69b3e0f57a282e7cc1a2337c4558e04c9a4575b4dc98a"
+  }
+ ],
+ "totalBytesAllRounds": 702340
+}

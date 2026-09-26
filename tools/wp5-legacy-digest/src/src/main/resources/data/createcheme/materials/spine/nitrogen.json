@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:spine_nitrogen",
+  "component": "Nitrogen",
+  "revision": "spine-nitrogen-r1",
+  "source": "P2 reference spine (batch 2026-09-24-coolprop-low-temperature, decision D6): CoolProp alpha0 from the triple point to 600 K (join at the smallest Cp step on a 25 K grid, -0.0000 %), NASA CEA above; ATcT 1.220 formation enthalpy; CEA standard entropy. Built by tools/spine-join-measurement/build-spine-records.mjs.",
+  "molar_mass_kg_per_mol": 0.02801348,
+  "formation_enthalpy": {
+    "value_j_per_mol": 0,
+    "uncertainty_j_per_mol": 0,
+    "temperature_kelvin": 298.15,
+    "source": "ATcT 1.220 (7727-37-9*0) as carried in CoolProp master 9b35f538 INFO.STANDARD_STATE"
+  },
+  "standard_entropy": {
+    "value_j_per_mol_kelvin": 191.6088,
+    "pressure_pascal": 100000,
+    "source": "NASA CEA thermo.inp N2 (tpis78) polynomial at 298.15 K and 1e5 Pa with R = 8.314472; CEA states no uncertainty, the uncertainty given is |CEA - JANAF| with JANAF N-023 S(298.15) = 191.609 (Chase 1998), a disagreement estimate",
+    "uncertainty_j_per_mol_kelvin": 0.0002
+  },
+  "ideal_gas": {
+    "maximum_cp_step_fraction": 0.005,
+    "segments": [
+      {
+        "type": "helmholtz_ideal_terms",
+        "temperature_min_kelvin": 63.151,
+        "temperature_max_kelvin": 600,
+        "source": "CoolProp Nitrogen.json EOS[0].alpha0 (revision ae81610e, MIT; Span-JPCRD-2000); lead and enthalpy-entropy offset terms omitted (constants only)",
+        "revision": "coolprop-ae81610e-nitrogen-alpha0",
+        "gas_constant_j_per_mol_kelvin": 8.31451,
+        "reducing_temperature_kelvin": 126.192,
+        "terms": [
+          {
+            "type": "log_tau",
+            "a": 2.5
+          },
+          {
+            "type": "power",
+            "n": [
+              -0.0001934819,
+              -0.00001247742,
+              6.678326e-8
+            ],
+            "t": [
+              -1,
+              -2,
+              -3
+            ]
+          },
+          {
+            "type": "planck_einstein_function_t",
+            "n": [
+              1.012941
+            ],
+            "v": [
+              3364.011
+            ],
+            "critical_temperature_kelvin": 126.192
+          }
+        ]
+      },
+      {
+        "type": "nasa9",
+        "temperature_min_kelvin": 600,
+        "temperature_max_kelvin": 1000,
+        "source": "NASA CEA thermo.inp (github.com/nasa/cea 3f4441d2, Apache-2.0; McBride, Zehe and Gordon 2002, NASA/TP-2002-211556), N2 record tpis78 (Ref-Elm. Gurvich,1978 pt1 p280 pt2 p207.), interval 200..1000 K; coefficients a1..a7, b1, b2 as printed, b1 and b2 not used",
+        "revision": "cea-3f4441d2-nitrogen-200-1000",
+        "gas_constant_j_per_mol_kelvin": 8.314472,
+        "coefficients": [
+          22103.71497,
+          -381.846182,
+          6.08273836,
+          -0.00853091441,
+          0.00001384646189,
+          -9.62579362e-9,
+          2.519705809e-12,
+          710.846086,
+          -10.76003744
+        ]
+      },
+      {
+        "type": "nasa9",
+        "temperature_min_kelvin": 1000,
+        "temperature_max_kelvin": 6000,
+        "source": "NASA CEA thermo.inp (github.com/nasa/cea 3f4441d2, Apache-2.0; McBride, Zehe and Gordon 2002, NASA/TP-2002-211556), N2 record tpis78 (Ref-Elm. Gurvich,1978 pt1 p280 pt2 p207.), interval 1000..6000 K; coefficients a1..a7, b1, b2 as printed, b1 and b2 not used",
+        "revision": "cea-3f4441d2-nitrogen-1000-6000",
+        "gas_constant_j_per_mol_kelvin": 8.314472,
+        "coefficients": [
+          587712.406,
+          -2239.249073,
+          6.06694922,
+          -0.00061396855,
+          1.491806679e-7,
+          -1.923105485e-11,
+          1.061954386e-15,
+          12832.10415,
+          -15.86640027
+        ]
+      }
+    ]
+  },
+  "groups": {
+    "scheme": "eppr78-2022",
+    "counts": {
+      "N2": 1
+    }
+  },
+  "coverage": {
+    "grade": "qualified",
+    "evidence": "P2 ReferenceSpineTest: CoolProp segment equal to the Java Helmholtz oracle to 1e-9; CEA Cp within 0.2 % of JANAF N-023 at 1000, 1100 and 1200 K (D7)"
+  }
+}

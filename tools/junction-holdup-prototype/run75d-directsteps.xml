@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.probe.JunctionStageClipProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-25T07:03:14.901Z" hostname="WORMZ-PC" time="0.125">
+  <properties/>
+  <testcase name="directStepsUpToTheProductMaximum()" classname="com.wormzjl.createcheme.probe.JunctionStageClipProbe" time="0.125"/>
+  <system-out><![CDATA[HOLDUP_CLIP case=mixing dt=0.1 PASS flows=[0.00488699736687725, 0.0030596423388056628, 0.007946639705682912] junctionMass=0.002948151997935272 junctionN2mol=0.09028702102322206 stateN2mol=51.968610449710546 stateCH4massFraction=0.14209089744922312
+HOLDUP_CLIP case=mixing dt=1.0 PASS flows=[0.004745020770922317, 0.0027552685926894994, 0.007500289363611816] junctionMass=0.0029481519979352717 junctionN2mol=0.045017506100688845 stateN2mol=20.083579593046778 stateCH4massFraction=0.5722427451894476
+HOLDUP_CLIP case=mixing dt=5.0 PASS flows=[0.004701028347431048, 0.0026545657870596265, 0.007355594134490674] junctionMass=0.002948151997935274 junctionN2mol=0.033673475580557104 stateN2mol=14.221133373659137 stateCH4massFraction=0.6800339529681574
+HOLDUP_CLIP case=mixing dt=20.0 PASS flows=[0.0046976849805975855, 0.0026467836803640817, 0.007344468660961667] junctionMass=0.002948151997935272 junctionN2mol=0.034899087674208754 stateN2mol=14.824195266433138 stateCH4massFraction=0.6683881620291735
+HOLDUP_CLIP case=reversed dt=0.1 PASS flows=[0.00789022843641729, -0.005314296480442944, 0.002575931955974346] junctionMass=0.002948151997935272 junctionN2mol=0.08108599954221654 stateN2mol=44.07302495656579 stateCH4massFraction=0.22951918993092552
+HOLDUP_CLIP case=reversed dt=1.0 PASS flows=[0.007731580735710739, -0.004995099073828819, 0.0027364816618819197] junctionMass=0.002948151997935272 junctionN2mol=0.010580361130788541 stateN2mol=4.030556126177103 stateCH4massFraction=0.8994651942271604
+HOLDUP_CLIP case=reversed dt=5.0 FAIL java.lang.IllegalArgumentException: Negative/nonfinite inventory
+HOLDUP_CLIP case=reversed dt=20.0 FAIL java.lang.IllegalArgumentException: Negative/nonfinite inventory
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

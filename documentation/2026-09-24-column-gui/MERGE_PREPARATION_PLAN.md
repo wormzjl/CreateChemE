@@ -1,0 +1,4 @@
+# GUI batch merge preparation
+In progress since 2026-09-24; preparation completed at 43bf7c5, actual merge pending. Prepare codex/column-gui against current main; do not merge main yet.
+
+Integrate main 0.4.1 preserving both changelog entries and revised presentation rules. Prepare version 0.5.0; leave batch under Unreleased until actual merge. Audit batch-only investigative sources, retain product/gate code, detach GUI MCP helpers under canonical tools/column-gui-mcp with original sources and reattachment patch. Keep all gate definitions unchanged. Review preset validation, payload bounds, tray semantics and retained test coverage. Run check and compile the GameTest/MCP sources with no client active. Reopen the client using detached local verification tooling. Record remaining solver/cursor limitations, final commits/tests and exact merge steps in MERGE_READINESS_REVIEW.md and the canonical batch index.

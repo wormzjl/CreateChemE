@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.PackagedSparseLuTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-25T07:18:28.931Z" hostname="WORMZ-PC" time="0.024">
+  <properties/>
+  <testcase name="solvesUsingOnlyTheBuiltModAndItsEmbeddedLibraries()" classname="com.wormzjl.createcheme.science.fluid.PackagedSparseLuTest" time="0.024"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

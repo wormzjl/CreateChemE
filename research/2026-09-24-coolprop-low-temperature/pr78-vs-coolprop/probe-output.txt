@@ -1,0 +1,88 @@
+Nitrogen: Tc=126.192 K Pc=3.3958 MPa w=0.0372 kappa=0.4316 translation c=+4.063 cm3/mol (anchor 90.0 K, 2 MPa)
+Methane: Tc=190.564 K Pc=4.5992 MPa w=0.0114 kappa=0.3922 translation c=+3.644 cm3/mol (anchor 150.0 K, 2 MPa)
+Ethane: Tc=305.322 K Pc=4.8722 MPa w=0.0990 kappa=0.5247 translation c=+3.834 cm3/mol (anchor 240.0 K, 2 MPa)
+CarbonDioxide: Tc=304.128 K Pc=7.3773 MPa w=0.2239 kappa=0.7065 translation c=+0.946 cm3/mol (anchor 250.0 K, 2 MPa)
+Hydrogen: Tc=33.144 K Pc=1.2964 MPa w=-0.2190 kappa=0.0239 translation c=+0.000 cm3/mol (anchor None K, 2 MPa)
+
+== Saturation: PR78 vs reference EOS. rhoL columns: raw PR at Psat, translated PR at Psat, and the network liquid path (2 MPa reference carried by the global k). cpL = CoolProp cp0 + PR residual. ==
+fluid             T[K] Psat ref[kPa]  dPsat%  rhoL ref   raw% transl% netpath%  cpL ref cpL PR%  hvap ref hvap PR%  kT ref[1/Pa]
+Nitrogen         63.15        12.520    4.48   30957.3  13.24   -0.88    -0.76    56.03   -8.24    6037.3    -1.85     1.980e-09
+Nitrogen         70.00        38.545    2.46   29932.5  13.33   -0.40    -0.16    56.43   -6.95    5828.7    -1.33     2.482e-09
+Nitrogen         77.36       101.325    1.21   28774.9  13.15   -0.07     0.34    57.19   -5.08    5579.6    -0.81     3.223e-09
+Nitrogen         90.00       360.458    0.34   26595.2  11.92   -0.16     0.69    59.97   -0.63    5056.1    -0.15     5.451e-09
+Nitrogen        100.00       778.275    0.30   24607.9   9.69   -1.15     0.16    64.93    4.47    4509.5    -0.13     9.337e-09
+Nitrogen        110.00      1465.810    0.49   22184.1   5.62   -3.56    -2.16    76.85   12.32    3762.8    -1.25     2.012e-08
+Nitrogen        120.00      2510.584    0.54   18682.3  -2.08   -8.85   -22.11   126.27   27.96    2578.4    -6.46     8.464e-08
+Methane          90.70        11.705    1.42   28141.4  12.73    1.05     1.08    54.03   -1.25    8731.4    -0.21     1.454e-09
+Methane         100.00        34.376    1.04   27357.1  12.76    1.36     1.47    54.68   -0.93    8510.4    -0.07     1.743e-09
+Methane         111.67       101.348    0.74   26326.6  12.53    1.56     1.79    55.85   -0.24    8195.0     0.13     2.239e-09
+Methane         130.00       367.320    0.57   24561.6  11.40    1.30     1.80    58.68    1.99    7572.8     0.34     3.558e-09
+Methane         150.00      1039.961    0.68   22309.0   8.58   -0.23     0.55    64.93    6.62    6619.0     0.04     6.951e-09
+Methane         170.00      2328.349    0.83   19354.6   2.70   -4.24    -5.31    83.22   16.40    5138.5    -2.22     2.024e-08
+Methane         185.00      3861.692    0.53   15667.9  -6.52  -11.26   -89.66   178.22   34.55    3079.8   -11.01     1.349e-07
+Ethane           90.40         0.001   28.69   21666.6   5.86   -2.70    -2.85    69.93   -8.79   17883.1    -3.10     5.514e-10
+Ethane          120.00         0.352   10.19   20584.3   7.40   -0.99    -1.08    68.54   -7.73   16914.8    -2.25     7.737e-10
+Ethane          150.00         9.638    3.47   19460.8   8.45    0.33     0.33    70.14   -6.51   15948.8    -1.40     1.114e-09
+Ethane          184.55       101.223    0.75   18086.8   8.79    1.15     1.34    73.35   -3.85   14716.7    -0.42     1.806e-09
+Ethane          220.00       492.046    0.10   16504.4   7.68    0.81     1.32    79.53    0.38   13094.2     0.40     3.375e-09
+Ethane          250.00      1300.845    0.30   14900.5   4.81   -1.11    -0.47    90.02    6.02   11196.2     0.28     7.012e-09
+Ethane          280.00      2806.736    0.63   12728.3  -1.61   -6.12    -9.71   119.89   17.68    8282.5    -2.56     2.399e-08
+Ethane          295.00      3918.397    0.53   11006.5  -7.84  -11.29   -90.85   190.61   31.73    5818.6    -8.68     8.988e-08
+CarbonDioxide   216.60       518.145   -0.37   26776.6   4.40    1.71     1.90    85.96   -8.92   15419.6    -0.50     1.786e-09
+CarbonDioxide   230.00       892.910   -0.81   25646.2   3.89    1.33     1.59    87.89   -5.21   14436.5     0.31     2.393e-09
+CarbonDioxide   250.00      1785.044   -0.79   23766.8   2.24   -0.05     0.06    93.83    1.43   12733.5     1.09     4.065e-09
+CarbonDioxide   270.00      3203.347   -0.31   21491.3  -1.01   -2.96    -4.59   107.98   11.03   10568.6     0.77     8.634e-09
+CarbonDioxide   290.00      5317.728    0.21   18283.8  -7.40   -8.86   -94.79   161.76   28.90    7399.2    -3.37     3.323e-08
+CarbonDioxide   300.00      6713.078    0.21   15433.8 -13.41  -14.49   -94.11   382.79   43.45    4563.9   -13.49     1.895e-07
+
+== Dense / supercritical single phase: density and cp, translated PR78 evaluated directly at (T,P) vs reference; netpath = the network's liquid path where the reference state is liquid-like and subcritical ==
+fluid             T[K]  P[MPa]            phase(ref)   rho ref  rho PR% netpath%   cp ref  cp PR%  Z ref
+Nitrogen         77.36    5.00  supercritical_liquid   29201.0    -0.08    -0.64    55.86   -6.07  0.266
+Nitrogen         77.36   10.00  supercritical_liquid   29588.1    -0.17    -1.45    54.84   -6.79  0.525
+Nitrogen        100.00   10.00  supercritical_liquid   26187.7     0.34    -5.01    56.65   -1.53  0.459
+Nitrogen        126.20    3.40         supercritical   12898.3   -14.90      nan  3955.40   89.21  0.251
+Nitrogen        130.00    4.00         supercritical   10707.0    -4.57      nan   515.27  -27.56  0.346
+Nitrogen        130.00    6.00         supercritical   17869.9    -6.46      nan    96.18    7.05  0.311
+Nitrogen        130.00   10.00         supercritical   20408.2    -2.62      nan    67.55    4.14  0.453
+Nitrogen        150.00   10.00         supercritical   14963.0    -4.80      nan    79.94   -3.75  0.536
+Nitrogen        300.00   10.00         supercritical    3988.3     0.02      nan    33.47    1.00  1.005
+CarbonDioxide   280.00    8.00  supercritical_liquid   20970.7    -2.80   -15.26   105.32    9.22  0.164
+CarbonDioxide   280.00   10.00  supercritical_liquid   21318.5    -1.93   -16.48   100.33    6.80  0.201
+CarbonDioxide   300.00    8.00  supercritical_liquid   17113.6    -9.75   -94.69   173.05   22.57  0.187
+CarbonDioxide   304.50    7.40         supercritical    8056.5    -1.18      nan  1650.48  -19.85  0.363
+CarbonDioxide   310.00    8.00         supercritical    7446.3     0.34      nan   421.90  -12.81  0.417
+CarbonDioxide   310.00   10.00         supercritical   15582.3   -10.58      nan   195.67   11.54  0.249
+CarbonDioxide   320.00    8.00         supercritical    5269.5     2.11      nan   126.53   -7.07  0.571
+CarbonDioxide   320.00   10.00         supercritical   10185.8    -6.40      nan   335.24  -20.76  0.369
+CarbonDioxide   350.00   10.00         supercritical    5198.9     0.99      nan    85.73   -3.61  0.661
+CarbonDioxide   400.00   10.00         supercritical    3670.3     0.67      nan    58.65    0.01  0.819
+Methane         110.00   10.00  supercritical_liquid   26998.7     1.43     0.79    54.22   -1.39  0.405
+Methane         150.00   10.00  supercritical_liquid   23414.0     1.15    -3.33    58.50    2.10  0.342
+Methane         190.60    4.60         supercritical    8504.8    -2.67      nan  4165.35  -26.68  0.341
+Methane         200.00    6.00         supercritical   10213.1    -5.43      nan   307.90  -22.89  0.353
+Methane         200.00   10.00         supercritical   16592.5    -5.07      nan    85.09    4.95  0.362
+Methane         250.00   10.00         supercritical    7007.9    -0.06      nan    66.87   -4.56  0.686
+Methane         300.00   10.00         supercritical    4685.9     0.83      nan    48.16   -0.17  0.856
+Ethane          200.00   10.00  supercritical_liquid   17785.7     1.50     0.42    73.34   -3.63  0.338
+Ethane          300.00   10.00  supercritical_liquid   12680.3    -3.37   -92.25   102.80    6.25  0.316
+Ethane          305.40    4.90         supercritical    8385.8   -16.19      nan  1409.51   10.79  0.230
+Ethane          320.00    6.00         supercritical    5262.9    -0.51      nan   284.22  -13.91  0.428
+Ethane          320.00   10.00         supercritical   10934.1    -6.29      nan   123.56    4.59  0.344
+Ethane          400.00   10.00         supercritical    4197.7    -0.15      nan    96.37   -2.04  0.716
+Hydrogen        300.00   10.00         supercritical    3782.7     2.41      nan    29.33    0.22  1.060
+Hydrogen        623.00    6.00         supercritical    1136.6     0.46      nan    29.40    0.13  1.019
+Hydrogen        650.00    9.00         supercritical    1620.8     0.61      nan    29.45    0.18  1.027
+Hydrogen        663.00    9.10         supercritical    1607.0     0.59      nan    29.47    0.18  1.027
+Hydrogen        700.00   10.00         supercritical    1670.9     0.57      nan    29.52    0.18  1.028
+
+== Reference-EOS ceilings (CoolProp Tmax) versus the steam-cracking target 1073-1143 K ==
+Methane        Tmin=  90.694 K  Tmax=   625.0 K  pmax=  1000.0 MPa
+Ethane         Tmin=  90.368 K  Tmax=   675.0 K  pmax=   900.0 MPa
+Ethylene       Tmin= 103.989 K  Tmax=   450.0 K  pmax=   300.0 MPa
+Propane        Tmin=  85.525 K  Tmax=   650.0 K  pmax=  1000.0 MPa
+Nitrogen       Tmin=  63.151 K  Tmax=  2000.0 K  pmax=  2200.0 MPa
+CarbonDioxide  Tmin= 216.592 K  Tmax=  2000.0 K  pmax=   800.0 MPa
+Hydrogen       Tmin=  13.957 K  Tmax=  1000.0 K  pmax=  2000.0 MPa
+Water          Tmin= 273.160 K  Tmax=  2000.0 K  pmax=  1000.0 MPa
+Methane: Cp at 1100 K, 0.2 MPa returned 76.801 J/mol/K (beyond Tmax; CoolProp did not refuse)
+Ethane: Cp at 1100 K, 0.2 MPa returned 128.575 J/mol/K (beyond Tmax; CoolProp did not refuse)

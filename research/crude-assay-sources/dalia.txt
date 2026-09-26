@@ -1,0 +1,134 @@
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                          Reference: DALIA26Y                                       
+                            Crude: Dalia                                            
+                                                                                    
+      Crude Summary Report                                                          
+                                                                                    
+      General Information               Molecules (%wt on crude) Whole Crude Properties
+      Reference:   DALIA26Y             methane + ethane 0.00Density @ 15°C (g/cc) 0.9178
+      Name:        Dalia                propane          0.00API Gravity     22.6   
+                                        isobutane        0.04Total Sulfur (% wt) 0.52
+      Origin:      Angola               n-butane         0.14Pour Point (°C) -48    
+                                        isopentane       0.13Viscosity @ 20°C (cSt) 141.6
+      Assay Date:  3/27/2026            n-pentane        0.15Viscosity @ 40°C (cSt) 46.9
+                                        cyclopentane     0.03Nickel (ppm)    20.3   
+      Comments:                         C6 paraffins     0.20Vanadium (ppm)  8.4    
+                                        C6 naphthenes    0.29Total Nitrogen (ppm) 2338
+                                        benzene          0.00Total Acid Number (mgKOH/g) 1.50
+                                        C7 paraffins     0.21Mercaptan Sulfur (ppm) 4.0
+                                        C7 naphthenes    0.70Hydrogen Sulfide (ppm) 0.0
+                                        toluene          0.12Reid Vapor Pressure (kPa) 7.3
+      Cut Data                          Atmospheric Cuts            Vacuum Cuts     
+      Start (°C)      IBP IBP C5  65  100 150 200 250 300 350 370 370 450 500 550   
+      End (°C)        FBP  C4  65 100 150 200 250 300 350 370 FBP 450 500 550 FBP   
+      Yield (% wt)        0.2 0.4 0.8 2.9 4.4 6.6 8.9 10.5 4.4 60.8 17.3 9.8 8.5 25.2
+      Yield (% vol)       0.3 0.5 1.0 3.5 4.9 7.1 9.4 10.9 4.4 57.9 17.2 9.6 8.2 22.9
+      Cumulative Yield (% wt) 0.2 0.6 1.4 4.3 8.7 15.3 24.2 34.7 39.2 100.0 56.4 66.3 74.8 100.0
+      Volume Average B.P. (°C) 416 35.5 87 127 177 226 276 325 360 533 409 474 524 653
+      Density @ 15°C (g/cc) 0.9178 0.6368 0.7486 0.7755 0.8160 0.8453 0.8716 0.8863 0.9100 0.9632 0.9238 0.9410 0.9471 1.0077
+      API Gravity     22.6    90.7 57.5 50.9 41.8 35.8 30.8 28.1 23.9 15.3 21.6 18.8 17.8 8.8
+      UOPK            11.70          11.55 11.42 11.41 11.42 11.56 11.47 11.75 11.59 11.73 11.90 11.76
+      Molecular Weight (g/mol)        110 136 167 204 248 279 528 334 431 549 1006  
+      Total Sulfur (% wt) 0.5 0.006 0.011 0.020 0.039 0.074 0.152 0.326 0.437 0.72 0.498 0.59 0.69 0.94
+      Mercaptan Sulfur (ppm) 4.0  17.6 12.0 8.6 3.5 1.4                             
+      Total Nitrogen (ppm) 2338               3   18 90  233 3806 790 1713 2514 7125
+      Basic Nitrogen (ppm) 725                2   13 58  127 1170 305 591 842 2101  
+      Total Acid Number (mgKOH/g) 1.50 0.01 0.06 0.24 0.70 1.39 2.20 2.82 2.97 1.23 2.59 1.70 1.07 0.16
+      Viscosity @ 20°C (cSt) 142         1.48                                       
+      Viscosity @ 40°C (cSt) 46.9        1.11 1.75 3.25 7.58 16.5                   
+      Viscosity @ 50°C (cSt) 30.2            1.50 2.65 5.71 11.5 1117 37.0 171 497  
+      Viscosity @ 60°C (cSt)                                 524 24.0 95.4 253      
+      Viscosity @ 100°C (cSt)                               59.6 6.85 17.9 36.2 2653
+      Viscosity @ 130°C (cSt)                                                423    
+      Viscosity @ 150°C (cSt)                                                167    
+      RON (Clear)             79.3 74.6 64.7 65.8                                   
+      MON (Clear)             77.6 75.5 62.5 52.0                                   
+      Paraffins (% wt) 11.2   92.6 30.6 13.0 14.6                                   
+      Naphthenes (%wt) 39.9   7.4 69.1 79.2 73.9                                    
+      Aromatics (% wt) 49.0   0.0 0.3 7.7 11.5                                      
+      Pour Point (°C)  -48                    -93 -75 -57 -47 11 -29 -8  6   61     
+      Cloud Point (°C)                        -91 -72 -54                           
+      Freeze Point (°C)                  -103 -88 -69                               
+      Smoke Point (mm)                    23  18  14                                
+      Cetane Index (D4737A)               28  35  41 49  48                         
+      Naphthalenes (% vol)                0.2 3.4 9.2 11.7                          
+      Aniline Point (°C)             48.5 48.6 52.7 58.3 64.9 69.3 76.8 85.2 88.7   
+      Hydrogen (% wt) 12.6    16.5 14.9 14.2 13.9 13.1 13.0 12.7 12.3 12.3 12.2 12.2
+      Total Wax (% wt) 1.4                                   1.9 1.9 1.8 2.1 1.9    
+      C7 Asphaltenes (% wt) 0.7                              1.1     0.0 0.0 2.7    
+      Micro Carbon Residue (% wt) 4.8                        7.8     0.3 1.7 18.3   
+      Vanadium (ppm)   8.4                                  13.8     0.0 0.0 33.4   
+      Nickel (ppm)    20.3                                  33.4     0.0 0.0 80.4   
+      Iron (ppm)       6.3                                  10.3     0.0 0.0 24.9   
+      Sodium (ppm)     1.0                                                          
+      Mercury (ppb)    1.0                                                          
+      Arsenic (ppb)   135                                                           
+      This assay information is provided to you courtesy of ExxonMobil Technology & Engineering Company (EMTEC) and is based on a range of data and information.
+      While care has been taken in preparing these materials, no representations, warranties or guarantees are made as to their accuracy, reliability, quality, correctness
+      or completeness. Each user must make its own determination and judgment on applying any information in this assay. Any and all use of this information shall be
+      the sole responsibility of the user, and the user releases EMTEC, its parent and its affiliates from any and all claims arising from its use and shall defend and hold
+      EMTEC, its parent and its affiliates harmless from any third party claims arising from the user's application or use of the assay information.
+
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                        Reference: DALIA26Y                                         
+                          Crude: Dalia                                              
+          Yield Distribution                                                        
+                                                                                    
+                                                                                    
+                                   Cumulative Yield                                 
+                                                                                    
+              700                                                                   
+                     Weight Yield                                                   
+                     Volume Yield                                                   
+                                                                                    
+              600                                                                   
+                                                                                    
+                                                                                    
+                                                                                    
+              500                                                                   
+                                                                                    
+                                                                                    
+                                                                                    
+              400                                                                   
+           C                                                                        
+           P                                                                        
+           °                                                                        
+           B                                                                        
+           T                                                                        
+              300                                                                   
+                                                                                    
+              200                                                                   
+                                                                                    
+                                                                                    
+                                                                                    
+              100                                                                   
+                                                                                    
+                                                                                    
+                                                                                    
+               0                                                                    
+                0    10    20   30    40   50    60    70   80    90   100          
+                                         % distilled                                
+                                                                                    
+                      Cumulative Volume % Distilled at 10 Degree C (TBP) Intervals  
+                            0   10  20  30  40  50  60  70 80  90                   
+                        0              0.5 0.6 0.7 0.8 0.9 1.1 1.4                  
+                       100 1.8 2.4 3.0 3.8 4.5 5.3 6.1 7.1 8.0 9.1                  
+                       200 10.2 11.5 12.8 14.2 15.8 17.4 19.1 20.9 22.8 24.7        
+                       300 26.8 28.9 31.0 33.2 35.4 37.6 39.9 42.1 44.3 46.5        
+                       400 48.7 50.8 53.0 55.1 57.2 59.2 61.3 63.2 65.2 67.0        
+                       500 68.8 70.6 72.3 73.9 75.5 77.1 78.5 80.0 81.3 82.6        
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    

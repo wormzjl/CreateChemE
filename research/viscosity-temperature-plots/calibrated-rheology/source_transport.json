@@ -1,0 +1,1259 @@
+{
+  "records": [
+    {
+      "id": "wti_light",
+      "name": "WTI Light - Export",
+      "reference": "WTLEX26Y",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/wti_light.pdf",
+      "pdf_sha256": "96ea254f6666fb85b3b12d050ed34f04a6f74187dd5b7c1efc51990c11b65c9c",
+      "whole": {
+        "start": "IBP",
+        "viscosity_points": [
+          [
+            20.0,
+            2.56
+          ],
+          [
+            40.0,
+            1.76
+          ],
+          [
+            50.0,
+            1.5
+          ]
+        ],
+        "vabp_celsius": 234.0,
+        "density_15c_g_ml": 0.7906,
+        "pour_point_celsius": -25.0,
+        "wax_mass_percent": 11.5,
+        "c7_asphaltenes_mass_percent": 0.0
+      },
+      "residue": {
+        "start": "370",
+        "viscosity_points": [
+          [
+            50.0,
+            48.9
+          ],
+          [
+            60.0,
+            32.9
+          ],
+          [
+            100.0,
+            10.0
+          ]
+        ],
+        "vabp_celsius": 481.0,
+        "density_15c_g_ml": 0.8816,
+        "mw_g_mol": 472.0,
+        "pour_point_celsius": 18.0,
+        "wax_mass_percent": 15.7,
+        "c7_asphaltenes_mass_percent": 0.1
+      },
+      "cuts": [
+        {
+          "start": "C5",
+          "viscosity_points": [],
+          "vabp_celsius": 42.6,
+          "density_15c_g_ml": 0.644
+        },
+        {
+          "start": "65",
+          "viscosity_points": [],
+          "vabp_celsius": 84.0,
+          "density_15c_g_ml": 0.7274
+        },
+        {
+          "start": "100",
+          "viscosity_points": [],
+          "vabp_celsius": 124.0,
+          "density_15c_g_ml": 0.7552,
+          "mw_g_mol": 109.0
+        },
+        {
+          "start": "150",
+          "viscosity_points": [
+            [
+              20.0,
+              1.36
+            ],
+            [
+              40.0,
+              1.05
+            ]
+          ],
+          "vabp_celsius": 174.0,
+          "density_15c_g_ml": 0.7808,
+          "mw_g_mol": 138.0
+        },
+        {
+          "start": "200",
+          "viscosity_points": [
+            [
+              40.0,
+              1.64
+            ],
+            [
+              50.0,
+              1.43
+            ]
+          ],
+          "vabp_celsius": 225.0,
+          "density_15c_g_ml": 0.8051,
+          "mw_g_mol": 172.0,
+          "pour_point_celsius": -46.0,
+          "cloud_point_celsius": -44.0
+        },
+        {
+          "start": "250",
+          "viscosity_points": [
+            [
+              40.0,
+              2.91
+            ],
+            [
+              50.0,
+              2.43
+            ]
+          ],
+          "vabp_celsius": 275.0,
+          "density_15c_g_ml": 0.8301,
+          "mw_g_mol": 212.0,
+          "pour_point_celsius": -24.0,
+          "cloud_point_celsius": -21.0
+        },
+        {
+          "start": "300",
+          "viscosity_points": [
+            [
+              40.0,
+              5.86
+            ],
+            [
+              50.0,
+              4.63
+            ]
+          ],
+          "vabp_celsius": 324.0,
+          "density_15c_g_ml": 0.8409,
+          "mw_g_mol": 261.0,
+          "pour_point_celsius": -1.0,
+          "cloud_point_celsius": 1.0
+        },
+        {
+          "start": "350",
+          "viscosity_points": [
+            [
+              40.0,
+              10.4
+            ],
+            [
+              50.0,
+              7.83
+            ]
+          ],
+          "vabp_celsius": 360.0,
+          "density_15c_g_ml": 0.8566,
+          "mw_g_mol": 299.0,
+          "pour_point_celsius": 10.0
+        },
+        {
+          "start": "370",
+          "viscosity_points": [
+            [
+              50.0,
+              16.5
+            ],
+            [
+              60.0,
+              12.0
+            ],
+            [
+              100.0,
+              4.7
+            ]
+          ],
+          "vabp_celsius": 408.0,
+          "density_15c_g_ml": 0.8676,
+          "mw_g_mol": 358.0,
+          "pour_point_celsius": 25.0,
+          "wax_mass_percent": 20.4
+        },
+        {
+          "start": "450",
+          "viscosity_points": [
+            [
+              50.0,
+              47.3
+            ],
+            [
+              60.0,
+              31.8
+            ],
+            [
+              100.0,
+              9.72
+            ]
+          ],
+          "vabp_celsius": 474.0,
+          "density_15c_g_ml": 0.8825,
+          "mw_g_mol": 469.0,
+          "pour_point_celsius": 42.0,
+          "wax_mass_percent": 18.2,
+          "c7_asphaltenes_mass_percent": 0.0
+        },
+        {
+          "start": "500",
+          "viscosity_points": [
+            [
+              50.0,
+              101.0
+            ],
+            [
+              60.0,
+              64.2
+            ],
+            [
+              100.0,
+              16.6
+            ]
+          ],
+          "vabp_celsius": 524.0,
+          "density_15c_g_ml": 0.8899,
+          "mw_g_mol": 599.0,
+          "pour_point_celsius": 51.0,
+          "wax_mass_percent": 13.6,
+          "c7_asphaltenes_mass_percent": 0.0
+        },
+        {
+          "start": "550",
+          "viscosity_points": [
+            [
+              100.0,
+              63.6
+            ],
+            [
+              130.0,
+              25.4
+            ],
+            [
+              150.0,
+              15.7
+            ]
+          ],
+          "vabp_celsius": 619.0,
+          "density_15c_g_ml": 0.9055,
+          "mw_g_mol": 982.0,
+          "pour_point_celsius": 12.0,
+          "wax_mass_percent": 4.9,
+          "c7_asphaltenes_mass_percent": 0.7
+        }
+      ]
+    },
+    {
+      "id": "upper_zakum",
+      "name": "Upper Zakum",
+      "reference": "UPZAK26B",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/upper_zakum.pdf",
+      "pdf_sha256": "bf6be49db1d61e5279e4b04ac3e40635d5b02190101b34270fa51d53142e71ea",
+      "whole": {
+        "start": "IBP",
+        "viscosity_points": [
+          [
+            20.0,
+            10.1
+          ],
+          [
+            40.0,
+            5.79
+          ],
+          [
+            50.0,
+            4.59
+          ]
+        ],
+        "vabp_celsius": 331.0,
+        "density_15c_g_ml": 0.8577,
+        "pour_point_celsius": -21.0,
+        "wax_mass_percent": 12.4,
+        "c7_asphaltenes_mass_percent": 1.7
+      },
+      "residue": {
+        "start": "370",
+        "viscosity_points": [
+          [
+            50.0,
+            606.0
+          ],
+          [
+            60.0,
+            315.0
+          ],
+          [
+            100.0,
+            46.8
+          ]
+        ],
+        "vabp_celsius": 536.0,
+        "density_15c_g_ml": 0.9721,
+        "mw_g_mol": 536.0,
+        "pour_point_celsius": 28.0,
+        "wax_mass_percent": 9.8,
+        "c7_asphaltenes_mass_percent": 3.7
+      },
+      "cuts": [
+        {
+          "start": "C5",
+          "viscosity_points": [],
+          "vabp_celsius": 39.9,
+          "density_15c_g_ml": 0.6356
+        },
+        {
+          "start": "65",
+          "viscosity_points": [],
+          "vabp_celsius": 83.0,
+          "density_15c_g_ml": 0.6937
+        },
+        {
+          "start": "100",
+          "viscosity_points": [],
+          "vabp_celsius": 126.0,
+          "density_15c_g_ml": 0.741,
+          "mw_g_mol": 111.0
+        },
+        {
+          "start": "150",
+          "viscosity_points": [
+            [
+              20.0,
+              1.34
+            ],
+            [
+              40.0,
+              1.02
+            ]
+          ],
+          "vabp_celsius": 175.0,
+          "density_15c_g_ml": 0.7819,
+          "mw_g_mol": 139.0
+        },
+        {
+          "start": "200",
+          "viscosity_points": [
+            [
+              40.0,
+              1.55
+            ],
+            [
+              50.0,
+              1.35
+            ]
+          ],
+          "vabp_celsius": 225.0,
+          "density_15c_g_ml": 0.8085,
+          "mw_g_mol": 172.0,
+          "pour_point_celsius": -44.0,
+          "cloud_point_celsius": -42.0
+        },
+        {
+          "start": "250",
+          "viscosity_points": [
+            [
+              40.0,
+              2.69
+            ],
+            [
+              50.0,
+              2.24
+            ]
+          ],
+          "vabp_celsius": 275.0,
+          "density_15c_g_ml": 0.8407,
+          "mw_g_mol": 210.0,
+          "pour_point_celsius": -22.0,
+          "cloud_point_celsius": -19.0
+        },
+        {
+          "start": "300",
+          "viscosity_points": [
+            [
+              40.0,
+              5.45
+            ],
+            [
+              50.0,
+              4.29
+            ]
+          ],
+          "vabp_celsius": 325.0,
+          "density_15c_g_ml": 0.866,
+          "mw_g_mol": 254.0,
+          "pour_point_celsius": 0.0,
+          "cloud_point_celsius": 3.0
+        },
+        {
+          "start": "350",
+          "viscosity_points": [
+            [
+              40.0,
+              9.93
+            ],
+            [
+              50.0,
+              7.41
+            ]
+          ],
+          "vabp_celsius": 360.0,
+          "density_15c_g_ml": 0.8902,
+          "mw_g_mol": 286.0,
+          "pour_point_celsius": 13.0
+        },
+        {
+          "start": "370",
+          "viscosity_points": [
+            [
+              50.0,
+              18.0
+            ],
+            [
+              60.0,
+              12.8
+            ],
+            [
+              100.0,
+              4.73
+            ]
+          ],
+          "vabp_celsius": 409.0,
+          "density_15c_g_ml": 0.9122,
+          "mw_g_mol": 339.0,
+          "pour_point_celsius": 27.0,
+          "wax_mass_percent": 19.4
+        },
+        {
+          "start": "450",
+          "viscosity_points": [
+            [
+              50.0,
+              73.1
+            ],
+            [
+              60.0,
+              46.1
+            ],
+            [
+              100.0,
+              11.9
+            ]
+          ],
+          "vabp_celsius": 474.0,
+          "density_15c_g_ml": 0.9387,
+          "mw_g_mol": 432.0,
+          "pour_point_celsius": 39.0,
+          "wax_mass_percent": 14.4,
+          "c7_asphaltenes_mass_percent": 0.0
+        },
+        {
+          "start": "500",
+          "viscosity_points": [
+            [
+              50.0,
+              271.0
+            ],
+            [
+              60.0,
+              152.0
+            ],
+            [
+              100.0,
+              28.2
+            ]
+          ],
+          "vabp_celsius": 524.0,
+          "density_15c_g_ml": 0.9575,
+          "mw_g_mol": 540.0,
+          "pour_point_celsius": 46.0,
+          "wax_mass_percent": 9.9,
+          "c7_asphaltenes_mass_percent": 0.0
+        },
+        {
+          "start": "550",
+          "viscosity_points": [
+            [
+              100.0,
+              2942.0
+            ],
+            [
+              130.0,
+              494.0
+            ],
+            [
+              150.0,
+              199.0
+            ]
+          ],
+          "vabp_celsius": 656.0,
+          "density_15c_g_ml": 1.0337,
+          "mw_g_mol": 983.0,
+          "pour_point_celsius": 50.0,
+          "wax_mass_percent": 2.1,
+          "c7_asphaltenes_mass_percent": 8.6
+        }
+      ]
+    },
+    {
+      "id": "bonga",
+      "name": "Bonga",
+      "reference": "BONGA25Y",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2025/bonga.pdf",
+      "pdf_sha256": "0ee57146598b561ee885c67959173f6f3f630443a7bcc1dc0bab22b30dcdecd7",
+      "whole": {
+        "start": "IBP",
+        "viscosity_points": [
+          [
+            20.0,
+            13.9
+          ],
+          [
+            40.0,
+            7.32
+          ],
+          [
+            50.0,
+            5.63
+          ]
+        ],
+        "vabp_celsius": 321.0,
+        "density_15c_g_ml": 0.8884,
+        "pour_point_celsius": -44.0,
+        "wax_mass_percent": 2.8,
+        "c7_asphaltenes_mass_percent": 0.0
+      },
+      "residue": {
+        "start": "370",
+        "viscosity_points": [
+          [
+            50.0,
+            785.0
+          ],
+          [
+            60.0,
+            356.0
+          ],
+          [
+            100.0,
+            38.7
+          ]
+        ],
+        "vabp_celsius": 488.0,
+        "density_15c_g_ml": 0.965,
+        "mw_g_mol": 428.0,
+        "pour_point_celsius": 31.0,
+        "wax_mass_percent": 1.8,
+        "c7_asphaltenes_mass_percent": 0.0
+      },
+      "cuts": [
+        {
+          "start": "C5",
+          "viscosity_points": [],
+          "vabp_celsius": 42.5,
+          "density_15c_g_ml": 0.6514
+        },
+        {
+          "start": "65",
+          "viscosity_points": [],
+          "vabp_celsius": 84.0,
+          "density_15c_g_ml": 0.7419
+        },
+        {
+          "start": "100",
+          "viscosity_points": [],
+          "vabp_celsius": 125.0,
+          "density_15c_g_ml": 0.779,
+          "mw_g_mol": 109.0
+        },
+        {
+          "start": "150",
+          "viscosity_points": [
+            [
+              20.0,
+              1.45
+            ],
+            [
+              40.0,
+              1.09
+            ]
+          ],
+          "vabp_celsius": 176.0,
+          "density_15c_g_ml": 0.8141,
+          "mw_g_mol": 136.0
+        },
+        {
+          "start": "200",
+          "viscosity_points": [
+            [
+              40.0,
+              1.79
+            ],
+            [
+              50.0,
+              1.53
+            ]
+          ],
+          "vabp_celsius": 227.0,
+          "density_15c_g_ml": 0.852,
+          "mw_g_mol": 167.0,
+          "pour_point_celsius": -65.0,
+          "cloud_point_celsius": -63.0
+        },
+        {
+          "start": "250",
+          "viscosity_points": [
+            [
+              40.0,
+              3.47
+            ],
+            [
+              50.0,
+              2.8
+            ]
+          ],
+          "vabp_celsius": 275.0,
+          "density_15c_g_ml": 0.8835,
+          "mw_g_mol": 200.0,
+          "pour_point_celsius": -42.0,
+          "cloud_point_celsius": -40.0
+        },
+        {
+          "start": "300",
+          "viscosity_points": [
+            [
+              40.0,
+              8.95
+            ],
+            [
+              50.0,
+              6.57
+            ]
+          ],
+          "vabp_celsius": 325.0,
+          "density_15c_g_ml": 0.8998,
+          "mw_g_mol": 243.0,
+          "pour_point_celsius": -18.0,
+          "cloud_point_celsius": -16.0
+        },
+        {
+          "start": "350",
+          "viscosity_points": [
+            [
+              40.0,
+              23.4
+            ],
+            [
+              50.0,
+              15.4
+            ]
+          ],
+          "vabp_celsius": 360.0,
+          "density_15c_g_ml": 0.9215,
+          "mw_g_mol": 274.0,
+          "pour_point_celsius": -3.0
+        },
+        {
+          "start": "370",
+          "viscosity_points": [
+            [
+              50.0,
+              74.3
+            ],
+            [
+              60.0,
+              43.4
+            ],
+            [
+              100.0,
+              9.53
+            ]
+          ],
+          "vabp_celsius": 408.0,
+          "density_15c_g_ml": 0.9433,
+          "mw_g_mol": 323.0,
+          "pour_point_celsius": 18.0,
+          "wax_mass_percent": 3.2
+        },
+        {
+          "start": "450",
+          "viscosity_points": [
+            [
+              50.0,
+              734.0
+            ],
+            [
+              60.0,
+              329.0
+            ],
+            [
+              100.0,
+              35.3
+            ]
+          ],
+          "vabp_celsius": 474.0,
+          "density_15c_g_ml": 0.9685,
+          "mw_g_mol": 411.0,
+          "pour_point_celsius": 38.0,
+          "wax_mass_percent": 2.1,
+          "c7_asphaltenes_mass_percent": 0.0
+        },
+        {
+          "start": "500",
+          "viscosity_points": [
+            [
+              50.0,
+              2493.0
+            ],
+            [
+              60.0,
+              990.0
+            ],
+            [
+              100.0,
+              74.8
+            ]
+          ],
+          "vabp_celsius": 523.0,
+          "density_15c_g_ml": 0.967,
+          "mw_g_mol": 529.0,
+          "pour_point_celsius": 47.0,
+          "wax_mass_percent": 0.2,
+          "c7_asphaltenes_mass_percent": 0.0
+        },
+        {
+          "start": "550",
+          "viscosity_points": [
+            [
+              100.0,
+              2502.0
+            ],
+            [
+              130.0,
+              346.0
+            ],
+            [
+              150.0,
+              130.0
+            ]
+          ],
+          "vabp_celsius": 637.0,
+          "density_15c_g_ml": 1.0038,
+          "mw_g_mol": 914.0,
+          "pour_point_celsius": 50.0,
+          "wax_mass_percent": 0.0,
+          "c7_asphaltenes_mass_percent": 0.0
+        }
+      ]
+    },
+    {
+      "id": "dalia",
+      "name": "Dalia",
+      "reference": "DALIA26Y",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/dalia.pdf",
+      "pdf_sha256": "02553213cde6cbb7dd0b4fea42029250485781dba2e2d39d092c5e5d6f8dfabc",
+      "whole": {
+        "start": "IBP",
+        "viscosity_points": [
+          [
+            20.0,
+            142.0
+          ],
+          [
+            40.0,
+            46.9
+          ],
+          [
+            50.0,
+            30.2
+          ]
+        ],
+        "vabp_celsius": 416.0,
+        "density_15c_g_ml": 0.9178,
+        "pour_point_celsius": -48.0,
+        "wax_mass_percent": 1.4,
+        "c7_asphaltenes_mass_percent": 0.7
+      },
+      "residue": {
+        "start": "370",
+        "viscosity_points": [
+          [
+            50.0,
+            1117.0
+          ],
+          [
+            60.0,
+            524.0
+          ],
+          [
+            100.0,
+            59.6
+          ]
+        ],
+        "vabp_celsius": 533.0,
+        "density_15c_g_ml": 0.9632,
+        "mw_g_mol": 528.0,
+        "pour_point_celsius": 11.0,
+        "wax_mass_percent": 1.9,
+        "c7_asphaltenes_mass_percent": 1.1
+      },
+      "cuts": [
+        {
+          "start": "C5",
+          "viscosity_points": [],
+          "vabp_celsius": 35.5,
+          "density_15c_g_ml": 0.6368
+        },
+        {
+          "start": "65",
+          "viscosity_points": [],
+          "vabp_celsius": 87.0,
+          "density_15c_g_ml": 0.7486
+        },
+        {
+          "start": "100",
+          "viscosity_points": [],
+          "vabp_celsius": 127.0,
+          "density_15c_g_ml": 0.7755,
+          "mw_g_mol": 110.0
+        },
+        {
+          "start": "150",
+          "viscosity_points": [
+            [
+              20.0,
+              1.48
+            ],
+            [
+              40.0,
+              1.11
+            ]
+          ],
+          "vabp_celsius": 177.0,
+          "density_15c_g_ml": 0.816,
+          "mw_g_mol": 136.0
+        },
+        {
+          "start": "200",
+          "viscosity_points": [
+            [
+              40.0,
+              1.75
+            ],
+            [
+              50.0,
+              1.5
+            ]
+          ],
+          "vabp_celsius": 226.0,
+          "density_15c_g_ml": 0.8453,
+          "mw_g_mol": 167.0,
+          "pour_point_celsius": -93.0,
+          "cloud_point_celsius": -91.0
+        },
+        {
+          "start": "250",
+          "viscosity_points": [
+            [
+              40.0,
+              3.25
+            ],
+            [
+              50.0,
+              2.65
+            ]
+          ],
+          "vabp_celsius": 276.0,
+          "density_15c_g_ml": 0.8716,
+          "mw_g_mol": 204.0,
+          "pour_point_celsius": -75.0,
+          "cloud_point_celsius": -72.0
+        },
+        {
+          "start": "300",
+          "viscosity_points": [
+            [
+              40.0,
+              7.58
+            ],
+            [
+              50.0,
+              5.71
+            ]
+          ],
+          "vabp_celsius": 325.0,
+          "density_15c_g_ml": 0.8863,
+          "mw_g_mol": 248.0,
+          "pour_point_celsius": -57.0,
+          "cloud_point_celsius": -54.0
+        },
+        {
+          "start": "350",
+          "viscosity_points": [
+            [
+              40.0,
+              16.5
+            ],
+            [
+              50.0,
+              11.5
+            ]
+          ],
+          "vabp_celsius": 360.0,
+          "density_15c_g_ml": 0.91,
+          "mw_g_mol": 279.0,
+          "pour_point_celsius": -47.0
+        },
+        {
+          "start": "370",
+          "viscosity_points": [
+            [
+              50.0,
+              37.0
+            ],
+            [
+              60.0,
+              24.0
+            ],
+            [
+              100.0,
+              6.85
+            ]
+          ],
+          "vabp_celsius": 409.0,
+          "density_15c_g_ml": 0.9238,
+          "mw_g_mol": 334.0,
+          "pour_point_celsius": -29.0,
+          "wax_mass_percent": 1.9
+        },
+        {
+          "start": "450",
+          "viscosity_points": [
+            [
+              50.0,
+              171.0
+            ],
+            [
+              60.0,
+              95.4
+            ],
+            [
+              100.0,
+              17.9
+            ]
+          ],
+          "vabp_celsius": 474.0,
+          "density_15c_g_ml": 0.941,
+          "mw_g_mol": 431.0,
+          "pour_point_celsius": -8.0,
+          "wax_mass_percent": 1.8,
+          "c7_asphaltenes_mass_percent": 0.0
+        },
+        {
+          "start": "500",
+          "viscosity_points": [
+            [
+              50.0,
+              497.0
+            ],
+            [
+              60.0,
+              253.0
+            ],
+            [
+              100.0,
+              36.2
+            ]
+          ],
+          "vabp_celsius": 524.0,
+          "density_15c_g_ml": 0.9471,
+          "mw_g_mol": 549.0,
+          "pour_point_celsius": 6.0,
+          "wax_mass_percent": 2.1,
+          "c7_asphaltenes_mass_percent": 0.0
+        },
+        {
+          "start": "550",
+          "viscosity_points": [
+            [
+              100.0,
+              2653.0
+            ],
+            [
+              130.0,
+              423.0
+            ],
+            [
+              150.0,
+              167.0
+            ]
+          ],
+          "vabp_celsius": 653.0,
+          "density_15c_g_ml": 1.0077,
+          "mw_g_mol": 1006.0,
+          "pour_point_celsius": 61.0,
+          "wax_mass_percent": 1.9,
+          "c7_asphaltenes_mass_percent": 2.7
+        }
+      ]
+    },
+    {
+      "id": "cold_lake_blend",
+      "name": "Cold Lake Blend",
+      "reference": "CLKBL23B",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2024/cold_lake_blend.pdf",
+      "pdf_sha256": "b15cf7217f38cfde936d27cc3848133b43e602d2db65174f2cb672f14e7921f1",
+      "whole": {
+        "start": "IBP",
+        "viscosity_points": [
+          [
+            20.0,
+            1019.0
+          ],
+          [
+            40.0,
+            174.0
+          ],
+          [
+            50.0,
+            88.1
+          ]
+        ],
+        "vabp_celsius": 423.0,
+        "density_15c_g_ml": 0.9367,
+        "pour_point_celsius": -20.0,
+        "wax_mass_percent": 0.8,
+        "c7_asphaltenes_mass_percent": 9.9
+      },
+      "residue": {
+        "start": "370",
+        "viscosity_points": [
+          [
+            50.0,
+            65885.0
+          ],
+          [
+            60.0,
+            20568.0
+          ],
+          [
+            100.0,
+            717.0
+          ]
+        ],
+        "vabp_celsius": 568.0,
+        "density_15c_g_ml": 1.021,
+        "mw_g_mol": 578.0,
+        "pour_point_celsius": 46.0,
+        "wax_mass_percent": 0.2,
+        "c7_asphaltenes_mass_percent": 14.8
+      },
+      "cuts": [
+        {
+          "start": "C5",
+          "viscosity_points": [],
+          "vabp_celsius": 37.8,
+          "density_15c_g_ml": 0.6307
+        },
+        {
+          "start": "65",
+          "viscosity_points": [],
+          "vabp_celsius": 81.0,
+          "density_15c_g_ml": 0.7397
+        },
+        {
+          "start": "100",
+          "viscosity_points": [],
+          "vabp_celsius": 125.0,
+          "density_15c_g_ml": 0.7616,
+          "mw_g_mol": 109.0
+        },
+        {
+          "start": "150",
+          "viscosity_points": [
+            [
+              20.0,
+              1.51
+            ],
+            [
+              40.0,
+              1.12
+            ]
+          ],
+          "vabp_celsius": 175.0,
+          "density_15c_g_ml": 0.8001,
+          "mw_g_mol": 137.0
+        },
+        {
+          "start": "200",
+          "viscosity_points": [
+            [
+              40.0,
+              1.87
+            ],
+            [
+              50.0,
+              1.58
+            ]
+          ],
+          "vabp_celsius": 227.0,
+          "density_15c_g_ml": 0.8406,
+          "mw_g_mol": 169.0,
+          "pour_point_celsius": -66.0,
+          "cloud_point_celsius": -65.0
+        },
+        {
+          "start": "250",
+          "viscosity_points": [
+            [
+              40.0,
+              3.65
+            ],
+            [
+              50.0,
+              2.92
+            ]
+          ],
+          "vabp_celsius": 276.0,
+          "density_15c_g_ml": 0.8774,
+          "mw_g_mol": 203.0,
+          "pour_point_celsius": -47.0,
+          "cloud_point_celsius": -45.0
+        },
+        {
+          "start": "300",
+          "viscosity_points": [
+            [
+              40.0,
+              8.9
+            ],
+            [
+              50.0,
+              6.54
+            ]
+          ],
+          "vabp_celsius": 325.0,
+          "density_15c_g_ml": 0.9052,
+          "mw_g_mol": 243.0,
+          "pour_point_celsius": -24.0,
+          "cloud_point_celsius": -21.0
+        },
+        {
+          "start": "350",
+          "viscosity_points": [
+            [
+              40.0,
+              20.2
+            ],
+            [
+              50.0,
+              13.6
+            ]
+          ],
+          "vabp_celsius": 360.0,
+          "density_15c_g_ml": 0.9326,
+          "mw_g_mol": 271.0,
+          "pour_point_celsius": -10.0
+        },
+        {
+          "start": "370",
+          "viscosity_points": [
+            [
+              50.0,
+              50.6
+            ],
+            [
+              60.0,
+              31.4
+            ],
+            [
+              100.0,
+              7.99
+            ]
+          ],
+          "vabp_celsius": 410.0,
+          "density_15c_g_ml": 0.9533,
+          "mw_g_mol": 321.0,
+          "pour_point_celsius": 1.0,
+          "wax_mass_percent": 0.6
+        },
+        {
+          "start": "450",
+          "viscosity_points": [
+            [
+              50.0,
+              323.0
+            ],
+            [
+              60.0,
+              166.0
+            ],
+            [
+              100.0,
+              25.3
+            ]
+          ],
+          "vabp_celsius": 475.0,
+          "density_15c_g_ml": 0.9724,
+          "mw_g_mol": 411.0,
+          "pour_point_celsius": 8.0,
+          "wax_mass_percent": 0.3,
+          "c7_asphaltenes_mass_percent": 0.0
+        },
+        {
+          "start": "500",
+          "viscosity_points": [
+            [
+              50.0,
+              1725.0
+            ],
+            [
+              60.0,
+              764.0
+            ],
+            [
+              100.0,
+              74.3
+            ]
+          ],
+          "vabp_celsius": 525.0,
+          "density_15c_g_ml": 0.9832,
+          "mw_g_mol": 519.0,
+          "pour_point_celsius": 12.0,
+          "wax_mass_percent": 0.1,
+          "c7_asphaltenes_mass_percent": 0.0
+        },
+        {
+          "start": "550",
+          "viscosity_points": [
+            [
+              100.0,
+              1040038.0
+            ],
+            [
+              130.0,
+              45231.0
+            ],
+            [
+              150.0,
+              9216.0
+            ]
+          ],
+          "vabp_celsius": 671.0,
+          "density_15c_g_ml": 1.072,
+          "mw_g_mol": 1008.0,
+          "pour_point_celsius": 75.0,
+          "wax_mass_percent": 0.0,
+          "c7_asphaltenes_mass_percent": 27.2
+        }
+      ]
+    }
+  ]
+}

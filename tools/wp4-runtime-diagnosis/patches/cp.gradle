@@ -1,0 +1,11 @@
+allprojects {
+    plugins.withId('java') {
+        def cp = project.sourceSets.test.runtimeClasspath
+        def out = project.layout.buildDirectory.file('diagnosis/testcp.txt')
+        tasks.register('diagPrintTestClasspath') {
+            inputs.files(cp)
+            outputs.upToDateWhen { false }
+            doLast { out.get().asFile.text = cp.asPath }
+        }
+    }
+}

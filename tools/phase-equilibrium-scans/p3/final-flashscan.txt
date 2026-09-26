@@ -1,0 +1,6 @@
+binary field: 25000 states in 0.3 s; {CONVERGED/SINGLE_FLUID=19895, CONVERGED/SINGLE_LIQUID=1070, CONVERGED/SINGLE_VAPOR=1488, CONVERGED/VAPOR_LIQUID=2547}; two-phase 2547, flash iterations mean 11.3 max 50; kernel calls mean 31.2 max 211; worst conservation defect 1.98e-16; worst fugacity residual 8.82e-11
+    worst fugacity at 160.0 K 4800000.0 Pa x_N2 0.54; not converged by reason {}
+near-critical: 105600 states in 0.5 s; {CONVERGED/SINGLE_FLUID=96433, CONVERGED/SINGLE_LIQUID=279, CONVERGED/SINGLE_VAPOR=344, CONVERGED/VAPOR_LIQUID=8544}; two-phase 8544, flash iterations mean 14.9 max 50; kernel calls mean 29.0 max 224; worst conservation defect 1.98e-16; worst fugacity residual 1.23e-10
+    worst fugacity at 135.0 K 3840000.0 Pa x_N2 0.87; not converged by reason {}
+network (1240/1240 phase counts agree with FluidThermodynamics.flashTP): 1240 states in 0.2 s; {CONVERGED/SINGLE_FLUID=98, CONVERGED/VAPOR_LIQUID=1142}; two-phase 1142, flash iterations mean 8.1 max 19; kernel calls mean 55.6 max 198; worst conservation defect 1.89e-16; worst fugacity residual 2.25e-11
+    worst fugacity at 880.0 K 1800000.0 Pa; not converged by reason {}

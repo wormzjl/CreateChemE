@@ -1,0 +1,9 @@
+// WP1 (2026-09-26): -PexcludeTests=<pattern>[,<pattern>] leaves tests out of a run (the two tests that run a REST
+// certificate to its Long.MAX_VALUE horizon never end until WP2 gives them a finite one). Nothing else.
+gradle.projectsEvaluated {
+    gradle.rootProject.tasks.withType(Test).configureEach {
+        def excluded = gradle.rootProject.findProperty('excludeTests')
+        if (excluded) { excluded.toString().split(',').each { pattern -> filter.excludeTestsMatching(pattern) } }
+        outputs.upToDateWhen { false }
+    }
+}

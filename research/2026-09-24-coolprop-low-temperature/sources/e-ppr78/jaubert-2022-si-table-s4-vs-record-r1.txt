@@ -1,0 +1,96 @@
+Record createcheme:eppr78_2022 revision eppr78-2022-clapeyron-0778184-r1: 355 pairs.
+Table S4: 356 numeric off-diagonal pairs, 424 NA pairs.
+Identical pairs: 274. Discrepancies: 83.
+
+Pilot pairs (groups 5 CH4, 6 C2H6, 12 CO2, 13 N2):
+5-6 (CH4/C2H6): S4 A=9.951 B=13.73; record A=9.951 B=13.73 IDENTICAL
+5-12 (CH4/CO2): S4 A=136.6 B=214.8; record A=136.6 B=214.8 IDENTICAL
+5-13 (CH4/N2): S4 A=30.88 B=37.06; record A=30.88 B=37.06 IDENTICAL
+6-12 (C2H6/CO2): S4 A=136.2 B=235.7; record A=136.2 B=235.7 IDENTICAL
+6-13 (C2H6/N2): S4 A=61.59 B=84.92; record A=61.59 B=84.92 IDENTICAL
+12-13 (CO2/N2): S4 A=113.9 B=212.4; record A=113.9 B=212.4 IDENTICAL
+
+Discrepancies:
+differs: 1-11 (CH3/CHcyclic/Ccyclic) S4 A=293.4 B=170.9; record A=0 B=170.9
+differs: 2-11 (CH2/CHcyclic/Ccyclic) S4 A=63.48 B=-74.46; record A=0 B=-74.46
+differs: 3-11 (CH/CHcyclic/Ccyclic) S4 A=-120.8 B=18.53; record A=0 B=18.53
+differs: 4-11 (C/CHcyclic/Ccyclic) S4 A=25.05 B=81.33; record A=0 B=81.33
+differs: 5-11 (CH4/CHcyclic/Ccyclic) S4 A=188.0 B=473.9; record A=0 B=473.9
+differs: 6-11 (C2H6/CHcyclic/Ccyclic) S4 A=118.0 B=-212.8; record A=0 B=-212.8
+differs: 7-11 (CHaro/CHcyclic/Ccyclic) S4 A=129.0 B=36.72; record A=0 B=36.72
+differs: 8-11 (Caro/CHcyclic/Ccyclic) S4 A=-99.17 B=-193.5; record A=0 B=-193.5
+differs: 9-11 (Cfused aromatic rings/CHcyclic/Ccyclic) S4 A=-99.17 B=-193.5; record A=0 B=-193.5
+differs: 10-11 (CH2,cyclic/CHcyclic/Ccyclic) S4 A=139.0 B=35.69; record A=0 B=35.69
+differs: 11-12 (CHcyclic/Ccyclic/CO2) S4 A=216.2 B=-132.8; record A=0 B=389.8
+missing in record (S4 A=331.5 B=389.8): 11-13 (CHcyclic/Ccyclic/N2)
+differs: 11-14 (CHcyclic/Ccyclic/H2S) S4 A=71.37 B=-127.7; record A=0 B=-127.7
+differs: 11-15 (CHcyclic/Ccyclic/SH) S4 A=463.2 B=-337.7; record A=0 B=-337.7
+differs: 11-16 (CHcyclic/Ccyclic/H2O) S4 A=244.0 B=-60.39; record A=0 B=-60.39
+differs: 11-17 (CHcyclic/Ccyclic/C2H4) S4 A=297.2 B=-647.2; record A=0 B=-647.2
+differs: 1-18 (CH3/CH2,alkenic/CHalkenic) S4 A=48.73 B=44.27; record A=0 B=44.27
+differs: 2-18 (CH2/CH2,alkenic/CHalkenic) S4 A=9.608 B=50.79; record A=0 B=50.79
+differs: 3-18 (CH/CH2,alkenic/CHalkenic) S4 A=84.76 B=193.2; record A=0 B=193.2
+differs: 4-18 (C/CH2,alkenic/CHalkenic) S4 A=181.2 B=419.0; record A=0 B=419
+differs: 5-18 (CH4/CH2,alkenic/CHalkenic) S4 A=48.73 B=68.29; record A=0 B=60.29
+differs: 6-18 (C2H6/CH2,alkenic/CHalkenic) S4 A=26.77 B=-5.147; record A=0 B=-5.147
+differs: 7-18 (CHaro/CH2,alkenic/CHalkenic) S4 A=9.951 B=19.90; record A=0 B=19.9
+differs: 8-18 (Caro/CH2,alkenic/CHalkenic) S4 A=-48.38 B=27.79; record A=0 B=27.79
+differs: 9-18 (Cfused aromatic rings/CH2,alkenic/CHalkenic) S4 A=669.8 B=589.5; record A=0 B=589.5
+differs: 10-18 (CH2,cyclic/CH2,alkenic/CHalkenic) S4 A=-15.44 B=24.36; record A=0 B=24.36
+differs: 11-18 (CHcyclic/Ccyclic/CH2,alkenic/CHalkenic) S4 A=260.1 B=134.9; record A=0 B=134.9
+differs: 12-18 (CO2/CH2,alkenic/CHalkenic) S4 A=60.74 B=183.9; record A=0 B=183.9
+differs: 13-18 (N2/CH2,alkenic/CHalkenic) S4 A=59.71 B=227.2; record A=0 B=227.2
+differs: 16-18 (H2O/CH2,alkenic/CHalkenic) S4 A=2243 B=5199; record A=0 B=5199
+differs: 17-18 (C2H4/CH2,alkenic/CHalkenic) S4 A=14.76 B=11.32; record A=0 B=11.32
+differs: 18-19 (CH2,alkenic/CHalkenic/Calkenic) S4 A=24.71 B=121.8; record A=0 B=121.8
+differs: 1-20 (CH3/CHcycloalkenic/Ccycloalkenic) S4 A=47.01 B=169.5; record A=0 B=169.5
+differs: 2-20 (CH2/CHcycloalkenic/Ccycloalkenic) S4 A=34.31 B=51.13; record A=0 B=51.13
+differs: 3-20 (CH/CHcycloalkenic/Ccycloalkenic) S4 A=0.52 B=-7.20; record A=0 B=-7.2
+differs: 7-20 (CHaro/CHcycloalkenic/Ccycloalkenic) S4 A=3.775 B=1.716; record A=0 B=1.716
+differs: 8-20 (Caro/CHcycloalkenic/Ccycloalkenic) S4 A=242.9 B=-7.206; record A=0 B=-7.206
+differs: 10-20 (CH2,cyclic/CHcycloalkenic/Ccycloalkenic) S4 A=31.91 B=69.32; record A=0 B=69.32
+differs: 11-20 (CHcyclic/Ccyclic/CHcycloalkenic/Ccycloalkenic) S4 A=151.3 B=2.745; record A=0 B=2.745
+differs: 12-20 (CO2/CHcycloalkenic/Ccycloalkenic) S4 A=87.85 B=66.91; record A=0 B=66.91
+differs: 17-20 (C2H4/CHcycloalkenic/Ccycloalkenic) S4 A=-98.83 B=1809; record A=0 B=1809
+differs: 18-20 (CH2,alkenic/CHalkenic/CHcycloalkenic/Ccycloalkenic) S4 A=14.07 B=-12.35; record A=0 B=-12.35
+differs: 19-20 (Calkenic/CHcycloalkenic/Ccycloalkenic) S4 A=23.68 B=87.50; record A=0 B=87.5
+differs: 11-21 (CHcyclic/Ccyclic/H2) S4 A=-51.82 B=34.31; record A=0 B=34.31
+differs: 18-21 (CH2,alkenic/CHalkenic/H2) S4 A=175.7 B=373.0; record A=0 B=373
+differs: 19-21 (Calkenic/H2) S4 A=621.4 B=873.6; record A=621.4 B=-495.5
+differs: 20-21 (CHcycloalkenic/Ccycloalkenic/H2) S4 A=460.8 B=2167; record A=0 B=2167
+differs: 18-22 (CH2,alkenic/CHalkenic/C2F6) S4 A=124.9 B=219.6; record A=0 B=219.6
+differs: 18-23 (CH2,alkenic/CHalkenic/CF3) S4 A=155.4 B=154.4; record A=0 B=154.4
+differs: 20-23 (CHcycloalkenic/Ccycloalkenic/CF3) S4 A=1232 B=-495.5; record A=0 B=-495.5
+missing in record (S4 A=479.0 B=1430): 4-24 (C/CF2)
+differs: 18-24 (CH2,alkenic/CHalkenic/CF2) S4 A=155.4 B=154.4; record A=0 B=154.4
+differs: 1-25 (CH3/CF2,double bond or CFdouble bond) S4 A=-12.29 B=16.54; record A=0 B=16.54
+S4 prints NA, record has A=0 B=1430: 4-25 (C/CF2,double bond or CFdouble bond)
+differs: 6-25 (C2H6/CF2,double bond or CFdouble bond) S4 A=95.55 B=-231.1; record A=0 B=-231.1
+differs: 7-25 (CHaro/CF2,double bond or CFdouble bond) S4 A=-274.3 B=-411.7; record A=0 B=-411.7
+differs: 8-25 (Caro/CF2,double bond or CFdouble bond) S4 A=78.62 B=-108.0; record A=0 B=-108
+differs: 12-25 (CO2/CF2,double bond or CFdouble bond) S4 A=36.25 B=63.49; record A=0 B=63.49
+differs: 17-25 (C2H4/CF2,double bond or CFdouble bond) S4 A=-132.7 B=548.3; record A=0 B=548.3
+differs: 18-25 (CH2,alkenic/CHalkenic/CF2,double bond or CFdouble bond) S4 A=88.21 B=12.87; record A=0 B=12.87
+differs: 22-25 (C2F6/CF2,double bond or CFdouble bond) S4 A=55.90 B=-193.3; record A=0 B=-193.3
+differs: 23-25 (CF3/CF2,double bond or CFdouble bond) S4 A=17.55 B=-92.99; record A=0 B=-92.99
+differs: 18-26 (CH2,alkenic/CHalkenic/C2H4F2) S4 A=76.86 B=-145.5; record A=0 B=-145.5
+differs: 1-27 (CH3/C2H2F4) S4 A=158.5 B=356.5; record A=158.5 B=3565
+differs: 18-27 (CH2,alkenic/CHalkenic/C2H2F4) S4 A=64.51 B=-41.86; record A=0 B=-41.86
+differs: 8-28 (Caro/CO) S4 A=125.77 B=-231.1; record A=0 B=-231.1
+differs: 8-29 (Caro/He) S4 A=753.6 B=590.5; record A=0 B=590.5
+differs: 18-29 (CH2,alkenic/CHalkenic/He) S4 A=644.3 B=687.7; record A=0 B=687.7
+differs: 18-30 (CH2,alkenic/CHalkenic/Ar) S4 A=203.0 B=-11.78; record A=0 B=-11.78
+differs: 8-31 (Caro/SO2) S4 A=-196.6 B=-397.4; record A=0 B=-397.4
+differs: 18-31 (CH2,alkenic/CHalkenic/SO2) S4 A=26.8 B=26.8; record A=0 B=26.8
+differs: 8-32 (Caro/O2) S4 A=177.1 B=2559.4; record A=0 B=2259.4
+differs: 11-32 (CHcyclic/Ccyclic/O2) S4 A=102.3 B=988.0; record A=0 B=988
+differs: 12-36 (CO2/NO2/N2O4) S4 A=124.9 B=241.6; record A=0 B=241.6
+differs: 13-36 (N2/NO2/N2O4) S4 A=263.5 B=260.0; record A=0 B=260
+differs: 30-36 (Ar/NO2/N2O4) S4 A=278.6 B=274.5; record A=0 B=274.5
+differs: 32-36 (O2/NO2/N2O4) S4 A=271.1 B=362.4; record A=0 B=362.4
+differs: 18-38 (CH2,alkenic/CHalkenic/C2H2) S4 A=165.4 B=39.80; record A=0 B=39.8
+differs: 8-39 (Caro/HC≡C-) S4 A=176.0 B=-459.5; record A=0 B=-459.5
+differs: 11-39 (CHcyclic/Ccyclic/HC≡C-) S4 A=863.7 B=863.7; record A=0 B=863.7
+differs: 18-39 (CH2,alkenic/CHalkenic/HC≡C-) S4 A=134.5 B=568.9; record A=0 B=568.9
+differs: 8-40 (Caro/-C≡C-) S4 A=518.5 B=518.5; record A=0 B=518.5
+differs: 18-40 (CH2,alkenic/CHalkenic/-C≡C-) S4 A=255.6 B=676.7; record A=0 B=676.7

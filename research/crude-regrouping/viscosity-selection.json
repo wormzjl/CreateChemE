@@ -1,0 +1,45 @@
+{
+  "selection": "dalia",
+  "method": "Minimum mean absolute natural-log dynamic-viscosity distance from the pointwise five-donor median; equal cut/temperature weights",
+  "temperature_celsius": [
+    40.0,
+    50.0,
+    60.0,
+    80.0,
+    100.0,
+    120.0,
+    150.0
+  ],
+  "components": [
+    "tjl19_pc01",
+    "tjl19_pc02",
+    "tjl19_pc03",
+    "tjl19_pc04",
+    "tjl19_pc05",
+    "tjl19_pc06",
+    "tjl19_pc07",
+    "tjl19_pc08",
+    "tjl19_pc09",
+    "tjl19_pc10",
+    "tjl19_pc11",
+    "tjl19_pc12",
+    "tjl19_pc13"
+  ],
+  "scores": {
+    "wti_light_export": 1.5568327805371005,
+    "upper_zakum": 0.1889459127574349,
+    "bonga": 0.22392367520397605,
+    "dalia": 0.012659794970396444,
+    "cold_lake_blend": 2.1877432849334686
+  },
+  "heavy_cut_100c_pascal_second": {
+    "wti_light_export": 0.05438632406196933,
+    "upper_zakum": 2.8699815934073705,
+    "bonga": 2.370986981066481,
+    "dalia": 2.5246917390346044,
+    "cold_lake_blend": 1052.300920618241
+  },
+  "source": "research/viscosity-temperature-plots/calibrated-rheology/calibrated_results.json",
+  "source_sha256": "9c6d73b03be542bb0b5f3fc59ae5240baaff7ec9ef8360d4a38720d0df99691a",
+  "limits": "Comparative donor choice includes extrapolation. No bulk fits, gel branch, per-crude mixture interactions, or claim of universal accuracy are selected. Rebin this one family onto the new cuts during implementation."
+}

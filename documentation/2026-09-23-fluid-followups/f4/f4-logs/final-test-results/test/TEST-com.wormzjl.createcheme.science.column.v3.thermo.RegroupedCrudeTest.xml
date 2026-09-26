@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.thermo.RegroupedCrudeTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:22.129Z" hostname="WORMZ-PC" time="35.315">
+  <properties/>
+  <testcase name="replacementHasTwelveConsistentCutsAndNoRetiredProductionBasis()" classname="com.wormzjl.createcheme.science.column.v3.thermo.RegroupedCrudeTest" time="0.001"/>
+  <testcase name="gameplayDrawsRetainTheCapturedPhysicalVolumeTargets()" classname="com.wormzjl.createcheme.science.column.v3.thermo.RegroupedCrudeTest" time="11.694"/>
+  <testcase name="productionTransportMeetsTheUnusedDaliaChecksAndSharesTheUnresolvedTail()" classname="com.wormzjl.createcheme.science.column.v3.thermo.RegroupedCrudeTest" time="0.004"/>
+  <testcase name="previouslyDifficultCrudesPublishAuditedClassicalSolutionsWithoutLearnedSeeds()" classname="com.wormzjl.createcheme.science.column.v3.thermo.RegroupedCrudeTest" time="23.616"/>
+  <testcase name="reconstructedFeedConservesIndependentOriginalMassVolumeAndCaloricMoments()" classname="com.wormzjl.createcheme.science.column.v3.thermo.RegroupedCrudeTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

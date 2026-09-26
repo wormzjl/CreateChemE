@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-26T05:19:38.838Z" hostname="WORMZ-PC" time="0.211">
+  <properties/>
+  <testcase name="changingGasCompositionAndWithdrawnEnergyMatchTighterStepDoubling()" classname="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest" time="0.072"/>
+  <testcase name="wetCrudePipeAndSimultaneousModuleBoundariesMatchTighterStepDoubling()" classname="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest" time="0.135"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

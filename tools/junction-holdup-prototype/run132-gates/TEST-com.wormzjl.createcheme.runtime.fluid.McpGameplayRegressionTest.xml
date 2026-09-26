@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.McpGameplayRegressionTest" tests="3" skipped="0" failures="1" errors="0" timestamp="2026-09-26T07:44:59.887Z" hostname="WORMZ-PC" time="0.374">
+  <properties/>
+  <testcase name="belowSeaLevelNitrogenTankAcceptsWaterAfterAnIdlePeriodAndPressureEdit()" classname="com.wormzjl.createcheme.runtime.fluid.McpGameplayRegressionTest" time="0.149">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;203.41927285191784&gt; but was: &lt;203.16422434083117&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;203.41927285191784&gt; but was: &lt;203.16422434083117&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:81)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1014)
+	at app//com.wormzjl.createcheme.runtime.fluid.McpGameplayRegressionTest.belowSeaLevelNitrogenTankAcceptsWaterAfterAnIdlePeriodAndPressureEdit(McpGameplayRegressionTest.java:88)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="savedSonicRefusalAdvancesWithVelocityClampingAndKeepsCanonicalBalances()" classname="com.wormzjl.createcheme.runtime.fluid.McpGameplayRegressionTest" time="0.054"/>
+  <testcase name="clampedDrainContinuesAfterTheTankBecomesAlmostLiquidFull()" classname="com.wormzjl.createcheme.runtime.fluid.McpGameplayRegressionTest" time="0.169"/>
+  <system-out><![CDATA[WP1MEASURE mcp p=130259.87847612199/130300.74927616405 t=298.14602133661185/298.1461021388342 m=203.16422434083117/203.41927285191784 q=-40.403774250929594/-40.4547839531469
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

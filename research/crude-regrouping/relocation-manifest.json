@@ -1,0 +1,484 @@
+{
+  "date": "2026-09-17",
+  "description": "Byte-exact relocation hashes before path repairs; no catalog/model regeneration",
+  "files": [
+    {
+      "old": "CRUDE_ASSAY_CONVERSION.md",
+      "new": "research/crude-regrouping/notes/CRUDE_ASSAY_CONVERSION.md",
+      "sha256": "92d361792f3f9f8dc1c87001b04ce702f3f463f28cc56b80a1edaacd9b396b8a",
+      "bytes": 7964
+    },
+    {
+      "old": "CUT_ELEMENTAL_PROFILES.md",
+      "new": "research/crude-regrouping/notes/CUT_ELEMENTAL_PROFILES.md",
+      "sha256": "fa392f1b96de4afc9e287399b14e7b2125c664c639d6100eba1ffdaa12e6f37d",
+      "bytes": 14416
+    },
+    {
+      "old": "HEAVY_FRACTION_LUMPING_STUDY.md",
+      "new": "research/crude-regrouping/notes/HEAVY_FRACTION_LUMPING_STUDY.md",
+      "sha256": "4fb0050804dcb8d6eaae743ff6299343865ef65b5e43fb579375690d8f98c676",
+      "bytes": 13642
+    },
+    {
+      "old": "HEAVY_FRACTION_VISCOSITY_LITERATURE.md",
+      "new": "research/crude-regrouping/notes/HEAVY_FRACTION_VISCOSITY_LITERATURE.md",
+      "sha256": "7aef828c0fc9548820eb6a361749ccab655deb326d4ffd6d3af0646054a84825",
+      "bytes": 21148
+    },
+    {
+      "old": "MISSING_PARAMETER_ESTIMATION_RESEARCH.md",
+      "new": "research/crude-regrouping/notes/MISSING_PARAMETER_ESTIMATION_RESEARCH.md",
+      "sha256": "e66d44c46676500c24743cc0752b7e10d744ff89ebb1dae48daafaf634b51ee3",
+      "bytes": 15771
+    },
+    {
+      "old": "PSEUDOCOMPONENT_COLD_FLOW.md",
+      "new": "research/crude-regrouping/notes/PSEUDOCOMPONENT_COLD_FLOW.md",
+      "sha256": "bb85ac66cebec4671c92a68af2831dc73004796c896f7fc6c84d96ce426db1e4",
+      "bytes": 13692
+    },
+    {
+      "old": "docs/tjl19-property-provenance.md",
+      "new": "research/crude-regrouping/notes/tjl19-property-provenance.md",
+      "sha256": "43f59f0c99b603abf640f598f767ce8a4acdccc397365238f2d894547d1b786b",
+      "bytes": 1431
+    },
+    {
+      "old": "documentation/current_crude_thermo_parameters.json",
+      "new": "research/crude-regrouping/notes/current_crude_thermo_parameters.json",
+      "sha256": "ce9f5408edffd7b53b838b210b80ba8a3bd821c3135a7fe36211eb97713c540f",
+      "bytes": 25397
+    },
+    {
+      "old": "documentation/VDU_SIMULATION_RESEARCH.md",
+      "new": "research/crude-regrouping/notes/VDU_SIMULATION_RESEARCH.md",
+      "sha256": "bca4a04a0ffe3ad86576112497c8828ef488634a3bcd33c4e6d97cc342e68d32",
+      "bytes": 22112
+    },
+    {
+      "old": "research/vacuum-residue-hydroprocessing-cuts.md",
+      "new": "research/crude-regrouping/notes/vacuum-residue-hydroprocessing-cuts.md",
+      "sha256": "0240feda4da2ebde09b5c2de6a9759a75ff6b6c2817160ea6471c8dc5c3ce896",
+      "bytes": 6504
+    },
+    {
+      "old": "examples/crude-assays/appearances.json",
+      "new": "research/crude-assays/appearances.json",
+      "sha256": "92772ac9918e4e339f5861a558338585bd8fc1e27bed8cf9ff28a8c53309886b",
+      "bytes": 399
+    },
+    {
+      "old": "examples/crude-assays/build_quality.py",
+      "new": "research/crude-assays/build_quality.py",
+      "sha256": "24c854d14d123da6f6213c2780ca5be1ff26abc25539ae1e8fcc42007a329d63",
+      "bytes": 14029
+    },
+    {
+      "old": "examples/crude-assays/convert.py",
+      "new": "research/crude-assays/convert.py",
+      "sha256": "38e18f41861e04a91c3c49f145cae18228b01d65f6bb75aca975f394c0d8372a",
+      "bytes": 16600
+    },
+    {
+      "old": "examples/crude-assays/converted-compositions.json",
+      "new": "research/crude-assays/converted-compositions.json",
+      "sha256": "9712c5c9ffcab8d0cac223fc7f7b05af6a893c3ba455581cef2ac49e41a56ebd",
+      "bytes": 35764
+    },
+    {
+      "old": "examples/crude-assays/cut-quality-profiles.json",
+      "new": "research/crude-assays/cut-quality-profiles.json",
+      "sha256": "e0d34d56d2c604f705ca90bf657f0bbad34a791946f62c1c92d6c37357f98138",
+      "bytes": 193033
+    },
+    {
+      "old": "examples/crude-assays/estimation-screening.json",
+      "new": "research/crude-assays/estimation-screening.json",
+      "sha256": "f97ea6eae58473cd5701b07c47f5377d6a3439cd9db815910ece96967e7c9f85",
+      "bytes": 32791
+    },
+    {
+      "old": "examples/crude-assays/extract_quality.py",
+      "new": "research/crude-assays/extract_quality.py",
+      "sha256": "f19b7a8ec4f34718551d0f21f4b52b979c848563843d3c820bf37be593bd24e8",
+      "bytes": 4639
+    },
+    {
+      "old": "examples/crude-assays/screen_estimation_methods.py",
+      "new": "research/crude-assays/screen_estimation_methods.py",
+      "sha256": "4b79247c7c9fc66213609d8ab32a83f55f20c34dd2135b0a46d9fc165a43d23a",
+      "bytes": 6482
+    },
+    {
+      "old": "examples/crude-assays/source-data.json",
+      "new": "research/crude-assays/source-data.json",
+      "sha256": "0827f33ba3e7733ff695ba6df3e0c0bdd2043d25d4f19ea6de952f772870886f",
+      "bytes": 15133
+    },
+    {
+      "old": "examples/crude-assays/source-quality.json",
+      "new": "research/crude-assays/source-quality.json",
+      "sha256": "7c86f21d14643968b08df039a1ff88ecd32264578841fc69d22b2e960b7a4149",
+      "bytes": 26891
+    },
+    {
+      "old": "examples/crude-assays/test_convert.py",
+      "new": "research/crude-assays/test_convert.py",
+      "sha256": "3b9779e85e337645ab1767e9078c86f18a1b3cdcc8a012ae8a0b38e1876ec580",
+      "bytes": 5071
+    },
+    {
+      "old": "examples/crude-assays/test_quality.py",
+      "new": "research/crude-assays/test_quality.py",
+      "sha256": "d66593afe7404b0c5f85d8ce1abf44ddd5e96a4da73c92d46ce34b3e88559c5f",
+      "bytes": 4179
+    },
+    {
+      "old": "examples/crude-assays/__pycache__/build_quality.cpython-312.pyc",
+      "new": "research/crude-assays/__pycache__/build_quality.cpython-312.pyc",
+      "sha256": "6f2b498c4423c916dade47e425dcf5cd08b651a8db9ccad13b84083561164e5d",
+      "bytes": 18275
+    },
+    {
+      "old": "examples/crude-assays/__pycache__/convert.cpython-312.pyc",
+      "new": "research/crude-assays/__pycache__/convert.cpython-312.pyc",
+      "sha256": "84d9a2a13f86add3a75b6fd0855902c84af2ff1c89b898cd1ac0428730a54a97",
+      "bytes": 24371
+    },
+    {
+      "old": "examples/cold-flow/dwsim-probe.json",
+      "new": "research/cold-flow/dwsim-probe.json",
+      "sha256": "2df22c2027e7ff0ec812955e3cb889e1d0ef540e3f8ff946d42bbc24882cf750",
+      "bytes": 52950
+    },
+    {
+      "old": "examples/cold-flow/screening.json",
+      "new": "research/cold-flow/screening.json",
+      "sha256": "c65f06e2440d2de81727782108fdff7db0222e47f368a90d558cd710826265a5",
+      "bytes": 20049
+    },
+    {
+      "old": "examples/cold-flow/units-audit.json",
+      "new": "research/cold-flow/units-audit.json",
+      "sha256": "a32665d0ec7f6d4634ba11c4ed61815044bfaae883eb629f26395a77650a38bb",
+      "bytes": 1261
+    },
+    {
+      "old": "build/crude-assay-sources/bonga-page1.png",
+      "new": "research/crude-assay-sources/bonga-page1.png",
+      "sha256": "1b6c9dcef34ad5d8aa77481e276fb259746dcdc50a370072b73519404d9732c8",
+      "bytes": 310224
+    },
+    {
+      "old": "build/crude-assay-sources/bonga.pdf",
+      "new": "research/crude-assay-sources/bonga.pdf",
+      "sha256": "0ee57146598b561ee885c67959173f6f3f630443a7bcc1dc0bab22b30dcdecd7",
+      "bytes": 111855
+    },
+    {
+      "old": "build/crude-assay-sources/bonga.txt",
+      "new": "research/crude-assay-sources/bonga.txt",
+      "sha256": "7480dac849d737eab07deda786bdb6e7633f5a4b0bf493b6df0c52e3d1c35036",
+      "bytes": 11974
+    },
+    {
+      "old": "build/crude-assay-sources/cold_lake_blend-quality.png",
+      "new": "research/crude-assay-sources/cold_lake_blend-quality.png",
+      "sha256": "74a31673c14b1111668164f955dee7252760b3eafd8e80c850bee64da617c84f",
+      "bytes": 330556
+    },
+    {
+      "old": "build/crude-assay-sources/cold_lake_blend.pdf",
+      "new": "research/crude-assay-sources/cold_lake_blend.pdf",
+      "sha256": "b15cf7217f38cfde936d27cc3848133b43e602d2db65174f2cb672f14e7921f1",
+      "bytes": 111386
+    },
+    {
+      "old": "build/crude-assay-sources/cold_lake_blend.txt",
+      "new": "research/crude-assay-sources/cold_lake_blend.txt",
+      "sha256": "b6c8a221983bb42b3dd5309a9a13716f94a16070248e1c39c5524401062bc419",
+      "bytes": 15803
+    },
+    {
+      "old": "build/crude-assay-sources/dalia-quality.png",
+      "new": "research/crude-assay-sources/dalia-quality.png",
+      "sha256": "f70a6c76e7e034457120db8cbf462de955db95fb5401453aa32d577b45f6ed3c",
+      "bytes": 308481
+    },
+    {
+      "old": "build/crude-assay-sources/dalia.pdf",
+      "new": "research/crude-assay-sources/dalia.pdf",
+      "sha256": "02553213cde6cbb7dd0b4fea42029250485781dba2e2d39d092c5e5d6f8dfabc",
+      "bytes": 245248
+    },
+    {
+      "old": "build/crude-assay-sources/dalia.txt",
+      "new": "research/crude-assay-sources/dalia.txt",
+      "sha256": "dad2a7140374e9b9ab454fc742b391922811d895897e211d5cfff20964ca8bc6",
+      "bytes": 12017
+    },
+    {
+      "old": "build/crude-assay-sources/upper_zakum-quality.png",
+      "new": "research/crude-assay-sources/upper_zakum-quality.png",
+      "sha256": "9f42cef98c2db0396092d9d7c7c9b202ac213d2db61ee0604be4a27525dfb6fe",
+      "bytes": 311271
+    },
+    {
+      "old": "build/crude-assay-sources/upper_zakum.pdf",
+      "new": "research/crude-assay-sources/upper_zakum.pdf",
+      "sha256": "bf6be49db1d61e5279e4b04ac3e40635d5b02190101b34270fa51d53142e71ea",
+      "bytes": 247036
+    },
+    {
+      "old": "build/crude-assay-sources/upper_zakum.txt",
+      "new": "research/crude-assay-sources/upper_zakum.txt",
+      "sha256": "d23fd144cc80a8c3591884e322032f9cc0818c01bf5a9f3c7eecdc9485eac61b",
+      "bytes": 12013
+    },
+    {
+      "old": "build/crude-assay-sources/wti_light-quality.png",
+      "new": "research/crude-assay-sources/wti_light-quality.png",
+      "sha256": "92b86cba5a00366ec981f436ff368252fbbf3152879fd57e1064da83879e214e",
+      "bytes": 308306
+    },
+    {
+      "old": "build/crude-assay-sources/wti_light.pdf",
+      "new": "research/crude-assay-sources/wti_light.pdf",
+      "sha256": "96ea254f6666fb85b3b12d050ed34f04a6f74187dd5b7c1efc51990c11b65c9c",
+      "bytes": 247392
+    },
+    {
+      "old": "build/crude-assay-sources/wti_light.txt",
+      "new": "research/crude-assay-sources/wti_light.txt",
+      "sha256": "cf30d4f80c1fb3b90ef092b21a7117452a2ff8dc15e82fcef811f160b3c44269",
+      "bytes": 12026
+    },
+    {
+      "old": "examples/Export-DissolvedViscosity.cs",
+      "new": "research/viscosity-tools/Export-DissolvedViscosity.cs",
+      "sha256": "be2ab824059260fd28d2bea73337ad9b57353b4a83bb2447a382b2c7518569f4",
+      "bytes": 4053
+    },
+    {
+      "old": "examples/Export-DwsimViscosity.cs",
+      "new": "research/viscosity-tools/Export-DwsimViscosity.cs",
+      "sha256": "7e7f2b4b72f602daba66392eaa55fa622de50613b2cdee7dbb30e6ef695e5b10",
+      "bytes": 6977
+    },
+    {
+      "old": "examples/Export-DwsimViscosity.ps1",
+      "new": "research/viscosity-tools/Export-DwsimViscosity.ps1",
+      "sha256": "77732e9fe5be47e3a282251891e2e55e744e50604945234e01f0ed1fe51d4025",
+      "bytes": 1149
+    },
+    {
+      "old": "examples/Probe-DwsimColdFlow.cs",
+      "new": "research/viscosity-tools/Probe-DwsimColdFlow.cs",
+      "sha256": "f600950d9268f10f0c8d1885df7344a7e0398dc2384c3c8f03b67088534dce22",
+      "bytes": 4614
+    },
+    {
+      "old": "examples/analyze_cold_flow.py",
+      "new": "research/viscosity-tools/analyze_cold_flow.py",
+      "sha256": "ab1fc92028ca98c4af7605c51968908d157d7d1fdb348006c9c37378ed16ba3e",
+      "bytes": 4445
+    },
+    {
+      "old": "examples/audit_residue_viscosity_units.py",
+      "new": "research/viscosity-tools/audit_residue_viscosity_units.py",
+      "sha256": "733f9c5b36b7e71d59ccb4792b3270f9ee98b79836a563a9b6aef45593b6f974",
+      "bytes": 2670
+    },
+    {
+      "old": "examples/extend_ambient_viscosity.py",
+      "new": "research/viscosity-tools/extend_ambient_viscosity.py",
+      "sha256": "55e444ed9873a11132db0b020b98bbeb6da0c26f3432f48e87f67ab150e0e1a6",
+      "bytes": 3289
+    },
+    {
+      "old": "examples/import_dwsim_viscosity.py",
+      "new": "research/viscosity-tools/import_dwsim_viscosity.py",
+      "sha256": "295908d35c92b19a5cb05617eb94e69a892528d0ab64e9755c130b5c752368d7",
+      "bytes": 1296
+    },
+    {
+      "old": "build/dwsim-ambient-dissolved.json",
+      "new": "research/viscosity-tools/raw/dwsim-ambient-dissolved.json",
+      "sha256": "540a14917c71e80961c1fc1544cf6a24909aa06799d94c695a4f509feb59eb72",
+      "bytes": 3400
+    },
+    {
+      "old": "build/dwsim-ambient-viscosity-export.json",
+      "new": "research/viscosity-tools/raw/dwsim-ambient-viscosity-export.json",
+      "sha256": "5d02c5faaa83393c9d333412f47bb3358fc7bd1a3a409ece38eeee41361701eb",
+      "bytes": 64986
+    },
+    {
+      "old": "build/dwsim-cold-flow-probe.json",
+      "new": "research/viscosity-tools/raw/dwsim-cold-flow-probe.json",
+      "sha256": "d96d84a1d0e88676c4b1785e0ca35c18aad5068124f849a0e21c8428da6b7e0e",
+      "bytes": 36974
+    },
+    {
+      "old": "build/dwsim-viscosity-export.json",
+      "new": "research/viscosity-tools/raw/dwsim-viscosity-export.json",
+      "sha256": "8d109db5a6f7aff34b0a2b6131bdbad8b40dcaff0405c1f53c7e2dc4435738e5",
+      "bytes": 551927
+    },
+    {
+      "old": "build/dwsim-viscosity-probe.json",
+      "new": "research/viscosity-tools/raw/dwsim-viscosity-probe.json",
+      "sha256": "6f5fbb964dbf723f847ab3e396739f64d837f91fe4c4412b805c6cb73e7fc26b",
+      "bytes": 21751
+    },
+    {
+      "old": "build/DwsimViscosityProbe.cs",
+      "new": "research/viscosity-tools/raw/DwsimViscosityProbe.cs",
+      "sha256": "db60be405aa3303fefef51f56ee2d114299c37a191414a9bb8092b450e77f2bb",
+      "bytes": 2885
+    },
+    {
+      "old": "build/DwsimViscosityProbe.exe",
+      "new": "research/viscosity-tools/raw/DwsimViscosityProbe.exe",
+      "sha256": "33df2f8305940bcbff0b48d60ad4857f724fc681b10bbf8d47cc9a5071e8c09d",
+      "bytes": 13312
+    },
+    {
+      "old": "build/DwsimViscosityProbe.exe.config",
+      "new": "research/viscosity-tools/raw/DwsimViscosityProbe.exe.config",
+      "sha256": "f8990fac4217c01bc5022908c36b90d33c088170f87c689e88082781c5d379f5",
+      "bytes": 19377
+    },
+    {
+      "old": "build/Export-DissolvedViscosity.exe",
+      "new": "research/viscosity-tools/raw/Export-DissolvedViscosity.exe",
+      "sha256": "372e5f53b3b14aae834ff9dd41a8e3af10901ee3de529c7a0513294960513a19",
+      "bytes": 15872
+    },
+    {
+      "old": "build/Export-DissolvedViscosity.exe.config",
+      "new": "research/viscosity-tools/raw/Export-DissolvedViscosity.exe.config",
+      "sha256": "f8990fac4217c01bc5022908c36b90d33c088170f87c689e88082781c5d379f5",
+      "bytes": 19377
+    },
+    {
+      "old": "build/Export-DwsimViscosity.exe",
+      "new": "research/viscosity-tools/raw/Export-DwsimViscosity.exe",
+      "sha256": "87800c25d6032bb3243ee107a14b96d9e9dd1aafe81004f94b271d33b4f3ad51",
+      "bytes": 28672
+    },
+    {
+      "old": "build/Export-DwsimViscosity.exe.config",
+      "new": "research/viscosity-tools/raw/Export-DwsimViscosity.exe.config",
+      "sha256": "f8990fac4217c01bc5022908c36b90d33c088170f87c689e88082781c5d379f5",
+      "bytes": 19377
+    },
+    {
+      "old": "build/Probe-DwsimColdFlow.exe",
+      "new": "research/viscosity-tools/raw/Probe-DwsimColdFlow.exe",
+      "sha256": "0fddda8d6799cdc195dda8f85fd123b2e7309ad12571478140b2de8a799bdc06",
+      "bytes": 22016
+    },
+    {
+      "old": "build/Probe-DwsimColdFlow.exe.config",
+      "new": "research/viscosity-tools/raw/Probe-DwsimColdFlow.exe.config",
+      "sha256": "f8990fac4217c01bc5022908c36b90d33c088170f87c689e88082781c5d379f5",
+      "bytes": 19377
+    },
+    {
+      "old": "build/read_crude_assays.py",
+      "new": "research/viscosity-tools/raw/read_crude_assays.py",
+      "sha256": "a09d11abd7aabf909cb541aab49b50381996e6382c72c18b2adc6dc12f17e490",
+      "bytes": 1121
+    },
+    {
+      "old": "build/dwsim-research/chemsep-v3/source-feed.dwxml",
+      "new": "research/viscosity-tools/source-feed.dwxml",
+      "sha256": "ae73c05df9db9d56607b11a7cb2b6baf6b6932c48994a574eb77e6bbacc5efa2",
+      "bytes": 521630
+    }
+  ],
+  "path_repairs": [
+    "research/crude-regrouping/notes/tjl19-property-provenance.md",
+    "research/viscosity-temperature-plots/calibrated-rheology/extract_transport.py",
+    "research/viscosity-temperature-plots/calibrated-rheology/model.py",
+    "research/viscosity-temperature-plots/component-reconstruction/reconstruct.py",
+    "research/viscosity-temperature-plots/plot_viscosity.py",
+    "research/viscosity-temperature-plots/wax-precipitation/calculate_wax.py",
+    "research/viscosity-tools/analyze_cold_flow.py",
+    "research/viscosity-tools/audit_residue_viscosity_units.py",
+    "research/viscosity-tools/Export-DwsimViscosity.ps1",
+    "research/viscosity-tools/extend_ambient_viscosity.py",
+    "research/viscosity-tools/import_dwsim_viscosity.py",
+    "research/viscosity-tools/raw/read_crude_assays.py"
+  ],
+  "post_repair_sha256": {
+    "research/crude-regrouping/notes/CRUDE_ASSAY_CONVERSION.md": "c1d3276aab9972121e0c73dc9958a77831421d7f627349bc440d913c8b19b154",
+    "research/crude-regrouping/notes/CUT_ELEMENTAL_PROFILES.md": "f92e849d40f5a2174b66762b7bd4da24dd0257d11bd3b73123e026c05d3fd79f",
+    "research/crude-regrouping/notes/HEAVY_FRACTION_LUMPING_STUDY.md": "47607ba7dfcd73f5a894c232c06ea9f908d9b4f271ee0d983cf61ccd8e7a59ac",
+    "research/crude-regrouping/notes/HEAVY_FRACTION_VISCOSITY_LITERATURE.md": "18c1fc23459e4e703f6bffe2aa401a08459bc5775bf2a3d2eb3ef40156c517bf",
+    "research/crude-regrouping/notes/MISSING_PARAMETER_ESTIMATION_RESEARCH.md": "b9932b254e9b890e20432dd3c105173f6d414dc3b3eab52afdbce6f01c487a9f",
+    "research/crude-regrouping/notes/PSEUDOCOMPONENT_COLD_FLOW.md": "d7901d998dac0e31997136eaf7b1c422e328b955c7e47399fa723b4bd6cf736d",
+    "research/crude-regrouping/notes/tjl19-property-provenance.md": "d28566bd642fff45e23e6a0b8c6bf266e4839c5f15b26e3372185f0b4f0b80ed",
+    "research/crude-regrouping/notes/current_crude_thermo_parameters.json": "ce9f5408edffd7b53b838b210b80ba8a3bd821c3135a7fe36211eb97713c540f",
+    "research/crude-regrouping/notes/VDU_SIMULATION_RESEARCH.md": "bca4a04a0ffe3ad86576112497c8828ef488634a3bcd33c4e6d97cc342e68d32",
+    "research/crude-regrouping/notes/vacuum-residue-hydroprocessing-cuts.md": "0240feda4da2ebde09b5c2de6a9759a75ff6b6c2817160ea6471c8dc5c3ce896",
+    "research/crude-assays/appearances.json": "92772ac9918e4e339f5861a558338585bd8fc1e27bed8cf9ff28a8c53309886b",
+    "research/crude-assays/build_quality.py": "3f31334f3441215eee7f0acd9dbde801ea10c0f7673f2d21bea7491c165bc326",
+    "research/crude-assays/convert.py": "9a3d6a6fde9942dd5b9b338cf19c5ab4984be4f2e71b33c5a90565aaa7daf94f",
+    "research/crude-assays/converted-compositions.json": "9712c5c9ffcab8d0cac223fc7f7b05af6a893c3ba455581cef2ac49e41a56ebd",
+    "research/crude-assays/cut-quality-profiles.json": "e0d34d56d2c604f705ca90bf657f0bbad34a791946f62c1c92d6c37357f98138",
+    "research/crude-assays/estimation-screening.json": "f97ea6eae58473cd5701b07c47f5377d6a3439cd9db815910ece96967e7c9f85",
+    "research/crude-assays/extract_quality.py": "bb6dab875aed46c65ce46e019e2732eb49fe512924638fa102bfc53c85619dd0",
+    "research/crude-assays/screen_estimation_methods.py": "4903aa8956aa5716d9e3cf2a50c475ce0ebc8ad020274ba65f89d213b8adcc66",
+    "research/crude-assays/source-data.json": "0827f33ba3e7733ff695ba6df3e0c0bdd2043d25d4f19ea6de952f772870886f",
+    "research/crude-assays/source-quality.json": "7c86f21d14643968b08df039a1ff88ecd32264578841fc69d22b2e960b7a4149",
+    "research/crude-assays/test_convert.py": "3b9779e85e337645ab1767e9078c86f18a1b3cdcc8a012ae8a0b38e1876ec580",
+    "research/crude-assays/test_quality.py": "d66593afe7404b0c5f85d8ce1abf44ddd5e96a4da73c92d46ce34b3e88559c5f",
+    "research/crude-assays/__pycache__/build_quality.cpython-312.pyc": "6f2b498c4423c916dade47e425dcf5cd08b651a8db9ccad13b84083561164e5d",
+    "research/crude-assays/__pycache__/convert.cpython-312.pyc": "84d9a2a13f86add3a75b6fd0855902c84af2ff1c89b898cd1ac0428730a54a97",
+    "research/cold-flow/dwsim-probe.json": "2df22c2027e7ff0ec812955e3cb889e1d0ef540e3f8ff946d42bbc24882cf750",
+    "research/cold-flow/screening.json": "c65f06e2440d2de81727782108fdff7db0222e47f368a90d558cd710826265a5",
+    "research/cold-flow/units-audit.json": "a32665d0ec7f6d4634ba11c4ed61815044bfaae883eb629f26395a77650a38bb",
+    "research/crude-assay-sources/bonga-page1.png": "1b6c9dcef34ad5d8aa77481e276fb259746dcdc50a370072b73519404d9732c8",
+    "research/crude-assay-sources/bonga.pdf": "0ee57146598b561ee885c67959173f6f3f630443a7bcc1dc0bab22b30dcdecd7",
+    "research/crude-assay-sources/bonga.txt": "7480dac849d737eab07deda786bdb6e7633f5a4b0bf493b6df0c52e3d1c35036",
+    "research/crude-assay-sources/cold_lake_blend-quality.png": "74a31673c14b1111668164f955dee7252760b3eafd8e80c850bee64da617c84f",
+    "research/crude-assay-sources/cold_lake_blend.pdf": "b15cf7217f38cfde936d27cc3848133b43e602d2db65174f2cb672f14e7921f1",
+    "research/crude-assay-sources/cold_lake_blend.txt": "b6c8a221983bb42b3dd5309a9a13716f94a16070248e1c39c5524401062bc419",
+    "research/crude-assay-sources/dalia-quality.png": "f70a6c76e7e034457120db8cbf462de955db95fb5401453aa32d577b45f6ed3c",
+    "research/crude-assay-sources/dalia.pdf": "02553213cde6cbb7dd0b4fea42029250485781dba2e2d39d092c5e5d6f8dfabc",
+    "research/crude-assay-sources/dalia.txt": "dad2a7140374e9b9ab454fc742b391922811d895897e211d5cfff20964ca8bc6",
+    "research/crude-assay-sources/upper_zakum-quality.png": "9f42cef98c2db0396092d9d7c7c9b202ac213d2db61ee0604be4a27525dfb6fe",
+    "research/crude-assay-sources/upper_zakum.pdf": "bf6be49db1d61e5279e4b04ac3e40635d5b02190101b34270fa51d53142e71ea",
+    "research/crude-assay-sources/upper_zakum.txt": "d23fd144cc80a8c3591884e322032f9cc0818c01bf5a9f3c7eecdc9485eac61b",
+    "research/crude-assay-sources/wti_light-quality.png": "92b86cba5a00366ec981f436ff368252fbbf3152879fd57e1064da83879e214e",
+    "research/crude-assay-sources/wti_light.pdf": "96ea254f6666fb85b3b12d050ed34f04a6f74187dd5b7c1efc51990c11b65c9c",
+    "research/crude-assay-sources/wti_light.txt": "cf30d4f80c1fb3b90ef092b21a7117452a2ff8dc15e82fcef811f160b3c44269",
+    "research/viscosity-tools/Export-DissolvedViscosity.cs": "be2ab824059260fd28d2bea73337ad9b57353b4a83bb2447a382b2c7518569f4",
+    "research/viscosity-tools/Export-DwsimViscosity.cs": "7e7f2b4b72f602daba66392eaa55fa622de50613b2cdee7dbb30e6ef695e5b10",
+    "research/viscosity-tools/Export-DwsimViscosity.ps1": "9a92716481b1c306f31a3518ac9df3c2b93d59d44080dfe881738660c0d14051",
+    "research/viscosity-tools/Probe-DwsimColdFlow.cs": "f600950d9268f10f0c8d1885df7344a7e0398dc2384c3c8f03b67088534dce22",
+    "research/viscosity-tools/analyze_cold_flow.py": "cf9bb49d2ac71e5796040ab0156511a1e18c7a8ce6eee04ff37b9328287849b7",
+    "research/viscosity-tools/audit_residue_viscosity_units.py": "eef79634f92e644be0fb6623dea06fca00edb092528a8faf5a7eadcf66c6eb37",
+    "research/viscosity-tools/extend_ambient_viscosity.py": "5393e5979af8db200ac393478bf85df2fa1f81fbe231bd25f0a09ef230c9f80a",
+    "research/viscosity-tools/import_dwsim_viscosity.py": "8c97020304115b41b9e5f09bbe287ea5397d839deaf84f27a73f02db33400c5d",
+    "research/viscosity-tools/raw/dwsim-ambient-dissolved.json": "540a14917c71e80961c1fc1544cf6a24909aa06799d94c695a4f509feb59eb72",
+    "research/viscosity-tools/raw/dwsim-ambient-viscosity-export.json": "5d02c5faaa83393c9d333412f47bb3358fc7bd1a3a409ece38eeee41361701eb",
+    "research/viscosity-tools/raw/dwsim-cold-flow-probe.json": "d96d84a1d0e88676c4b1785e0ca35c18aad5068124f849a0e21c8428da6b7e0e",
+    "research/viscosity-tools/raw/dwsim-viscosity-export.json": "8d109db5a6f7aff34b0a2b6131bdbad8b40dcaff0405c1f53c7e2dc4435738e5",
+    "research/viscosity-tools/raw/dwsim-viscosity-probe.json": "6f5fbb964dbf723f847ab3e396739f64d837f91fe4c4412b805c6cb73e7fc26b",
+    "research/viscosity-tools/raw/DwsimViscosityProbe.cs": "db60be405aa3303fefef51f56ee2d114299c37a191414a9bb8092b450e77f2bb",
+    "research/viscosity-tools/raw/DwsimViscosityProbe.exe": "33df2f8305940bcbff0b48d60ad4857f724fc681b10bbf8d47cc9a5071e8c09d",
+    "research/viscosity-tools/raw/DwsimViscosityProbe.exe.config": "f8990fac4217c01bc5022908c36b90d33c088170f87c689e88082781c5d379f5",
+    "research/viscosity-tools/raw/Export-DissolvedViscosity.exe": "372e5f53b3b14aae834ff9dd41a8e3af10901ee3de529c7a0513294960513a19",
+    "research/viscosity-tools/raw/Export-DissolvedViscosity.exe.config": "f8990fac4217c01bc5022908c36b90d33c088170f87c689e88082781c5d379f5",
+    "research/viscosity-tools/raw/Export-DwsimViscosity.exe": "87800c25d6032bb3243ee107a14b96d9e9dd1aafe81004f94b271d33b4f3ad51",
+    "research/viscosity-tools/raw/Export-DwsimViscosity.exe.config": "f8990fac4217c01bc5022908c36b90d33c088170f87c689e88082781c5d379f5",
+    "research/viscosity-tools/raw/Probe-DwsimColdFlow.exe": "0fddda8d6799cdc195dda8f85fd123b2e7309ad12571478140b2de8a799bdc06",
+    "research/viscosity-tools/raw/Probe-DwsimColdFlow.exe.config": "f8990fac4217c01bc5022908c36b90d33c088170f87c689e88082781c5d379f5",
+    "research/viscosity-tools/raw/read_crude_assays.py": "07935460f2d24e2c24f6befaf50ed46c27e7542d0c9290ba6b6dabe33c6f017b",
+    "research/viscosity-tools/source-feed.dwxml": "ae73c05df9db9d56607b11a7cb2b6baf6b6932c48994a574eb77e6bbacc5efa2"
+  }
+}

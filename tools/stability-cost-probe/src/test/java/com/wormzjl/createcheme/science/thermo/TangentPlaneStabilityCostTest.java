@@ -1,0 +1,118 @@
+package com.wormzjl.createcheme.science.thermo;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.wormzjl.createcheme.science.thermo.TangentPlaneStability.Result;
+import com.wormzjl.createcheme.science.thermo.TangentPlaneStability.Verdict;
+import java.lang.management.ManagementFactory;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+
+/**
+ * Cost of one stability call for 2, 4 and 20 (+ water = the 21-component network basis) components, printed as a
+ * table. A measurement, not a gate: it runs only with {@code CREATECHEME_STABILITY_COST=1} in the environment and
+ * asserts only the verdicts it measures.
+ */
+@EnabledIfEnvironmentVariable(named = "CREATECHEME_STABILITY_COST", matches = "1")
+class TangentPlaneStabilityCostTest {
+    private static final int WARM_UP_CALLS = 3000;
+    private static final int MEASURED_CALLS = 200;
+    private static final int KERNEL_CALLS = 20_000;
+    private static volatile double sink;
+
+    private record Case(String label, TangentPlaneStability test, double t, double p, double[] z, Verdict expected) {}
+
+    @Test
+    void measureStabilityCallCost() {
+        var binary = new TangentPlaneStability(TangentPlaneStabilityTest.kernel(
+                PengRobinsonKernel.Mixing.CLASSICAL, "Methane", "Nitrogen"));
+        var four = new TangentPlaneStability(TangentPlaneStabilityTest.kernel(
+                PengRobinsonKernel.Mixing.CLASSICAL, "Methane", "Ethane", "Propane", "Nitrogen"));
+        var network = new TangentPlaneStability(TangentPlaneStabilityTest.kernel(PengRobinsonKernel.Mixing.SPARSE_PAIRS));
+        double[] crude = TangentPlaneStabilityTest.crudeWithNitrogen();
+        double[] light = {0.4, 0.15, 0.15, 0.3};
+        List<Case> cases = List.of(
+                new Case("2: 110 K 0.5 MPa x_N2 0.5 (two-phase)", binary, 110.0, 0.5e6, new double[] {0.5, 0.5}, Verdict.UNSTABLE),
+                new Case("2: 120 K 3 MPa x_N2 0.5 (compressed liquid)", binary, 120.0, 3.0e6, new double[] {0.5, 0.5}, Verdict.STABLE),
+                new Case("2: 250 K 10 MPa x_N2 0.5 (supercritical)", binary, 250.0, 10.0e6, new double[] {0.5, 0.5}, Verdict.STABLE),
+                new Case("4: 150 K 1 MPa (two-phase)", four, 150.0, 1.0e6, light, Verdict.UNSTABLE),
+                new Case("4: 120 K 2 MPa (compressed liquid)", four, 120.0, 2.0e6, light, Verdict.STABLE),
+                new Case("4: 300 K 2 MPa (vapour)", four, 300.0, 2.0e6, light, Verdict.STABLE),
+                new Case("20: crude+N2 350 K 0.5 MPa (two-phase)", network, 350.0, 0.5e6, crude, Verdict.UNSTABLE),
+                new Case("20: crude+N2 600 K 2 MPa (two-phase)", network, 600.0, 2.0e6, crude, Verdict.UNSTABLE),
+                new Case("20: crude+N2 900 K 0.1 MPa (vapour)", network, 900.0, 0.1e6, crude, Verdict.STABLE));
+
+        var threads = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
+        var system = (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        long thread = Thread.currentThread().threadId();
+        StringBuilder out = new StringBuilder();
+        out.append(String.format("java %s, %d processors, machine free memory %.1f GB of %.1f GB%n",
+                System.getProperty("java.version"), Runtime.getRuntime().availableProcessors(),
+                system.getFreeMemorySize() / 1.0e9, system.getTotalMemorySize() / 1.0e9));
+
+        for (int pass = 0; pass < 2; pass++) {
+            for (Case c : cases) {
+                var workspace = c.test().newWorkspace();
+                for (int call = 0; call < WARM_UP_CALLS; call++) sink += c.test().test(c.t(), c.p(), c.z(), workspace).minimumTangentPlaneDistance();
+            }
+        }
+
+        out.append("| state | verdict | trials | iterations | kernel evals (derivative) | mean us | p95 us | us per kernel eval in call | "
+                + "kernel evaluate us | kernel evaluateDerivatives us | bytes per call, reused workspace | bytes per call, new workspace |\n");
+        out.append("|---|---|---|---|---|---|---|---|---|---|---|---|\n");
+        for (Case c : cases) {
+            var test = c.test();
+            var workspace = test.newWorkspace();
+            Result result = test.test(c.t(), c.p(), c.z(), workspace);
+            assertEquals(c.expected(), result.verdict(), c.label());
+            long[] times = new long[MEASURED_CALLS];
+            for (int call = 0; call < MEASURED_CALLS; call++) {
+                long start = System.nanoTime();
+                Result r = test.test(c.t(), c.p(), c.z(), workspace);
+                times[call] = System.nanoTime() - start;
+                sink += r.minimumTangentPlaneDistance();
+            }
+            Arrays.sort(times);
+            double mean = Arrays.stream(times).average().orElseThrow() / 1.0e3;
+            double p95 = times[(int) Math.ceil(0.95 * MEASURED_CALLS) - 1] / 1.0e3;
+
+            long before = threads.getThreadAllocatedBytes(thread);
+            for (int call = 0; call < MEASURED_CALLS; call++) sink += test.test(c.t(), c.p(), c.z(), workspace).minimumTangentPlaneDistance();
+            double reusedBytes = (threads.getThreadAllocatedBytes(thread) - before) / (double) MEASURED_CALLS;
+            before = threads.getThreadAllocatedBytes(thread);
+            for (int call = 0; call < MEASURED_CALLS; call++) sink += test.test(c.t(), c.p(), c.z()).minimumTangentPlaneDistance();
+            double freshBytes = (threads.getThreadAllocatedBytes(thread) - before) / (double) MEASURED_CALLS;
+
+            // One kernel evaluation of the feed, value and derivative, for scale.
+            var kernel = test.kernel();
+            var kernelWorkspace = kernel.newWorkspace();
+            var evaluation = kernel.newEvaluation();
+            var derivatives = kernel.newDerivatives();
+            kernel.prepareTemperature(c.t(), kernelWorkspace);
+            for (int call = 0; call < KERNEL_CALLS; call++) {
+                kernel.evaluate(c.t(), c.p(), c.z(), result.feedRoot(), kernelWorkspace, evaluation);
+                kernel.evaluateDerivatives(c.t(), c.p(), c.z(), result.feedRoot(), kernelWorkspace, derivatives);
+            }
+            long start = System.nanoTime();
+            for (int call = 0; call < KERNEL_CALLS; call++) {
+                kernel.evaluate(c.t(), c.p(), c.z(), result.feedRoot(), kernelWorkspace, evaluation);
+                sink += evaluation.compressibility();
+            }
+            double valueUs = (System.nanoTime() - start) / 1.0e3 / KERNEL_CALLS;
+            start = System.nanoTime();
+            for (int call = 0; call < KERNEL_CALLS; call++) {
+                kernel.evaluateDerivatives(c.t(), c.p(), c.z(), result.feedRoot(), kernelWorkspace, derivatives);
+                sink += derivatives.dResidualEnthalpyDt();
+            }
+            double derivativeUs = (System.nanoTime() - start) / 1.0e3 / KERNEL_CALLS;
+
+            out.append(String.format("| %s | %s | %d | %d | %d (%d) | %.2f | %.2f | %.3f | %.3f | %.3f | %.0f | %.0f |%n",
+                    c.label(), result.verdict(), result.trials(), result.iterations(), result.kernelEvaluations(),
+                    result.derivativeEvaluations(), mean, p95, mean / result.kernelEvaluations(), valueUs, derivativeUs,
+                    reusedBytes, freshBytes));
+        }
+        System.out.println(out);
+    }
+}

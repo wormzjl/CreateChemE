@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.BlockJacobianEquivalenceTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:43:54.186Z" hostname="WORMZ-PC" time="0.049">
+  <properties/>
+  <testcase name="theBlockSweepReproducesTheColumnDifferencesOfAFilterIsland()" classname="com.wormzjl.createcheme.science.fluid.network.BlockJacobianEquivalenceTest" time="0.035"/>
+  <testcase name="theBlockSweepReproducesTheColumnDifferencesOfASolidChain()" classname="com.wormzjl.createcheme.science.fluid.network.BlockJacobianEquivalenceTest" time="0.008"/>
+  <system-out><![CDATA[block jacobian: filter island with a junction columns=16 entries=196 neighbour-solid-couplings=6 filter columns=1
+block jacobian: ten-node slurry chain columns=69 entries=1177 neighbour-solid-couplings=126 filter columns=0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

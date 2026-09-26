@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinsonDerivativesTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-26T00:49:54.688Z" hostname="WORMZ-PC" time="0.008">
+  <properties/>
+  <testcase name="everyExposedDerivativeMatchesCentralDifferencesOfWhatItDifferentiates()" classname="com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinsonDerivativesTest" time="0.008"/>
+  <system-out><![CDATA[TranslatedPengRobinson derivatives vs central differences: 18 phase evaluations, 18 identity checks
+    sum x_i h_i = h           max 2.074e-15 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 15786.2042433, analytic 15786.2042433)
+    cp = cp_ideal + dH^R/dT   max 6.967e-16 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 407.939157343, analytic 407.939157343)
+    d ln phi_i/dT             max 1.116e-09 over 360 comparisons at T=480.0 P=900000.0 LIQUID (difference 0.313334668503, analytic 0.313334668153)
+    dh/dT (cp)                max 6.614e-10 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 407.939157612, analytic 407.939157343)
+    dv/dT                     max 2.372e-09 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 3.00122276144e-06, analytic 3.00122275432e-06)
+    d2v/dT2                   max 8.093e-09 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 2.31485305958e-07, analytic 2.31485304084e-07)
+    d ln phi_i/dP             max 1.023e-07 over 360 comparisons at T=520.0 P=250000.0 VAPOR (difference -2.23038404824e-05, analytic -2.23038382001e-05)
+    dv/dP                     max 2.174e-07 over 18 comparisons at T=300.0 P=101325.0 LIQUID (difference -1.90280057355e-13, analytic -1.90280098723e-13)
+    dh/dP                     max 1.091e-07 over 18 comparisons at T=520.0 P=250000.0 VAPOR (difference -0.0414319189326, analytic -0.0414319144139)
+    d ln phi_i/dn_j           max 6.974e-08 over 6520 comparisons at T=300.0 P=101325.0 LIQUID d18/dn9 (difference -0.133374740585, analytic -0.133374590525)
+    dH/dn_j                   max 4.589e-08 over 326 comparisons at T=480.0 P=900000.0 LIQUID dH/dn18 (difference -90551.5464838, analytic -90551.5423287)
+    dV/dn_j                   max 2.292e-08 over 326 comparisons at T=480.0 P=900000.0 LIQUID dV/dn18 (difference -0.00475169162304, analytic -0.00475169151413)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,415 @@
+[
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "gradle.properties",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/gradle.properties"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/ServerConfig.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/ServerConfig.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/EnergyPipeBlock.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/EnergyPipeBlock.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/FluidPipeBlock.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/FluidPipeBlock.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/GasPipeBlock.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/GasPipeBlock.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/ItemPipeBlock.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/ItemPipeBlock.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/PipeBlock.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/PipeBlock.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/UniversalPipeBlock.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/UniversalPipeBlock.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/tileentity/EnergyPipeTileEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/tileentity/EnergyPipeTileEntity.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/tileentity/FluidPipeTileEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/tileentity/FluidPipeTileEntity.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/tileentity/GasPipeTileEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/tileentity/GasPipeTileEntity.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/tileentity/ItemPipeTileEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/tileentity/ItemPipeTileEntity.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/tileentity/PipeLogicTileEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/tileentity/PipeLogicTileEntity.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/tileentity/PipeTileEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/tileentity/PipeTileEntity.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/tileentity/UniversalPipeTileEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/tileentity/UniversalPipeTileEntity.java"
+  },
+  {
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "path": "src/main/java/de/maxhenkel/pipez/blocks/tileentity/types/FluidPipeType.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/pipez/src/main/java/de/maxhenkel/pipez/blocks/tileentity/types/FluidPipeType.java"
+  },
+  {
+    "id": "xnet",
+    "repo": "McJtyMods/XNet",
+    "sha": "559b1d959811cf04021b51810f353d8c048cd65e",
+    "path": "gradle.properties",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/xnet/gradle.properties"
+  },
+  {
+    "id": "xnet",
+    "repo": "McJtyMods/XNet",
+    "sha": "559b1d959811cf04021b51810f353d8c048cd65e",
+    "path": "src/main/java/mcjty/xnet/apiimpl/fluids/FluidChannelSettings.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/xnet/src/main/java/mcjty/xnet/apiimpl/fluids/FluidChannelSettings.java"
+  },
+  {
+    "id": "xnet",
+    "repo": "McJtyMods/XNet",
+    "sha": "559b1d959811cf04021b51810f353d8c048cd65e",
+    "path": "src/main/java/mcjty/xnet/apiimpl/fluids/FluidConnectorSettings.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/xnet/src/main/java/mcjty/xnet/apiimpl/fluids/FluidConnectorSettings.java"
+  },
+  {
+    "id": "laserio",
+    "repo": "Direwolf20-MC/LaserIO",
+    "sha": "4d278a6351a434d343fbf70d942baeeaf2607536",
+    "path": "gradle.properties",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/laserio/gradle.properties"
+  },
+  {
+    "id": "laserio",
+    "repo": "Direwolf20-MC/LaserIO",
+    "sha": "4d278a6351a434d343fbf70d942baeeaf2607536",
+    "path": "src/main/java/com/direwolf20/laserio/client/screens/CardFluidScreen.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/laserio/src/main/java/com/direwolf20/laserio/client/screens/CardFluidScreen.java"
+  },
+  {
+    "id": "laserio",
+    "repo": "Direwolf20-MC/LaserIO",
+    "sha": "4d278a6351a434d343fbf70d942baeeaf2607536",
+    "path": "src/main/java/com/direwolf20/laserio/common/containers/CardFluidContainer.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/laserio/src/main/java/com/direwolf20/laserio/common/containers/CardFluidContainer.java"
+  },
+  {
+    "id": "laserio",
+    "repo": "Direwolf20-MC/LaserIO",
+    "sha": "4d278a6351a434d343fbf70d942baeeaf2607536",
+    "path": "src/main/java/com/direwolf20/laserio/common/items/cards/CardFluid.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/laserio/src/main/java/com/direwolf20/laserio/common/items/cards/CardFluid.java"
+  },
+  {
+    "id": "laserio",
+    "repo": "Direwolf20-MC/LaserIO",
+    "sha": "4d278a6351a434d343fbf70d942baeeaf2607536",
+    "path": "src/main/resources/assets/laserio/patchouli_books/laseriobook/en_us/entries/card_fluid.json",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/laserio/src/main/resources/assets/laserio/patchouli_books/laseriobook/en_us/entries/card_fluid.json"
+  },
+  {
+    "id": "mi",
+    "repo": "AztechMC/Modern-Industrialization",
+    "sha": "e0b405a1f24917db38cb5e82836511f3ad357afe",
+    "path": "gradle.properties",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mi/gradle.properties"
+  },
+  {
+    "id": "mi",
+    "repo": "AztechMC/Modern-Industrialization",
+    "sha": "e0b405a1f24917db38cb5e82836511f3ad357afe",
+    "path": "src/main/java/aztech/modern_industrialization/pipes/api/PipeNetworkManager.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mi/src/main/java/aztech/modern_industrialization/pipes/api/PipeNetworkManager.java"
+  },
+  {
+    "id": "mi",
+    "repo": "AztechMC/Modern-Industrialization",
+    "sha": "e0b405a1f24917db38cb5e82836511f3ad357afe",
+    "path": "src/main/java/aztech/modern_industrialization/pipes/fluid/FluidNetwork.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mi/src/main/java/aztech/modern_industrialization/pipes/fluid/FluidNetwork.java"
+  },
+  {
+    "id": "mi",
+    "repo": "AztechMC/Modern-Industrialization",
+    "sha": "e0b405a1f24917db38cb5e82836511f3ad357afe",
+    "path": "src/main/java/aztech/modern_industrialization/pipes/fluid/FluidNetworkData.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mi/src/main/java/aztech/modern_industrialization/pipes/fluid/FluidNetworkData.java"
+  },
+  {
+    "id": "mi",
+    "repo": "AztechMC/Modern-Industrialization",
+    "sha": "e0b405a1f24917db38cb5e82836511f3ad357afe",
+    "path": "src/main/java/aztech/modern_industrialization/pipes/fluid/FluidNetworkNode.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mi/src/main/java/aztech/modern_industrialization/pipes/fluid/FluidNetworkNode.java"
+  },
+  {
+    "id": "mi",
+    "repo": "AztechMC/Modern-Industrialization",
+    "sha": "e0b405a1f24917db38cb5e82836511f3ad357afe",
+    "path": "src/main/java/aztech/modern_industrialization/pipes/fluid/FluidPipeInterface.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mi/src/main/java/aztech/modern_industrialization/pipes/fluid/FluidPipeInterface.java"
+  },
+  {
+    "id": "mi",
+    "repo": "AztechMC/Modern-Industrialization",
+    "sha": "e0b405a1f24917db38cb5e82836511f3ad357afe",
+    "path": "src/main/java/aztech/modern_industrialization/pipes/fluid/FluidTarget.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mi/src/main/java/aztech/modern_industrialization/pipes/fluid/FluidTarget.java"
+  },
+  {
+    "id": "mi",
+    "repo": "AztechMC/Modern-Industrialization",
+    "sha": "e0b405a1f24917db38cb5e82836511f3ad357afe",
+    "path": "src/main/java/aztech/modern_industrialization/test/FluidPipeTests.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mi/src/main/java/aztech/modern_industrialization/test/FluidPipeTests.java"
+  },
+  {
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "path": "enderio/src/gametest/java/com/enderio/enderio/gametests/conduits/fluid/FluidConduitTests.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/enderio/enderio/src/gametest/java/com/enderio/enderio/gametests/conduits/fluid/FluidConduitTests.java"
+  },
+  {
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "path": "enderio/src/generated/resources/data/enderio/enderio/conduit/ender_fluid.json",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/enderio/enderio/src/generated/resources/data/enderio/enderio/conduit/ender_fluid.json"
+  },
+  {
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "path": "enderio/src/generated/resources/data/enderio/enderio/conduit/fluid.json",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/enderio/enderio/src/generated/resources/data/enderio/enderio/conduit/fluid.json"
+  },
+  {
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "path": "enderio/src/generated/resources/data/enderio/enderio/conduit/pressurized_fluid.json",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/enderio/enderio/src/generated/resources/data/enderio/enderio/conduit/pressurized_fluid.json"
+  },
+  {
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "path": "enderio/src/main/java/com/enderio/enderio/client/content/conduits/gui/screen_type/FluidConduitScreenType.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/enderio/enderio/src/main/java/com/enderio/enderio/client/content/conduits/gui/screen_type/FluidConduitScreenType.java"
+  },
+  {
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "path": "enderio/src/main/java/com/enderio/enderio/content/conduits/legacy/LegacyFluidConduitData.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/enderio/enderio/src/main/java/com/enderio/enderio/content/conduits/legacy/LegacyFluidConduitData.java"
+  },
+  {
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "path": "enderio/src/main/java/com/enderio/enderio/content/conduits/type/fluid/FluidConduit.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/enderio/enderio/src/main/java/com/enderio/enderio/content/conduits/type/fluid/FluidConduit.java"
+  },
+  {
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "path": "enderio/src/main/java/com/enderio/enderio/content/conduits/type/fluid/FluidConduitConnectionConfig.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/enderio/enderio/src/main/java/com/enderio/enderio/content/conduits/type/fluid/FluidConduitConnectionConfig.java"
+  },
+  {
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "path": "enderio/src/main/java/com/enderio/enderio/content/conduits/type/fluid/FluidConduitTicker.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/enderio/enderio/src/main/java/com/enderio/enderio/content/conduits/type/fluid/FluidConduitTicker.java"
+  },
+  {
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "path": "gradle.properties",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/enderio/gradle.properties"
+  },
+  {
+    "id": "create",
+    "repo": "Creators-of-Create/Create",
+    "sha": "ac0c444d9828da3453ae8cc65338e8de063286fb",
+    "path": "gradle.properties",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/create/gradle.properties"
+  },
+  {
+    "id": "create",
+    "repo": "Creators-of-Create/Create",
+    "sha": "ac0c444d9828da3453ae8cc65338e8de063286fb",
+    "path": "src/main/java/com/simibubi/create/content/fluids/FluidNetwork.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/create/src/main/java/com/simibubi/create/content/fluids/FluidNetwork.java"
+  },
+  {
+    "id": "create",
+    "repo": "Creators-of-Create/Create",
+    "sha": "ac0c444d9828da3453ae8cc65338e8de063286fb",
+    "path": "src/main/java/com/simibubi/create/content/fluids/FluidTransportBehaviour.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/create/src/main/java/com/simibubi/create/content/fluids/FluidTransportBehaviour.java"
+  },
+  {
+    "id": "create",
+    "repo": "Creators-of-Create/Create",
+    "sha": "ac0c444d9828da3453ae8cc65338e8de063286fb",
+    "path": "src/main/java/com/simibubi/create/content/fluids/PipeConnection.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/create/src/main/java/com/simibubi/create/content/fluids/PipeConnection.java"
+  },
+  {
+    "id": "create",
+    "repo": "Creators-of-Create/Create",
+    "sha": "ac0c444d9828da3453ae8cc65338e8de063286fb",
+    "path": "src/main/java/com/simibubi/create/content/fluids/pump/PumpBlockEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/create/src/main/java/com/simibubi/create/content/fluids/pump/PumpBlockEntity.java"
+  },
+  {
+    "id": "create",
+    "repo": "Creators-of-Create/Create",
+    "sha": "ac0c444d9828da3453ae8cc65338e8de063286fb",
+    "path": "src/main/java/com/simibubi/create/infrastructure/config/CFluids.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/create/src/main/java/com/simibubi/create/infrastructure/config/CFluids.java"
+  },
+  {
+    "id": "ie",
+    "repo": "BluSunrize/ImmersiveEngineering",
+    "sha": "583a182549d284a35c813b55ac2a0d1fddcf945a",
+    "path": "gradle.properties",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/ie/gradle.properties"
+  },
+  {
+    "id": "ie",
+    "repo": "BluSunrize/ImmersiveEngineering",
+    "sha": "583a182549d284a35c813b55ac2a0d1fddcf945a",
+    "path": "src/main/java/blusunrize/immersiveengineering/common/blocks/metal/FluidPipeBlockEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/ie/src/main/java/blusunrize/immersiveengineering/common/blocks/metal/FluidPipeBlockEntity.java"
+  },
+  {
+    "id": "ie",
+    "repo": "BluSunrize/ImmersiveEngineering",
+    "sha": "583a182549d284a35c813b55ac2a0d1fddcf945a",
+    "path": "src/main/java/blusunrize/immersiveengineering/common/blocks/metal/FluidPumpBlockEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/ie/src/main/java/blusunrize/immersiveengineering/common/blocks/metal/FluidPumpBlockEntity.java"
+  },
+  {
+    "id": "ie",
+    "repo": "BluSunrize/ImmersiveEngineering",
+    "sha": "583a182549d284a35c813b55ac2a0d1fddcf945a",
+    "path": "src/main/resources/assets/immersiveengineering/manual/en_us/fluid_pipes.txt",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/ie/src/main/resources/assets/immersiveengineering/manual/en_us/fluid_pipes.txt"
+  },
+  {
+    "id": "mekanism",
+    "repo": "mekanism/Mekanism",
+    "sha": "a00109e4856fd38b9c5b3dd7f22ce4a59cd65a80",
+    "path": "gradle.properties",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mekanism/gradle.properties"
+  },
+  {
+    "id": "mekanism",
+    "repo": "mekanism/Mekanism",
+    "sha": "a00109e4856fd38b9c5b3dd7f22ce4a59cd65a80",
+    "path": "src/main/java/mekanism/client/render/transmitter/RenderMechanicalPipe.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mekanism/src/main/java/mekanism/client/render/transmitter/RenderMechanicalPipe.java"
+  },
+  {
+    "id": "mekanism",
+    "repo": "mekanism/Mekanism",
+    "sha": "a00109e4856fd38b9c5b3dd7f22ce4a59cd65a80",
+    "path": "src/main/java/mekanism/common/content/network/FluidNetwork.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mekanism/src/main/java/mekanism/common/content/network/FluidNetwork.java"
+  },
+  {
+    "id": "mekanism",
+    "repo": "mekanism/Mekanism",
+    "sha": "a00109e4856fd38b9c5b3dd7f22ce4a59cd65a80",
+    "path": "src/main/java/mekanism/common/content/network/transmitter/MechanicalPipe.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mekanism/src/main/java/mekanism/common/content/network/transmitter/MechanicalPipe.java"
+  },
+  {
+    "id": "mekanism",
+    "repo": "mekanism/Mekanism",
+    "sha": "a00109e4856fd38b9c5b3dd7f22ce4a59cd65a80",
+    "path": "src/main/java/mekanism/common/item/block/transmitter/ItemBlockMechanicalPipe.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mekanism/src/main/java/mekanism/common/item/block/transmitter/ItemBlockMechanicalPipe.java"
+  },
+  {
+    "id": "mekanism",
+    "repo": "mekanism/Mekanism",
+    "sha": "a00109e4856fd38b9c5b3dd7f22ce4a59cd65a80",
+    "path": "src/main/java/mekanism/common/tier/PipeTier.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mekanism/src/main/java/mekanism/common/tier/PipeTier.java"
+  },
+  {
+    "id": "mekanism",
+    "repo": "mekanism/Mekanism",
+    "sha": "a00109e4856fd38b9c5b3dd7f22ce4a59cd65a80",
+    "path": "src/main/java/mekanism/common/tile/transmitter/TileEntityMechanicalPipe.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mekanism/src/main/java/mekanism/common/tile/transmitter/TileEntityMechanicalPipe.java"
+  }
+]

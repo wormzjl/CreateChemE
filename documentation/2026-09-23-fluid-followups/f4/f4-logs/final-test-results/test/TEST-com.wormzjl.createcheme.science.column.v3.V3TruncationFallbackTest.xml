@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:21.439Z" hostname="WORMZ-PC" time="0.005">
+  <properties/>
+  <testcase name="successIsNotRetriedAndCancellationEscapesTheFirstChainAndTheRetry()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.001"/>
+  <testcase name="[1] INVALID_INPUT" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.001"/>
+  <testcase name="[2] DOF_MISMATCH" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.001"/>
+  <testcase name="[3] INFEASIBLE_SPECIFICATION" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.0"/>
+  <testcase name="[4] PROPERTY_OUT_OF_RANGE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.0"/>
+  <testcase name="[5] PHASE_REGIME_MISMATCH" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.0"/>
+  <testcase name="[6] INITIALIZATION_FAILURE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.0"/>
+  <testcase name="[7] LINEAR_SOLVE_FAILURE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.0"/>
+  <testcase name="[8] NONCONVERGENCE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.0"/>
+  <testcase name="[9] ACCEPTANCE_AUDIT_FAILURE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.0"/>
+  <testcase name="[10] CANCELLED" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.0"/>
+  <testcase name="[11] DEADLINE_EXCEEDED" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.001"/>
+  <testcase name="[12] INTERNAL_ERROR" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.0"/>
+  <testcase name="aFailedUntruncatedRetryDoesNotRecurseAndZeroNeverRetries()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationFallbackTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

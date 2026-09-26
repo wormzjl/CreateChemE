@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:crystal_carbon_dioxide_i",
+  "component": "CarbonDioxide",
+  "crystal": "CO2 solid phase I (dry ice), the phase described by Trusler 2011 and Jaeger and Span 2012",
+  "revision": "crystal-carbon_dioxide-i-r1",
+  "source": "P2 research-only fixture (batch 2026-09-24-coolprop-low-temperature) from open secondary values. Incomplete on purpose: no open source for the solid heat capacity between 189.78 K and the triple point, and none for the thermal expansion or compressibility, was available; the reference equations of state for solid CO2 (Trusler 2011, J. Phys. Chem. Ref. Data 40, 043105; Jaeger and Span 2012, J. Chem. Eng. Data 57, 590) are not available locally. Missing fields are left absent and the record refuses evaluation.",
+  "heat_capacity": {
+    "segments": [
+      {
+        "type": "table",
+        "temperature_min_kelvin": 146.48,
+        "temperature_max_kelvin": 189.78,
+        "temperatures_kelvin": [146.48, 189.78],
+        "values_j_per_mol_kelvin": [47.11, 54.55],
+        "estimated": true,
+        "source": "Giauque and Egan 1937 (J. Chem. Phys. 5, 45) measured points as quoted by Wikipedia 'Carbon dioxide (data page)', retrieved 2026-09-24; linear interpolation between them is this record's assumption; the quoted 15.52 K point (2.534 J/(mol K)) is omitted because a straight line to it would misstate the low-temperature region"
+      }
+    ]
+  },
+  "molar_volume": {
+    "reference_temperature_kelvin": 194.65,
+    "reference_pressure_pascal": 101325,
+    "value_m3_per_mol": 2.8175288092189502e-5,
+    "estimated": true,
+    "source": "density 1562 kg/m3 of the solid at 1 atm and -78.5 C (Wikipedia 'Carbon dioxide' infobox, no primary citation, retrieved 2026-09-24) with the CoolProp molar mass 0.0440098 kg/mol; thermal_expansion_per_kelvin, isothermal_compressibility_per_pascal and the range are absent: not sourced"
+  },
+  "transitions": [],
+  "anchor": {
+    "type": "triple_point",
+    "temperature_kelvin": 216.592,
+    "pressure_pascal": 517950,
+    "fusion_enthalpy_j_per_mol": 9019,
+    "estimated": true,
+    "source": "triple point 216.592 K and 0.51795 MPa: Span and Wagner 1996 (J. Phys. Chem. Ref. Data 25, 1509); fusion enthalpy 9.019 kJ/mol at the triple point: Air Liquide Gas Encyclopedia as quoted by Wikipedia 'Carbon dioxide (data page)', retrieved 2026-09-24 (secondary, estimated)"
+  },
+  "coverage": {
+    "grade": "research_only",
+    "evidence": "Incomplete: heat capacity ends at 189.78 K below the 216.592 K anchor; no thermal expansion, compressibility or volume range. Every evaluation is refused until Trusler 2011 or Jaeger and Span 2012 is acquired (P4)."
+  }
+}

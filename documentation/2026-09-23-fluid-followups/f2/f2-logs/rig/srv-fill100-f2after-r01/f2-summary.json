@@ -1,0 +1,55 @@
+{
+  "runId": "srv-fill100-f2after-r01",
+  "scenario": "fill100",
+  "devices": 800,
+  "placement": {
+    "rconMs": 145,
+    "tickLoopGapMs": 291,
+    "firstTickAfter": {
+      "tickMs": 116.7455,
+      "engineMs": 114.429
+    },
+    "next5s": {
+      "maxTickMs": 116.7455,
+      "maxEngineMs": 114.429,
+      "engineMsSum": 203.36280000000002
+    },
+    "cantKeepUp": []
+  },
+  "window": {
+    "ticks": {
+      "count": 1200,
+      "tickMs": {
+        "p50": 0.2651,
+        "p95": 0.5518,
+        "p99": 1.2542,
+        "max": 4.205,
+        "mean": 0.30826133333333366
+      },
+      "engineMs": {
+        "p50": 0.0685,
+        "p95": 0.2775,
+        "p99": 1.6676,
+        "max": 10.1871,
+        "mean": 0.15023158333333358
+      },
+      "ticksPerSecond": 19.99500124968758
+    },
+    "endState": {
+      "onlineTick": 2600,
+      "devices": 800,
+      "islands": 100,
+      "kinds": {
+        "AWAKE": 100
+      },
+      "statuses": {
+        "FULL": 100
+      },
+      "workersActive": 0,
+      "workersLimit": 12
+    },
+    "placementGap": null,
+    "heldLines": 10,
+    "processCores": 0.3729661159104252
+  }
+}

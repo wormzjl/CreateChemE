@@ -1,0 +1,147 @@
+{
+  "runId": "srv-rest1000-f2after-r01",
+  "scenario": "rest1000",
+  "devices": 5000,
+  "placement": {
+    "rconMs": 638,
+    "tickLoopGapMs": 739,
+    "firstTickAfter": {
+      "tickMs": 84.4217,
+      "engineMs": 78.5704
+    },
+    "next5s": {
+      "maxTickMs": 84.4217,
+      "maxEngineMs": 78.5704,
+      "engineMsSum": 322.9109
+    },
+    "cantKeepUp": []
+  },
+  "window": {
+    "ticks": {
+      "count": 1201,
+      "tickMs": {
+        "p50": 0.1688,
+        "p95": 0.3597,
+        "p99": 0.7605,
+        "max": 1.5967,
+        "mean": 0.1913741881765192
+      },
+      "engineMs": {
+        "p50": 0.007,
+        "p95": 0.0215,
+        "p99": 0.0708,
+        "max": 0.2852,
+        "mean": 0.009802997502081592
+      },
+      "ticksPerSecond": 20.01199720065318
+    },
+    "endState": {
+      "onlineTick": 2600,
+      "devices": 5000,
+      "islands": 1000,
+      "kinds": {
+        "REST": 1000
+      },
+      "statuses": {
+        "RESTING": 1000
+      },
+      "workersActive": 0,
+      "workersLimit": 1
+    },
+    "placementGap": {
+      "t": 1790213670217,
+      "ms": 654.7,
+      "devices": 5000
+    },
+    "heldLines": 0,
+    "processCores": 0.0918284246230312
+  },
+  "marginal": {
+    "windowMs": 450,
+    "noopRttMs": 1,
+    "noopEngineMsInWindow": 0.06535,
+    "ops": {
+      "noop": {
+        "n": 10,
+        "rttMs": 1,
+        "rttMax": 2,
+        "engineMsInWindow": 0.06535,
+        "maxTickMs": 0.2046,
+        "costMs": 0.004749999999999997,
+        "costMsMax": 0.9940499999999999
+      },
+      "plus_tank": {
+        "n": 10,
+        "rttMs": 1,
+        "rttMax": 6,
+        "engineMsInWindow": 1.53495,
+        "maxTickMs": 0.78235,
+        "costMs": 1.4696,
+        "costMsMax": 9.48785
+      },
+      "minus_tank": {
+        "n": 10,
+        "rttMs": 1,
+        "rttMax": 3,
+        "engineMsInWindow": 0.6898500000000001,
+        "maxTickMs": 0.5198,
+        "costMs": 0.6245,
+        "costMsMax": 2.92415
+      },
+      "plus_pipe": {
+        "n": 10,
+        "rttMs": 1,
+        "rttMax": 1,
+        "engineMsInWindow": 1.6833,
+        "maxTickMs": 1.1694,
+        "costMs": 1.61795,
+        "costMsMax": 2.09105
+      },
+      "minus_pipe": {
+        "n": 10,
+        "rttMs": 1,
+        "rttMax": 1,
+        "engineMsInWindow": 1.29115,
+        "maxTickMs": 0.81655,
+        "costMs": 1.2258,
+        "costMsMax": 2.0575500000000004
+      },
+      "edit_pipe": {
+        "n": 10,
+        "rttMs": 1,
+        "rttMax": 2,
+        "engineMsInWindow": 0.8492000000000001,
+        "maxTickMs": 0.6635,
+        "costMs": 0.78385,
+        "costMsMax": 2.02515
+      },
+      "edit_back": {
+        "n": 10,
+        "rttMs": 1,
+        "rttMax": 1,
+        "engineMsInWindow": 1.0147499999999998,
+        "maxTickMs": 0.6733,
+        "costMs": 0.9493999999999999,
+        "costMsMax": 2.0736499999999998
+      },
+      "plus20": {
+        "n": 10,
+        "rttMs": 2,
+        "rttMax": 3,
+        "engineMsInWindow": 2.4617500000000003,
+        "maxTickMs": 1.93465,
+        "costMs": 3.4084000000000003,
+        "costMsMax": 6.345750000000001
+      },
+      "minus20": {
+        "n": 10,
+        "rttMs": 1,
+        "rttMax": 3,
+        "engineMsInWindow": 0.7731,
+        "maxTickMs": 0.6467499999999999,
+        "costMs": 0.8521999999999998,
+        "costMsMax": 3.0422499999999997
+      }
+    }
+  }
+}

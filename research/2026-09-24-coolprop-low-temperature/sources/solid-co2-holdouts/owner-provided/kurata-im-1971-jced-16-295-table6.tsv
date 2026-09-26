@@ -1,0 +1,29 @@
+# Kurata F., Im K.U. (1971). Phase Equilibrium of Carbon Dioxide and Light Paraffins in Presence of Solid Carbon Dioxide.
+# J. Chem. Eng. Data 16(3), 295-299. doi:10.1021/je60050a018. ACS copyright, owner-provided.
+# Local copy: kurata-im-1971-jced-16-295.pdf (sha256 ab8a75e7a27b19a446b41811e8383cc79558c978d0ab171c2cbc9fa385dde146).
+# Table VI, "Molal equilibrium ratios along S-V-L locus in carbon dioxide-methane system", p. 298, text layer checked against
+# a 110 dpi page render. Footnote: "Based on data of Davis et al. (2)", i.e. Davis, Rodewald, Kurata 1962 (see
+# davis-rodewald-kurata-1962-aiche-8-537.tsv); the pairing of liquid and vapour compositions at the same T is Kurata-Im's
+# (interpolated/smoothed from Davis's separate x and y tables), NOT an independent measurement.
+# Units as printed: T in deg F, p in psia, compositions in mole fraction, K = y/x. T_K and p_MPa derived here.
+# 10 points, -81.3 to -162.3 F (210.2 to 165.2 K), 275 to 703 psia (1.90 to 4.85 MPa), x_CO2 0.0183 to 0.7400.
+# Tables I to V (ternary and quaternary S-L-V data with ethane, propane, n-butane; Table I from Jensen) are NOT transcribed
+# (outside the CO2 + CH4 / CO2 + CH4 + N2 scope of this task). There is no N2 system in this paper.
+# Experimental uncertainty stated for Tables I to V (p. 296): T +-0.3 F (thermometer calibration better than +-0.1 F),
+# p +-0.5 psia, composition maximum relative uncertainty +-3.2 %.
+# Printed inconsistencies (not corrected): at -100.0 F the vapour sums to 1.0100 (K_CH4 1.150 implies y_CH4 0.9240); at
+# -117.3 F the liquid sums to 0.9750 and the vapour to 0.9633 (K_CH4 1.092 implies y_CH4 0.9587 with x_CH4 0.8780).
+# Sanity check: x_CO2 and y_CO2 decrease monotonically as T falls; p passes a maximum (703 psia) near -90 F, as in Davis.
+# Digits as printed, one sanity check, not re-verified (owner: not looking for 100 % correct data).
+# Role: G5 binary SLV phase compositions (derived from Davis 1962). Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+T_F	T_K	p_psia	p_MPa	x_CO2	x_CH4	y_CO2	y_CH4	K_CO2	K_CH4
+-81.3	210.21	580.0	3.9990	0.7400	0.2600	0.1750	0.8250	0.236	3.170
+-84.9	208.21	655.0	4.5161	0.6500	0.3500	0.1500	0.8500	0.231	2.300
+-89.9	205.43	702.0	4.8401	0.4300	0.5700	0.1130	0.8870	0.263	1.560
+-90.3	205.21	703.0	4.8470	0.3450	0.6550	0.1110	0.8890	0.322	1.360
+-99.3	200.21	695.0	4.7919	0.2070	0.7930	0.0780	0.9220	0.383	1.160
+-100.0	199.82	690.0	4.7574	0.1970	0.8030	0.0760	0.9340	0.386	1.150
+-117.3	190.21	577.0	3.9783	0.0970	0.8780	0.0413	0.9220	0.426	1.092
+-126.3	185.21	510.0	3.5163	0.0710	0.9260	0.0300	0.9700	0.422	1.050
+-159.9	166.54	287.0	1.9788	0.0355	0.9665	0.0140	0.9860	0.418	1.020
+-162.3	165.21	275.0	1.8961	0.0183	0.9817	0.0060	0.9940	0.327	1.013

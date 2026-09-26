@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PipeJunctionMixedFeedProbe" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-24T15:40:44.212Z" hostname="WORMZ-PC" time="0.142">
+  <properties/>
+  <testcase name="fourFiveAndSixEquipmentConnectionsMixAndBalanceWithoutDuplicatingDisplayedThroughput()" classname="com.wormzjl.createcheme.runtime.fluid.PipeJunctionMixedFeedProbe" time="0.142">
+    <failure message="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 5.816801548255438E-6; active-set pass=0" type="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence">com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 5.816801548255438E-6; active-set pass=0
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(PassiveIntervalSolver.java:182)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(PassiveIntervalSolver.java:83)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(PassiveIntervalSolver.java:51)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(PassiveIntervalSolver.java:40)
+	at app//com.wormzjl.createcheme.runtime.fluid.PipeJunctionMixedFeedProbe.fourFiveAndSixEquipmentConnectionsMixAndBalanceWithoutDuplicatingDisplayedThroughput(PipeJunctionMixedFeedProbe.java:39)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

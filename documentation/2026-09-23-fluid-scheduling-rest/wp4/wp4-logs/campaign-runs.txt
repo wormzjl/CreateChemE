@@ -1,0 +1,3 @@
+rest100-wp4-off-r01 rest100 false - memory
+rest100-wp4-on-r01 rest100 true - memory
+stress100-wp4-on-r01 stress100 true

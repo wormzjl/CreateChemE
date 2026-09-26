@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3ColdStartSweepTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:52.936Z" hostname="WORMZ-PC" time="0.798">
+  <properties/>
+  <testcase name="reasonableSetupMatrixHasBoundedTypedColdOutcomes()" classname="com.wormzjl.createcheme.science.column.v3.V3ColdStartSweepTest" time="0.798"/>
+  <system-out><![CDATA[V3 cold-start sweep
+nominal | SUCCESS residual=1.9054482936780464E-11 iterations=41
+flow_75.0 | SUCCESS residual=1.583112219926382E-9 iterations=4
+flow_125.0 | SUCCESS residual=5.8092289499472824E-9 iterations=75
+feed_k_545.0 | SUCCESS residual=4.755564662638153E-13 iterations=18
+feed_k_548.0 | SUCCESS residual=4.144385457038879E-15 iterations=25
+feed_k_551.0 | SUCCESS residual=9.2148511043888E-15 iterations=27
+feed_k_552.0 | SUCCESS residual=3.723824862390716E-10 iterations=18
+feed_k_555.0 | SUCCESS residual=1.1375806479918538E-10 iterations=2
+top_kpa_225.0 | SUCCESS residual=5.329070518200751E-15 iterations=2
+top_kpa_275.0 | SUCCESS residual=5.69543439105835E-14 iterations=1
+drop_kpa_0.0 | SUCCESS residual=2.833942122312231E-9 iterations=33
+drop_kpa_1.5 | SUCCESS residual=1.2434497875801753E-14 iterations=20
+condenser_k_295.0 | PROPERTY_OUT_OF_RANGE residual=0.0 iterations=0
+condenser_k_305.0 | SUCCESS residual=6.935928233790917E-10 iterations=3
+reflux_1.5 | SUCCESS residual=5.329070518200751E-15 iterations=68
+reflux_2.5 | SUCCESS residual=9.43689570931383E-15 iterations=20
+reboiler_mw_0.02 | SUCCESS residual=6.044870297046145E-11 iterations=11
+reboiler_mw_0.05 | SUCCESS residual=5.984329618513585E-14 iterations=42
+low_corner | PROPERTY_OUT_OF_RANGE residual=0.0 iterations=0
+high_corner | SUCCESS residual=1.2434497875801753E-14 iterations=15
+cool_high_reflux | PROPERTY_OUT_OF_RANGE residual=0.0 iterations=0
+hot_low_reflux | SUCCESS residual=1.4210854715202004E-14 iterations=0
+accepted=19 / 22
+
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

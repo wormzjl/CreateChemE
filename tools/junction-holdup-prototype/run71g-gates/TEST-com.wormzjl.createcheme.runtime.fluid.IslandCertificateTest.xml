@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" tests="22" skipped="0" failures="1" errors="0" timestamp="2026-09-25T06:39:10.118Z" hostname="WORMZ-PC" time="3.582">
+  <properties/>
+  <testcase name="deadHeadedLinesCertifyRestAndThenCostNothing()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.344">
+    <failure message="org.opentest4j.AssertionFailedError: dead-headed pump did not certify: no accepted interval ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: dead-headed pump did not certify: no accepted interval ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest.deadHeadedLinesCertifyRestAndThenCostNothing(IslandCertificateTest.java:149)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="aPumpHeatingItsLoopDoesNotCertify()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.414"/>
+  <testcase name="aSettledClosedPairCertifiesWithALongHorizon()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.133"/>
+  <testcase name="slowMonotonicEvolutionFailsStationarity()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.004"/>
+  <testcase name="aTankBeingFlushedWithAnotherCompositionDoesNotCertifyUntilTheFlushIsComplete()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.185"/>
+  <testcase name="aPropertyHoldFreezesACertifiedIslandAndResumeRequalifiesOverTheConfirmCount()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.023"/>
+  <testcase name="solidPhaseAndClosureTransitionsResetQualification()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.001"/>
+  <testcase name="aSettledBenchmarkClosedLadderCertifiesOnceItsQuietPipesAreExempt()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.524"/>
+  <testcase name="aModuleDriveWakesACertifiedIslandAtItsExactTick()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.016"/>
+  <testcase name="aHorizonRevalidationThatNoLongerRepeatsDropsTheCertificate()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.084"/>
+  <testcase name="aHorizonRevalidationRenewsAStationaryCertificate()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.016"/>
+  <testcase name="grossFlowWithAZeroAverageIsNotRest()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.0"/>
+  <testcase name="aQuietPipeIsExemptFromTheRelativeFlowTestAndALoudOneIsNot()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.002"/>
+  <testcase name="generatorToVoidReplaysWithinBudgetOfTheSolvedTrajectory()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.089"/>
+  <testcase name="replayScalesTheRecordedIntervalLinearly()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.002"/>
+  <testcase name="aSmallInventoryFailsTheRelativeToleranceThatALargeOnePasses()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.002"/>
+  <testcase name="theHorizonKeepsReplayWithinTheBudgetAndStopsBeforeDepletion()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.001"/>
+  <testcase name="changedControlsReplaceACertifiedIslandWithAnAwakeOne()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.013"/>
+  <testcase name="eventsInsideACertifiedWindowAlignByMaterialisationAtTheirExactTicks()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.007"/>
+  <testcase name="aMatchedThroughputTankReplaysWithinBudgetAndConservesExactly()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.153"/>
+  <testcase name="aSlowlyFillingTankNeverCertifies()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.078"/>
+  <testcase name="anIslandThatNeverCertifiesSolvesBitForBitAsWithCertificatesOff()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="1.359"/>
+  <system-out><![CDATA[dead-headed line: certified at tick 200 Optional[Certified[REST, since 200, base 200, horizon 9223372036854775807, largest flow 0.0]] refusal=null
+dead-headed pump: certified at tick -1 Optional.empty refusal=no accepted interval
+pumped loop: pump work 0.6338896712301854 J per interval, Optional.empty refusal=a node's temperature or pressure changed by 1.2519566938863266E-6 per interval
+closed pair: certified at tick 300 Optional[Certified[STEADY, since 300, base 300, horizon 103900, largest flow 3.2567084364542316E-10]] refusal=null
+closed pair, three-interval window: 10 solves in 40 intervals, Optional[Certified[STEADY, since 400, base 4400, horizon 4700, largest flow 1.346354283321337E-14]] refusal=null
+composition replacement at eps_s 1.0E-9: Optional[Certified[STEADY, since 17500, base 17500, horizon 38000, largest flow 0.20000434787199223]], last refusal while flushing: a node's temperature or pressure changed by 5.0571277983713355E-6 per interval
+composition replacement at eps_s 1.0E-7: Optional[Certified[STEADY, since 13000, base 13000, horizon 13200, largest flow 0.200004523296926]], last refusal while flushing: a node's temperature or pressure changed by 5.0571277983713355E-6 per interval
+closed ladder 65: certified at tick 300 Optional[Certified[STEADY, since 300, base 300, horizon 155700, largest flow 8.359283551827984E-9]] refusal=null evidence=Evidence[endTick=300, stationarity=Stationarity[discrete=null, state=7.224924302408208E-11, component=1.1532335793992712E-9, componentAt=node 6574 component 10, energy=1.1319047324381301E-9, energyAt=node 6574 energy, flow=1.085221993324614E-9, flowAt=pipe 4134588280833814892, flowChange=1.3145747071060112, flowMoves=1.085221993324614E-9, largestRelativeFlowChange=1.3145747071060112], drift=6.433896885374101E-10]
+drop: certified Certified[STEADY, since 10600, base 10600, horizon 11100, largest flow 0.20000622131069878], then Optional.empty refusal=revalidation: node 4 component 19 changed by 2.396325820284586E-6 of its inventory
+renewal: Optional[Certified[STEADY, since 200, base 600, horizon 900, largest flow 0.33296864487582134]] refusal=null
+generator to void: certified at tick 200 Optional[Certified[STEADY, since 200, base 200, horizon 1728200, largest flow 0.33296864487582134]] refusal=null
+generator to void: 2 solves certified vs 400 reference; void received -2.377209799e+04 vs -2.377209799e+04 mol nitrogen
+matched throughput: certified at tick 1500 Optional[Certified[STEADY, since 1500, base 1500, horizon 4900, largest flow 0.26587941328535064]] refusal=null
+matched throughput: base 1500, solves certified 35 vs reference 215
+slow fill: Optional.empty refusal=a node's temperature or pressure changed by 0.0011390408903865798 per interval
+slow fill: a node's temperature or pressure changed by 0.0018861458951659115 per interval
+pumped loop: a node's temperature or pressure changed by 1.3007500281037242E-6 per interval
+stress100 ladder 7: a node's temperature or pressure changed by 1.1830195909311177E-8 per interval
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

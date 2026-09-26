@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3ContinuationSeedTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:58.139Z" hostname="WORMZ-PC" time="0.003">
+  <properties/>
+  <testcase name="noRectifyingNodeOfAStageGridReadsThePreviousGridsFeedTray()" classname="com.wormzjl.createcheme.science.column.v3.V3ContinuationSeedTest" time="0.002"/>
+  <testcase name="aGridMapsOntoItselfAsTheIdentity()" classname="com.wormzjl.createcheme.science.column.v3.V3ContinuationSeedTest" time="0.0"/>
+  <testcase name="aStructurallyAbsentPhaseStaysZeroAndAOnePhasePointTakesTheWholeInflow()" classname="com.wormzjl.createcheme.science.column.v3.V3ContinuationSeedTest" time="0.0"/>
+  <testcase name="theFeedTrayIsNeverCapped()" classname="com.wormzjl.createcheme.science.column.v3.V3ContinuationSeedTest" time="0.0"/>
+  <testcase name="anOversizedTracePointIsBroughtBackToTheMaterialItsNeighboursDeliver()" classname="com.wormzjl.createcheme.science.column.v3.V3ContinuationSeedTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

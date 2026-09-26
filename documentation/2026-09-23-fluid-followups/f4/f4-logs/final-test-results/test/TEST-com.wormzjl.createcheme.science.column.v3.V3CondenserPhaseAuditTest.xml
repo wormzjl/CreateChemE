@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseAuditTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:57.623Z" hostname="WORMZ-PC" time="0.007">
+  <properties/>
+  <testcase name="independentlyAcceptsTheManufacturedTwoPhaseSplit()" classname="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseAuditTest" time="0.0"/>
+  <testcase name="rejectsATwoPhaseMeshWhenTheIndependentFlashIsLiquid()" classname="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseAuditTest" time="0.001"/>
+  <testcase name="rejectsIncorrectComponentPartitionEvenWhenOverallCompositionAndBetaAgree()" classname="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseAuditTest" time="0.001"/>
+  <testcase name="rejectsAFlashWhosePhaseFractionsDoNotMatchTheSolvedComponentFlows()" classname="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseAuditTest" time="0.0"/>
+  <testcase name="independentlyRejectsAWetCondenserPartitionThatTheWetResidualWouldOtherwiseShare()" classname="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseAuditTest" time="0.002"/>
+  <testcase name="condenserEnergyBalanceClosesADecantingDrumWithBothTheSlipAndTheFreeWaterBoot()" classname="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseAuditTest" time="0.001"/>
+  <testcase name="cancellationAfterTheIndependentFlashEscapesUnchanged()" classname="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseAuditTest" time="0.001"/>
+  <testcase name="waterLimitedOverheadRetainsAllSteamAsMixedVaporInsteadOfMakingNegativeFreeWater()" classname="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseAuditTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

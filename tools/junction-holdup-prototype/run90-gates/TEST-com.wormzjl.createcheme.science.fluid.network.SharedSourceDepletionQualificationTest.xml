@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.SharedSourceDepletionQualificationTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:52:06.243Z" hostname="WORMZ-PC" time="0.401">
+  <properties/>
+  <testcase name="competingBranchesNeverWithdrawMoreThanFiniteSourceAcrossInputPermutations()" classname="com.wormzjl.createcheme.science.fluid.network.SharedSourceDepletionQualificationTest" time="0.035"/>
+  <testcase name="excessivePumpRequestAllowsBoundedTransferOrAtomicRefusalAndControlTransfersMaterial()" classname="com.wormzjl.createcheme.science.fluid.network.SharedSourceDepletionQualificationTest" time="0.362"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

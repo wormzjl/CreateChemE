@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" tests="4" skipped="0" failures="1" errors="0" timestamp="2026-09-25T07:04:23.981Z" hostname="WORMZ-PC" time="0.997">
+  <properties/>
+  <testcase name="aLineChargedToItsOwnHydrostaticBalanceIntegratesAtZeroFlow()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.168"/>
+  <testcase name="aDeadHeadedElevatedLineBehavesLikeItsFlatEquivalent()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.382"/>
+  <testcase name="aVerticalPipeStackCompilesToOneEdgeWithAnElevationDifference()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.003"/>
+  <testcase name="elevatedLinesIntegrateFortyIntervalsLikeTheirFlatControl()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.416">
+    <failure message="org.opentest4j.AssertionFailedError: A tank below its generator must settle one water column above it ==&gt; expected: &lt;439081.6931625868&gt; but was: &lt;434925.6987174727&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: A tank below its generator must settle one water column above it ==&gt; expected: &lt;439081.6931625868&gt; but was: &lt;434925.6987174727&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+	at app//com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest.elevatedLinesIntegrateFortyIntervalsLikeTheirFlatControl(ElevatedBlockLineIslandTest.java:218)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+
+(balanced) generator at 400000 Pa, tank charged at 360918.3068374132 Pa: OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.3068374132 mass=4.082632911146436
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+ENGAGED holdup junction=3 inventoryMassKg=9.778289370211617 stateMassKg=996.0083764813535 inventoryVolume=9.778289370211617
+ENGAGED holdup junction=-3 inventoryMassKg=9.778289370211617 stateMassKg=996.0083764813535 inventoryVolume=9.778289370211617
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+
+=== dead-headed at 101325 Pa, adverse column 39070.02218088346 Pa ===
+(rising plain)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(flat  plain)   OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(rising filter) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(flat  filter)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=7.33075750350967E-4 everCached=true sameNodesOtherTransfers=true cacheSize=8 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[15.822860209027617] estimate=[15.822860209027617]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[15.822860209027617] estimate=[15.822860209027617]
+RATEMISS dt=1.5960817046731715E-4 everCached=true sameNodesOtherTransfers=true cacheSize=8 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=4644.73230933072 previous=[15.822860209027617] estimate=[16.75362287986367]
+RATEWARM use=fresh sameState=false maxDeltaP=4644.73230933072 previous=[15.822860209027617] estimate=[16.75362287986367]
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176087655631 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.01417631117241 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-7.014176358606516 rateOnly=false
+(falling plain) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=140395.02120042467 mass=261.8246651555104
+rising line:
+  node[0] id=1 GENERATOR y=-59.0 P=101325.0 rho=996.0083764813535 liquid=1.0 vapour=0.0
+  node[1] id=5 RESERVOIR y=-55.0 P=101325.0 rho=1.145353086183201 liquid=0.0 vapour=1.0
+  pipe id=1032387407353448371 0->1 Passive filter=false blocked=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+
+=== generator at 400000 Pa, water column over 4 m = 39081.6931625868 Pa ===
+(flat control)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=400000.0056142352 mass=743.1612589993315
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-5.488406106114336 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-5.617105259988104 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-5.617105259988104 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.963830627035282 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.894757657959477 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.909134349322894 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.909134349322894 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.838865456556267 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.831837370666062 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.833294207761551 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.833294207761551 rateOnly=false
+RATEMISS dt=0.0010561648805618717 everCached=true sameNodesOtherTransfers=true cacheSize=8 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=333600.6987174727 previous=[47.13550792361613] estimate=[-4.824801934892516]
+VOIDSTART edge=0 GENERATOR->PORT start=-4.824801934892516 used=-4.824801934892516 rateOnly=true
+RATEWARM use=fresh sameState=false maxDeltaP=333600.6987174727 previous=[47.13550792361613] estimate=[-4.824801934892516]
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+VOIDSTART edge=0 GENERATOR->RESERVOIR start=0.0 used=-4.824801934892516 rateOnly=false
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.06082405075269164 everCached=true sameNodesOtherTransfers=true cacheSize=8 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=259593.39837791387 previous=[38.43122171643364, 38.43122171643364, 38.43122171643364] estimate=[-0.003929863663985511, -0.003929863663985511, -0.003929863663985511]
+RATEWARM use=fresh sameState=false maxDeltaP=259593.39837791387 previous=[38.43122171643364, 38.43122171643364, 38.43122171643364] estimate=[-0.003929863663985511, -0.003929863663985511, -0.003929863663985511]
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+ENGAGED holdup junction=2 inventoryMassKg=9.781210336977425 stateMassKg=996.3059037129602 inventoryVolume=9.781210336977425
+VOIDSTART edge=0 GENERATOR->JUNCTION start=1.8592841166730154E-32 used=-2.573090496227337E-8 rateOnly=false
+VOIDSTART edge=0 GENERATOR->JUNCTION start=0.0 used=-0.06349007058907175 rateOnly=false
+VOIDSTART edge=0 GENERATOR->JUNCTION start=6.783448760177191E-33 used=-0.053790000461563015 rateOnly=false
+RATEMISS dt=0.016634055791193772 everCached=true sameNodesOtherTransfers=true cacheSize=8 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=744281.2109916839 previous=[9.962928377487907, 9.962928377487907] estimate=[9.962934432441962, 9.962934432441855]
+RATEWARM use=fresh sameState=false maxDeltaP=744281.2109916839 previous=[9.962928377487907, 9.962928377487907] estimate=[9.962934432441962, 9.962934432441855]
+RATEMISS dt=0.003183252244346484 everCached=true sameNodesOtherTransfers=true cacheSize=8 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[9.962934432441855, 9.962934432441855] estimate=[9.962934432441962, 9.962934432441855]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[9.962934432441855, 9.962934432441855] estimate=[9.962934432441962, 9.962934432441855]
+RATEMISS dt=7.065857656026143E-4 everCached=true sameNodesOtherTransfers=true cacheSize=8 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[9.962934432441855, 9.962934432441855] estimate=[9.962934432441962, 9.962934432441855]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[9.962934432441855, 9.962934432441855] estimate=[9.962934432441962, 9.962934432441855]
+RATEMISS dt=3.1125245641300454E-4 everCached=true sameNodesOtherTransfers=true cacheSize=8 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=15343.825560357189 previous=[9.962934432441855, 9.962934432441855] estimate=[0.7225473601687296, 9.962961963517357]
+RATEWARM use=fresh sameState=false maxDeltaP=15343.825560357189 previous=[9.962934432441855, 9.962934432441855] estimate=[0.7225473601687296, 9.962961963517357]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[9.962934432441916, 9.962934432441916] estimate=[0.7225473601687296, 9.962961963517357]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[4.5868817105625315, 4.5868817105625315] estimate=[0.7225473601687296, 9.962961963517357]
+(rising  generator->3 pipes up->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.47228805406 mass=715.3401670175984 offset vs flat=-39081.53332618112 Pa
+(falling generator->3 pipes down->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=434925.6987174727 mass=763.7666157681382 offset vs flat=34925.69310323754 Pa
+(rising  generator->pipe->filter->pipe->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.39837791387 mass=715.3399430652275 offset vs flat=-39081.60723632132 Pa
+(rising  generator->pump->2 pipes->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=860950.0365520451 mass=880.3315720542471 offset vs flat=460950.03093780996 Pa
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

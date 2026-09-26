@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PhysicalFluidTopologyTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-25T05:00:03.441Z" hostname="WORMZ-PC" time="0.078">
+  <properties/>
+  <testcase name="pumpControlUsesItsOutletDirectionAndItsSuctionJunctionInEitherOrientation()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalFluidTopologyTest" time="0.012"/>
+  <testcase name="tenPhysicalPipeBlocksCompileToOneTenMetreRunWithEveryDebugMapping()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalFluidTopologyTest" time="0.006"/>
+  <testcase name="zeroStoragePumpBypassDisablesThePumpButStillAllowsPassiveEqualization()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalFluidTopologyTest" time="0.022"/>
+  <testcase name="dimensionsDeadLegsAndUnsupportedPumpPortsCannotCreateHiddenConnections()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalFluidTopologyTest" time="0.005"/>
+  <system-out><![CDATA[RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+ENGAGED holdup junction=2 inventoryMassKg=1.6957953832510995 stateMassKg=1.6957953832510995 inventoryVolume=1.0
+ENGAGED holdup junction=4 inventoryMassKg=1.6957953832510995 stateMassKg=1.6957953832510995 inventoryVolume=1.0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" tests="4" skipped="1" failures="0" errors="0" timestamp="2026-09-26T05:07:27.932Z" hostname="WORMZ-PC" time="605.339">
+  <properties/>
+  <testcase name="aMenuFollowsItsDeviceToItsNewIslandsBucket()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.014"/>
+  <testcase name="firstRequestedOpeningReplaysLastBucketWithoutAnyScienceWorkOrDeadlineShift()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.004"/>
+  <testcase name="cachedReplayDoesNotConsumePendingInputRepliesOrUseANewerUnpublishedRevision()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.005"/>
+  <testcase name="aPresentationReadStopsShortOfAWakeAndNeverWakesTheIsland()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="605.304">
+    <skipped/>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

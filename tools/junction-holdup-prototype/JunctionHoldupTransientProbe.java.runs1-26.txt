@@ -1,0 +1,107 @@
+package com.wormzjl.createcheme.runtime.fluid;
+import com.wormzjl.createcheme.science.fluid.network.*;
+import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind;
+import com.wormzjl.createcheme.science.material.*;
+import java.util.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * E2 transient probe: two finite 1 m3 tanks (methane / nitrogen) feed a physically compiled junction
+ * with 2-4 void outlets. Phase 1 runs {@code junction.steps} 0.1 s intervals (default 100 = 10 s,
+ * through the approach to rest). Phase 2 restarts flow by injecting methane into tank 1 for 3 s,
+ * phase 3 lets it settle for 3 s more. Every accepted interval is checked against finite tank
+ * inventories + the owned junction holdup ({@code createcheme.junctionHoldup} kg, 0 = none) +
+ * accumulated boundary transfers. Exploration wrapper: read the PASS/FAIL lines.
+ */
+class JunctionHoldupTransientProbe {
+    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
+    private final double holdup=Double.parseDouble(System.getProperty("createcheme.junctionHoldup","0"));
+    private final double[] mw=model.molecularWeights();
+    private int completed;
+    private double bore;
+    @Test void finiteTanksThroughRestAndRestart(){
+        int steps=Integer.getInteger("junction.steps",100);
+        String filter=System.getProperty("junction.cases","");
+        for(double diameter:new double[]{.05,.02})for(int ports=4;ports<=6;ports++)for(boolean unequal:new boolean[]{false,true}) {
+            String key=diameter+":"+ports+":"+unequal;
+            if(!filter.isBlank()&&!Arrays.asList(filter.split(",")).contains(key))continue;
+            bore=diameter;completed=0;long start=System.nanoTime();
+            try{runCase(ports,unequal,steps);System.out.println("HOLDUP_DYNAMIC holdup="+holdup+" case="+key+" PASS steps="+completed+" ms="+(System.nanoTime()-start)/1000000);}
+            catch(Exception|AssertionError failure){System.out.println("HOLDUP_DYNAMIC holdup="+holdup+" case="+key+" FAIL step="+completed+" ms="+(System.nanoTime()-start)/1000000+" "+failure);}
+        }
+    }
+    private void runCase(int ports,boolean unequal,int steps){
+        int[][] positions={{-1,0,0},{1,0,0},{0,0,-1},{0,0,1},{0,1,0},{0,-1,0}};
+        var geometry=new PipeResistance.Geometry(1,bore,PipeResistance.DEFAULT_ROUGHNESS_METRES,0);
+        var devices=new ArrayList<PhysicalFluidTopology.Device>();
+        devices.add(new PhysicalFluidTopology.Device(100,new PhysicalFluidTopology.Position("minecraft:overworld",0,0,0),Kind.PIPE,PhysicalFluidTopology.Direction.EAST,geometry,new FlowControl.Passive()));
+        var boundaries=new HashMap<Long,PassiveNetwork.Reservoir>();
+        for(int i=0;i<ports;i++){
+            int[] at=positions[i];var kind=i<2?Kind.RESERVOIR:Kind.VOID;
+            var d=new PhysicalFluidTopology.Device(i+1,new PhysicalFluidTopology.Position("minecraft:overworld",at[0],at[1],at[2]),kind,PhysicalFluidTopology.Direction.EAST,geometry,new FlowControl.Passive());devices.add(d);
+            double pressure=i==0?150000:i==1?(unequal?90000:150000):101325;
+            double temperature=i==1&&unequal?400:350;
+            double[] n=new double[mw.length];n[i==0?0:MaterialTestBasis.NITROGEN]=1;
+            var unit=model.flashTP(temperature,pressure,n,()->{});for(int c=0;c<n.length;c++)n[c]/=unit.volume();
+            var state=model.flashTP(temperature,pressure,n,()->{});
+            boundaries.put(d.id(),new PassiveNetwork.Reservoir(d.id(),at[1],state,i<2?PassiveNetwork.NodeKind.RESERVOIR:PassiveNetwork.NodeKind.VOID));
+        }
+        var graph=PhysicalFluidTopology.compile(devices,boundaries).islands().getFirst().graph();
+        double[] initial=totals(graph),external=new double[mw.length];
+        double initialEnergy=energy(graph),externalEnergy=0,worstMoles=0,worstEnergy=0;
+        int tank=-1;for(int i=0;i<graph.reservoirs().size();i++)if(graph.reservoirs().get(i).id()==1)tank=i;
+        // 0.5 mol/s methane at 350 K and 150 kPa, enthalpy plus the tank's gravitational term.
+        double[] feed=new double[mw.length];feed[0]=.5;
+        var feedState=model.flashTP(350,150000,feed,()->{});
+        double feedEnergy=feedState.enthalpy()+.5*mw[0]*PassiveStepSolver.GRAVITY*graph.reservoirs().get(tank).elevation();
+        int[] signs=new int[graph.pipes().size()];
+        var solver=new PassiveIntervalSolver(model);
+        int total=steps+60;
+        try {for(int step=0;step<total;step++){
+            List<ScheduledTransfer> transfers=step>=steps&&step<steps+30?List.of(new ScheduledTransfer.Injection(900,tank,feed,feedEnergy)):List.of();
+            graph=new PassiveNetwork(graph.reservoirs(),graph.pipes(),transfers);
+            var result=solver.solve(graph,.1,PassiveIntervalSolver.Settings.defaults(),()->{});
+            graph=result.graph();completed++;
+            for(var transfer:result.boundaries()){
+                var n=transfer.moles();for(int c=0;c<n.length;c++)external[c]+=n[c];
+                externalEnergy+=transfer.totalEnergyJoule();
+            }
+            var sum=totals(graph);
+            for(int c=0;c<sum.length;c++){
+                double error=Math.abs(sum[c]-initial[c]-external[c])/Math.max(1,initial[c]);worstMoles=Math.max(worstMoles,error);
+                assertTrue(error<1e-7,"component balance "+c+" error "+error);
+            }
+            double error=Math.abs(energy(graph)-initialEnergy-externalEnergy)/Math.max(1,Math.abs(initialEnergy));
+            worstEnergy=Math.max(worstEnergy,error);assertTrue(error<Double.parseDouble(System.getProperty("junction.energyTolerance","1e-7")),"energy balance "+error);
+            var flows=result.averageMassFlows();for(int i=0;i<flows.length;i++)if(Math.abs(flows[i])>1e-7)signs[i]|=flows[i]>0?1:2;
+            if(step%10==9||step>=13&&step<=17)System.out.println("HOLDUP_TRAJECTORY case="+bore+":"+ports+":"+unequal+" time="+String.format("%.1f",completed*.1)
+                    +" P="+graph.reservoirs().stream().filter(n->n.kind()==PassiveNetwork.NodeKind.RESERVOIR).map(n->n.state().pressure()).toList()
+                    +" q="+Arrays.toString(flows)+" modes="+result.endpointModes()+" substeps="+result.acceptedSubsteps()+"/"+result.rejectedSubsteps());
+        }
+        } finally {
+            long reversals=Arrays.stream(signs).filter(s->s==3).count();
+            double mixedMethane=graph.reservoirs().stream().filter(n->n.id()==2).findFirst().orElseThrow().inventory().moles()[0];
+            System.out.println("HOLDUP_METRICS case="+bore+":"+ports+":"+unequal+" maxComponentError="+worstMoles+" maxEnergyError="+worstEnergy+" reversedEdges="+reversals+" methaneInTank2="+mixedMethane);
+        }
+    }
+    private double[] totals(PassiveNetwork graph){
+        var totals=new double[mw.length];
+        for(var node:graph.reservoirs()) {
+            if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR){var n=node.inventory().moles();for(int c=0;c<n.length;c++)totals[c]+=n[c];}
+            else if(node.junction()&&holdup>0){var n=node.inventory().moles();double m=0;for(int c=0;c<n.length;c++)m+=n[c]*mw[c];for(int c=0;c<n.length;c++)totals[c]+=holdup*n[c]/m;}
+        }
+        return totals;
+    }
+    private double energy(PassiveNetwork graph){
+        double energy=0;
+        for(var node:graph.reservoirs()){
+            if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR){
+                double mass=0;var n=node.inventory().moles();for(int c=0;c<n.length;c++)mass+=mw[c]*n[c];
+                energy+=node.inventory().internalEnergy()+mass*PassiveStepSolver.GRAVITY*node.elevation();
+            }else if(node.junction()&&holdup>0)energy+=holdup*(node.state().enthalpy()/node.state().mass()+PassiveStepSolver.GRAVITY*node.elevation());
+        }
+        return energy;
+    }
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-09-26T08:20:24.653Z" hostname="WORMZ-PC" time="0.227">
+  <properties/>
+  <testcase name="aFullBranchHistoryFitsTheBoundedClientWireAndSurvivesTheActualJsonSchema()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.151"/>
+  <testcase name="nonfiniteOutOfDomainAndMalformedCompositionControlsCannotReachAnApply()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.006"/>
+  <testcase name="theClientRemembersTheLastDeliveredStateOfRecentDevices()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.0"/>
+  <testcase name="aRefusedControlIsRepliedWithItsOwnReason()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.004"/>
+  <testcase name="staticMolecularWeightsAreMandatoryPositiveAndOnTheServerAxis()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.006"/>
+  <testcase name="receivedComponentAxisDoesNotDependOnTheClientCatalog()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.002"/>
+  <testcase name="theProtocolIsFluidSixWithDistinctStaticAndLivePayloads()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.003"/>
+  <testcase name="aLivePayloadMustMatchItsStaticAxisAndABoundedReply()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.001"/>
+  <testcase name="editWirePreservesItsExactMenuPositionIdentityAndRevisionAndRejectsOversizedText()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.032"/>
+  <testcase name="theStaticAndLivePayloadsSplitAndRejoinIntoTheSameMenuState()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.002"/>
+  <testcase name="maximumAdmittedAxisAndPresetCountsFitThePacketBudget()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.015"/>
+  <testcase name="pipeInspectionRoundTripsAndRejectsInvalidMetricValues()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

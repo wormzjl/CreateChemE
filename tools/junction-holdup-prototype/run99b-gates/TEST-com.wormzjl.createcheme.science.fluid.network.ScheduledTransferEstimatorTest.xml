@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest" tests="2" skipped="0" failures="1" errors="0" timestamp="2026-09-26T00:47:54.444Z" hostname="WORMZ-PC" time="0.029">
+  <properties/>
+  <testcase name="changingGasCompositionAndWithdrawnEnergyMatchTighterStepDoubling()" classname="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest" time="0.01">
+    <failure message="org.opentest4j.AssertionFailedError: Boundary -2 component/energy 0 ==&gt; expected: &lt;-0.11970231114961034&gt; but was: &lt;-0.15990279295698018&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Boundary -2 component/energy 0 ==&gt; expected: &lt;-0.11970231114961034&gt; but was: &lt;-0.15990279295698018&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+	at app//com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest.compare(ScheduledTransferEstimatorTest.java:34)
+	at app//com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest.changingGasCompositionAndWithdrawnEnergyMatchTighterStepDoubling(ScheduledTransferEstimatorTest.java:16)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="wetCrudePipeAndSimultaneousModuleBoundariesMatchTighterStepDoubling()" classname="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest" time="0.015"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-09-25T07:18:23.369Z" hostname="WORMZ-PC" time="0.025">
+  <properties/>
+  <testcase name="heldResultsKeepDebtAndNeverReplayAnAcceptedApproximateInterval()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.001"/>
+  <testcase name="oneEpochIncrementAdvancesEveryClockOnItWithoutTouchingThem()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.001"/>
+  <testcase name="idleCatchupCanConsumeNineIntervalsWithoutWaitingForNineMoreCadences()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.0"/>
+  <testcase name="cadenceChangesAreBoundedAndDoNotEraseAccruedTime()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.0"/>
+  <testcase name="restCommitsWithoutASolveButNeverPastTheOnlineClockAFenceOrAroundAnOutstandingSlice()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.001"/>
+  <testcase name="aFenceAtTheCommittedTickHasNoTimeDeadlineAndALaterFenceShortensTheSlice()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.0"/>
+  <testcase name="theRetrySpanIsTheExactReadyTickOfAHeldClock()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.001"/>
+  <testcase name="causalFencesAndRestartPreserveOnlineDebtWithoutAddingOfflineTime()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.0"/>
+  <testcase name="theReadyTickMatchesSliceAvailabilityForArbitraryClockStates()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.02"/>
+  <testcase name="restartOnAnotherEpochKeepsTheSavedDebtExactlyAndAddsNoOfflineTime()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.001"/>
+  <testcase name="measuredOverloadAndRecoveryFollowThePlannedHysteresis()" classname="com.wormzjl.createcheme.runtime.fluid.IslandClockTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

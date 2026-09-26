@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" tests="5" skipped="0" failures="1" errors="0" timestamp="2026-09-26T00:47:54.346Z" hostname="WORMZ-PC" time="0.094">
+  <properties/>
+  <testcase name="aGasTransferBetweenClosedTanksClosesWithinASecond()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="0.009"/>
+  <testcase name="aDomainRefusalIsItsOwnRejectionKeyAndTheReasonTheIntervalFails()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="0.069">
+    <failure message="org.opentest4j.AssertionFailedError: the rejection map counts it under its key: Substep refinement exhausted: Newton iteration limit at residual 6.003828397376155E-4; active-set pass=0 ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: the rejection map counts it under its key: Substep refinement exhausted: Newton iteration limit at residual 6.003828397376155E-4; active-set pass=0 ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest.aDomainRefusalIsItsOwnRejectionKeyAndTheReasonTheIntervalFails(PumpRiseScalingTest.java:87)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="onWaterTheLimitIsTheSettingWithinWatersCompressibility()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="0.001"/>
+  <testcase name="theReferenceIsThisModelsOwnWaterAtRoomConditions()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="0.0"/>
+  <testcase name="anIntervalFailsOnTheDomainWhenItsLastOrMostRejectionsWereDomainOnes()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="0.0"/>
+  <system-out><![CDATA[gas transfer (P1): closed at 0.30 s, suction 297.908762 K 101038.277 Pa, discharge 298.391131 K 101612.019 Pa, rise at shutoff 573.7415 Pa, limit at the start 574.9716 Pa
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" tests="18" skipped="0" failures="0" errors="0" timestamp="2026-09-25T07:17:16.764Z" hostname="WORMZ-PC" time="0.076">
+  <properties/>
+  <testcase name="aHeldOwnerRetriesExactlyAtItsRetryDeadlineAndIsNotVisitedBefore()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001"/>
+  <testcase name="aBudgetHoldHalvesTheSliceAndReplacesTheSolver()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.0"/>
+  <testcase name="thePerTickDispatchBudgetResumesOnTheNextTickWithoutPolling()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001"/>
+  <testcase name="aDeadlineRetriesAShorterWholeIntervalThenGrowsWithoutDiscardingDebt()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.0"/>
+  <testcase name="deadlineKeepsDebtAndDoesNotReuseACancelledButStillRunningOwner()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.0"/>
+  <testcase name="theAllocatorShrinkIsObservedExactlyAtItsDeadlineWithNoOtherActivity()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.002"/>
+  <testcase name="staleStampAndStopCannotPublishAnUncommittedCandidate()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001"/>
+  <testcase name="laterIndependentGroupMayPublishWhileEarlierGroupStillComputes()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.0"/>
+  <testcase name="aRefusedFallbackIsRetriedAsAFullSolveUntilAnIntervalIsAccepted()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001"/>
+  <testcase name="anExpiredRoundClosesWithinOneTickOfItsWallBudgetOnASlowServer()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.002"/>
+  <testcase name="aReproducedThermoDomainViolationWaitsForAnInputChangeInsteadOfTheLadder()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.004"/>
+  <testcase name="aRoundTimeoutClosesTheRoundFromItsDeadlineAlone()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.0"/>
+  <testcase name="splitAndMergeAtAnAlignedFencePreserveEveryInventoryAndOnlineDebt()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001"/>
+  <testcase name="anIndependentGroupUsesFreeWorkersWithoutBreakingTheEarlierBarrierOrDeadline()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001"/>
+  <testcase name="nonblockingBarrierCommitsACompleteRoundAndThenCatchesUpFairly()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.002"/>
+  <testcase name="aDifferentViolationOnTheRetryKeepsTheLadder()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001"/>
+  <testcase name="fencesAlignUnequalClocksWithoutApplyingAnEventRetroactively()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001"/>
+  <testcase name="aHeldOwnerRetriesAFreshSolverOnHalvedSlicesAndThenWaitsLongerAtOneTick()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

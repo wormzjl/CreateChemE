@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-24T05:32:32.119Z" hostname="WORMZ-PC" time="0.031">
+  <properties/>
+  <testcase name="branchJunctionHasNoInventoryAndBalancesEveryConnectedFlow()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.002"/>
+  <testcase name="aPreviouslyAbsentGasComponentCanEnterAReceivingReservoir()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.001"/>
+  <testcase name="aJunctionNoOpenConnectionReachesKeepsItsPressureInsteadOfGoingSingular()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.002"/>
+  <testcase name="bulkThreePhaseCrudeTransfersAllComponentsAndIncludesElevationEnergy()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.004"/>
+  <testcase name="endpointOrderOnlyChangesTheFlowSign()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.002"/>
+  <testcase name="gasAndLiquidFullReservoirsEqualizeWithConservedInventoriesAndEnergy()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

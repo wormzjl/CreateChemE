@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-25T03:31:42.195Z" hostname="WORMZ-PC" time="2.089">
+  <properties/>
+  <testcase name="coldJunctionMatrix()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe" time="2.089"/>
+  <system-out><![CDATA[HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=false unequal=false PASS inlets=2 in=0.007298745535870959 kg T_J=349.9876220896859 P_J=102127.54520705431 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=false unequal=false PASS inlets=2 in=0.011768153780114836 kg T_J=349.98679472388693 P_J=101830.96337764073 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=false unequal=false PASS inlets=2 in=0.013528500423047271 kg T_J=349.986059797011 P_J=101627.52848138179 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=false unequal=false PASS inlets=2 in=0.014181481607824715 kg T_J=349.98564337827503 P_J=101512.7656352292 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=false unequal=false PASS inlets=2 in=0.010705390615830694 kg T_J=349.9818325238012 P_J=149719.27614056657 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=false unequal=false PASS inlets=2 in=0.022039655180406577 kg T_J=349.9782467907058 P_J=148597.94508341272 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=false unequal=false PASS inlets=2 in=0.022306524920181838 kg T_J=349.8555266889237 P_J=102092.45387685923 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=false unequal=false PASS inlets=2 in=0.022306524920181838 kg T_J=349.8546610784173 P_J=101764.83353370067 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=false unequal=true PASS inlets=2 in=0.007251833001502613 kg T_J=328.2283024889023 P_J=102072.85853359904 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=false unequal=true PASS inlets=2 in=0.011482930892877065 kg T_J=331.5978137788088 P_J=101796.96300955206 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=false unequal=true PASS inlets=2 in=0.013384081026633458 kg T_J=332.8905475059084 P_J=101617.12154589499 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=false unequal=true PASS inlets=2 in=0.014010146499766144 kg T_J=334.8077756896605 P_J=101506.53806778473 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Interval substep limit; no partial interval may commit: advanced=0.01237792968750011 of 0.05 s, accepted=507, rejected=517, reasons={Newton iteration limit at residual #; active-set pass=#=517}, last=Newton iteration limit at residual 2.272022334471327E-6; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=false unequal=true PASS inlets=2 in=0.021241992147205523 kg T_J=336.13178287348387 P_J=143803.06112849605 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=false unequal=true PASS inlets=2 in=0.021486369322401673 kg T_J=336.4749119123066 P_J=102040.09713110756 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=false unequal=true PASS inlets=2 in=0.021486369322401673 kg T_J=336.4739810022057 P_J=101734.4972305029 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=true unequal=false PASS inlets=2 in=0.007299306629993441 kg T_J=349.9876230640494 P_J=102127.5656166035 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=true unequal=false PASS inlets=2 in=0.011768292662168965 kg T_J=349.98679527966124 P_J=101830.97132501342 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=true unequal=false PASS inlets=2 in=0.013528556849721365 kg T_J=349.9860601676925 P_J=101627.53557052699 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=true unequal=false PASS inlets=2 in=0.014181515912302173 kg T_J=349.9856436207954 P_J=101512.77006252109 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=true unequal=false PASS inlets=2 in=0.010705951218077076 kg T_J=349.9818339755341 P_J=149719.29612900756 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=true unequal=false PASS inlets=2 in=0.022040371545846853 kg T_J=349.9782471733778 P_J=148598.04487564735 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=true unequal=false PASS inlets=2 in=0.022306524920181838 kg T_J=349.8555240650444 P_J=102092.46748593752 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=true unequal=false PASS inlets=2 in=0.022306524920181838 kg T_J=349.8546584176808 P_J=101764.84117546467 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=true unequal=true PASS inlets=2 in=0.007445355529761352 kg T_J=353.49413671615605 P_J=102084.76271564055 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=true unequal=true PASS inlets=2 in=0.01166035896609095 kg T_J=357.7886670410357 P_J=101816.24730404724 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=true unequal=true PASS inlets=2 in=0.01353408565356432 kg T_J=356.7603272924709 P_J=101625.52841487527 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=true unequal=true PASS inlets=2 in=0.01423395306626553 kg T_J=354.8186529372555 P_J=101511.73459052005 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 6.114916800694647E-4; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=true unequal=true PASS inlets=2 in=0.02283969124675538 kg T_J=347.0846314417412 P_J=144394.31982326135 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=true unequal=true PASS inlets=2 in=0.023418220138522388 kg T_J=349.2111032451711 P_J=102133.09838903692 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=true unequal=true PASS inlets=2 in=0.023418220138522388 kg T_J=349.21024007595616 P_J=101788.12441660346 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-6 passed=30/32
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:21.456Z" hostname="WORMZ-PC" time="0.015">
+  <properties/>
+  <testcase name="[1] TWO_PHASE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.0"/>
+  <testcase name="[2] VAPOR_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.0"/>
+  <testcase name="[3] LIQUID_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.001"/>
+  <testcase name="[1] TWO_PHASE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.0"/>
+  <testcase name="[2] VAPOR_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.0"/>
+  <testcase name="[3] LIQUID_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.0"/>
+  <testcase name="traceConfinedToEachPossibleFeedTrayLeavesEverySmallBranchSquareAndFullRank()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.01"/>
+  <testcase name="rejectsSupportLedgerMismatchBeforeLayoutAndDoesNotAllowNestedMasks()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.001"/>
+  <testcase name="[1] TWO_PHASE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.0"/>
+  <testcase name="[2] VAPOR_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.0"/>
+  <testcase name="[3] LIQUID_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.0"/>
+  <testcase name="rejectsIncompatibleTopologyAndComponentAxesEvenForIdentity()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationStructureTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

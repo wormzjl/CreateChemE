@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" tests="25" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:57.723Z" hostname="WORMZ-PC" time="0.007">
+  <properties/>
+  <testcase name="derivedSupportCannotBeChangedThroughAnyCompositionArray()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="evidenceDetailIsRequiredNonblankAndBounded()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="supportTreatsTheExactCutoffAsRetainedInEachPhase()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="singlePhaseSupportIsIdentityWithOnlyItsNaturalPhase()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="policyRejectsOutOfRangeAndNonfiniteCutoffsAtEveryEntryPoint()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.001"/>
+  <testcase name="enabledBudgetsUseOverallAllocationAndDimensionedEnthalpyScales()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="disabledPolicyHasZeroBudgetsIncludingTheEnthalpyFloor()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="evidenceAndResultWrappingRejectNullEvidenceState()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="enthalpyBudgetRejectsNonfiniteReferencesEvenWhenDisabled()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.001"/>
+  <testcase name="evidenceRejectsNegativeCounters()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="enabledSupportWithoutOneSidedTraceCandidatesIsIdentity()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="policyAcceptsBothBoundsAndCanonicalizesNegativeZero()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.001"/>
+  <testcase name="evidenceRejectsNegativeAndNonfiniteErrorMetrics()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="supportUsesPhaseCompositionAndRetainsAmbiguousBothTraceComponents()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="evidenceRejectsNonfiniteReferenceEnthalpyAndMalformedCutoff()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="fallbackKeepsReferenceThermodynamicsAndCountsFailedReducedWork()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="appliedEvidenceRequiresEnabledPolicyActualOmissionsAndEvaluatedErrors()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.001"/>
+  <testcase name="referenceOnlyStatusesRejectOmissionsReducedWorkAndEvaluatedErrors()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="referenceOnlyEvidencePreservesReferenceResultsWithoutInventingReducedWork()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="oldResultConstructorAndDisabledWrappingPreserveLegacyEvidence()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="unevaluatedErrorsCannotMasqueradeAsMeasurements()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="disabledSupportIsIdentityAndDoesNotCountAuthoredZerosAsOmissions()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="supportRejectsMalformedOverallCompositionAndInconsistentBasis()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.001"/>
+  <testcase name="appliedEvidenceAcceptsBudgetBoundariesButRejectsTheNextRepresentableValue()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.0"/>
+  <testcase name="appliedEvidencePreservesReducedResultAndUsesReferencePlusReducedIterations()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationValuesTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:upper_zakum",
+  "package": "createcheme:upper_zakum_tjl20",
+  "basis": "mass",
+  "provenance": {
+    "source_reference": "UPZAK26B",
+    "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/upper_zakum.pdf",
+    "source_pdf_sha256": "bf6be49db1d61e5279e4b04ac3e40635d5b02190101b34270fa51d53142e71ea",
+    "source_whole_crude": {
+      "density_15c_kg_per_m3": 857.7,
+      "sulfur_mass_percent": 2.09,
+      "nitrogen_mass_ppm": 873.0,
+      "nickel_mass_ppm": 10.1,
+      "vanadium_mass_ppm": 11.2,
+      "iron_mass_ppm": 0.3,
+      "sodium_mass_ppm": 0.8,
+      "mercury_mass_ppb": 1.0,
+      "arsenic_mass_ppb": 5.0
+    },
+    "residual_mass_rounding_scale": 0.9988512949039264,
+    "tail": {
+      "model": "exponential_survival_constrained_by_residue_vabp",
+      "estimated_above_celsius": 590,
+      "scale_celsius": 92.81746031746036,
+      "remaining_at_590_volume_percent": 12.599999999999994,
+      "residue_550_plus_mean_celsius": 656.0,
+      "estimated_mass_percent_above_590": 15.17890749601275
+    }
+  },
+  "appearance": {
+    "color": "#382519",
+    "transparency": 0.04,
+    "estimated": true
+  },
+  "revision": "crude-regrouped-r1",
+  "amounts_by_component": {
+    "Propane": 0.0038,
+    "Isobutane": 0.0037,
+    "N-butane": 0.0126,
+    "Isopentane": 0.0097,
+    "N-pentane": 0.0137,
+    "crude_pc01": 0.03888970387458344,
+    "crude_pc02": 0.06319538026343126,
+    "crude_pc03": 0.07817737503893642,
+    "crude_pc04": 0.08120899364110137,
+    "crude_pc05": 0.08308669709377575,
+    "crude_pc06": 0.08269375927782137,
+    "crude_pc07": 0.08220217363650313,
+    "crude_pc08": 0.11442843597083971,
+    "crude_pc09": 0.13384607351712613,
+    "crude_pc10": 0.11924717458596606,
+    "crude_pc11": 0.052447405368205496,
+    "crude_pc12": 0.02707682773170978
+  }
+}

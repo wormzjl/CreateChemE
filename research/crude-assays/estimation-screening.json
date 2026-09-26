@@ -1,0 +1,1100 @@
+{
+  "research_only": true,
+  "production_profiles_changed": false,
+  "references": {
+    "phillips": "https://patents.google.com/patent/US6275776B1/en",
+    "saturates": "https://doi.org/10.3390/pr11020420"
+  },
+  "crudes": [
+    {
+      "id": "wti_light_export",
+      "name": "WTI Light - Export",
+      "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/wti_light.pdf",
+      "source_pdf_sha256": "96ea254f6666fb85b3b12d050ed34f04a6f74187dd5b7c1efc51990c11b65c9c",
+      "source_rows": {
+        "API Gravity": {
+          "whole": 47.4,
+          "cuts": [
+            88.2,
+            63.0,
+            55.8,
+            49.7,
+            44.2,
+            38.9,
+            36.7,
+            33.6,
+            31.5,
+            28.8,
+            27.4,
+            24.7
+          ]
+        },
+        "UOPK": {
+          "whole": null,
+          "cuts": [
+            null,
+            null,
+            11.84,
+            11.91,
+            11.97,
+            11.98,
+            12.18,
+            12.19,
+            12.33,
+            12.5,
+            12.67,
+            12.93
+          ]
+        },
+        "Total Acid Number": {
+          "whole": 0.05,
+          "cuts": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.01,
+            0.03,
+            0.08,
+            0.12,
+            0.16,
+            0.18,
+            0.16,
+            0.07
+          ]
+        },
+        "Pour Point": {
+          "whole": -25.0,
+          "cuts": [
+            null,
+            null,
+            null,
+            null,
+            -46.0,
+            -24.0,
+            -1.0,
+            10.0,
+            25.0,
+            42.0,
+            51.0,
+            12.0
+          ]
+        },
+        "Paraffins": {
+          "whole": 42.6,
+          "cuts": [
+            96.6,
+            56.0,
+            32.8,
+            50.0,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Naphthenes": {
+          "whole": 44.8,
+          "cuts": [
+            3.4,
+            40.6,
+            52.5,
+            37.0,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Aromatics": {
+          "whole": 12.4,
+          "cuts": [
+            0.0,
+            3.3,
+            14.7,
+            13.0,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      },
+      "residue_hydrogen": {
+        "current_balance_estimate_wt_percent": 14.341409691379797,
+        "phillips_extrapolation_wt_percent": 13.10933709346991,
+        "suitable_for_automatic_replacement": false,
+        "reason": "Every isolated 550C+ cut is 100% above 1000F; patent calibration mixtures ranged only to 53.3% above 1000F. SG/K alone do not establish applicability."
+      },
+      "reported_cut_hydrogen_probes": [
+        {
+          "source_cut_index": 2,
+          "reported_h_wt_percent": 14.099999999999998,
+          "predicted_h_wt_percent": 15.601306091831288,
+          "difference_wt_percent": 1.5013060918312906,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 3,
+          "reported_h_wt_percent": 14.400000000000002,
+          "predicted_h_wt_percent": 15.113671545253862,
+          "difference_wt_percent": 0.7136715452538596,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 4,
+          "reported_h_wt_percent": 14.3,
+          "predicted_h_wt_percent": 14.640749908935685,
+          "difference_wt_percent": 0.3407499089356847,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 5,
+          "reported_h_wt_percent": 14.099999999999998,
+          "predicted_h_wt_percent": 14.126281502347418,
+          "difference_wt_percent": 0.02628150234741966,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 6,
+          "reported_h_wt_percent": 14.000000000000002,
+          "predicted_h_wt_percent": 14.016691403091556,
+          "difference_wt_percent": 0.01669140309155459,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 7,
+          "reported_h_wt_percent": 13.8,
+          "predicted_h_wt_percent": 13.69441003634161,
+          "difference_wt_percent": -0.10558996365839057,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 8,
+          "reported_h_wt_percent": 13.600000000000001,
+          "predicted_h_wt_percent": 13.546271226993865,
+          "difference_wt_percent": -0.053728773006136876,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 9,
+          "reported_h_wt_percent": 13.600000000000001,
+          "predicted_h_wt_percent": 13.341177673112913,
+          "difference_wt_percent": -0.2588223268870884,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 10,
+          "reported_h_wt_percent": 13.600000000000001,
+          "predicted_h_wt_percent": 13.278243820012587,
+          "difference_wt_percent": -0.321756179987414,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        }
+      ],
+      "whole_crude_saturates": {
+        "density15_g_per_cm3": 0.7906,
+        "pour_point_celsius": -25.0,
+        "equation10_wt_percent": 84.47430057560251,
+        "equation11_wt_percent": 82.13264755373017,
+        "reported_input_ranges_pass": true,
+        "note": "Prior estimate, not measured SARA; do not apply the whole-crude equations to isolated cuts."
+      },
+      "pna_plus_asphaltenes_diagnostic_wt_percent": 99.8,
+      "tan_carboxylic_oxygen_equivalent_wt_percent": 0.002851602255045423,
+      "oxygen_note": "Conditional acid-oxygen equivalent only: all titrated acidity assigned to carboxyl groups. Not total oxygen or an unconditional lower bound."
+    },
+    {
+      "id": "upper_zakum",
+      "name": "Upper Zakum",
+      "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/upper_zakum.pdf",
+      "source_pdf_sha256": "bf6be49db1d61e5279e4b04ac3e40635d5b02190101b34270fa51d53142e71ea",
+      "source_rows": {
+        "API Gravity": {
+          "whole": 33.4,
+          "cuts": [
+            91.1,
+            72.4,
+            59.4,
+            49.4,
+            43.4,
+            36.7,
+            31.8,
+            27.4,
+            23.5,
+            19.2,
+            16.2,
+            5.3
+          ]
+        },
+        "UOPK": {
+          "whole": null,
+          "cuts": [
+            null,
+            null,
+            12.08,
+            11.9,
+            11.92,
+            11.84,
+            11.83,
+            11.73,
+            11.73,
+            11.76,
+            11.78,
+            11.48
+          ]
+        },
+        "Total Acid Number": {
+          "whole": 0.07,
+          "cuts": [
+            0.0,
+            0.0,
+            0.0,
+            0.01,
+            0.02,
+            0.04,
+            0.09,
+            0.13,
+            0.17,
+            0.18,
+            0.16,
+            0.05
+          ]
+        },
+        "Pour Point": {
+          "whole": -21.0,
+          "cuts": [
+            null,
+            null,
+            null,
+            null,
+            -44.0,
+            -22.0,
+            0.0,
+            13.0,
+            27.0,
+            39.0,
+            46.0,
+            50.0
+          ]
+        },
+        "Paraffins": {
+          "whole": 33.2,
+          "cuts": [
+            97.3,
+            79.1,
+            53.9,
+            55.7,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Naphthenes": {
+          "whole": 24.7,
+          "cuts": [
+            2.7,
+            19.1,
+            29.5,
+            24.0,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Aromatics": {
+          "whole": 42.1,
+          "cuts": [
+            0.0,
+            1.8,
+            16.7,
+            20.2,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      },
+      "residue_hydrogen": {
+        "current_balance_estimate_wt_percent": 11.817866011633548,
+        "phillips_extrapolation_wt_percent": 9.600080818713453,
+        "suitable_for_automatic_replacement": false,
+        "reason": "Every isolated 550C+ cut is 100% above 1000F; patent calibration mixtures ranged only to 53.3% above 1000F. SG/K alone do not establish applicability."
+      },
+      "reported_cut_hydrogen_probes": [
+        {
+          "source_cut_index": 2,
+          "reported_h_wt_percent": 14.3,
+          "predicted_h_wt_percent": 16.036410701938188,
+          "difference_wt_percent": 1.736410701938187,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 3,
+          "reported_h_wt_percent": 14.2,
+          "predicted_h_wt_percent": 15.080973703703703,
+          "difference_wt_percent": 0.8809737037037042,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 4,
+          "reported_h_wt_percent": 13.900000000000002,
+          "predicted_h_wt_percent": 14.535239353916523,
+          "difference_wt_percent": 0.6352393539165213,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 5,
+          "reported_h_wt_percent": 13.5,
+          "predicted_h_wt_percent": 13.819491403091558,
+          "difference_wt_percent": 0.31949140309155766,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 6,
+          "reported_h_wt_percent": 13.100000000000001,
+          "predicted_h_wt_percent": 13.289395045927742,
+          "difference_wt_percent": 0.18939504592774092,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 7,
+          "reported_h_wt_percent": 12.7,
+          "predicted_h_wt_percent": 12.733043820012588,
+          "difference_wt_percent": 0.033043820012588654,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 8,
+          "reported_h_wt_percent": 12.400000000000002,
+          "predicted_h_wt_percent": 12.267669999999999,
+          "difference_wt_percent": -0.13233000000000317,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 9,
+          "reported_h_wt_percent": 12.1,
+          "predicted_h_wt_percent": 11.744046111479758,
+          "difference_wt_percent": -0.3559538885202418,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 10,
+          "reported_h_wt_percent": 11.8,
+          "predicted_h_wt_percent": 11.359531882193634,
+          "difference_wt_percent": -0.4404681178063665,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        }
+      ],
+      "whole_crude_saturates": {
+        "density15_g_per_cm3": 0.8577,
+        "pour_point_celsius": -21.0,
+        "equation10_wt_percent": 61.5657208105016,
+        "equation11_wt_percent": 60.561385782223844,
+        "reported_input_ranges_pass": true,
+        "note": "Prior estimate, not measured SARA; do not apply the whole-crude equations to isolated cuts."
+      },
+      "pna_plus_asphaltenes_diagnostic_wt_percent": 101.7,
+      "tan_carboxylic_oxygen_equivalent_wt_percent": 0.0039922431570635925,
+      "oxygen_note": "Conditional acid-oxygen equivalent only: all titrated acidity assigned to carboxyl groups. Not total oxygen or an unconditional lower bound."
+    },
+    {
+      "id": "bonga",
+      "name": "Bonga",
+      "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2025/bonga.pdf",
+      "source_pdf_sha256": "0ee57146598b561ee885c67959173f6f3f630443a7bcc1dc0bab22b30dcdecd7",
+      "source_rows": {
+        "API Gravity": {
+          "whole": 27.7,
+          "cuts": [
+            85.7,
+            59.2,
+            50.1,
+            42.2,
+            34.5,
+            28.6,
+            25.7,
+            22.0,
+            18.4,
+            14.5,
+            14.8,
+            9.4
+          ]
+        },
+        "UOPK": {
+          "whole": null,
+          "cuts": [
+            null,
+            null,
+            11.49,
+            11.44,
+            11.32,
+            11.26,
+            11.38,
+            11.33,
+            11.34,
+            11.39,
+            11.65,
+            11.74
+          ]
+        },
+        "Total Acid Number": {
+          "whole": 0.51,
+          "cuts": [
+            0.0,
+            0.02,
+            0.05,
+            0.09,
+            0.15,
+            0.3,
+            0.57,
+            0.65,
+            0.81,
+            1.22,
+            1.0,
+            0.63
+          ]
+        },
+        "Pour Point": {
+          "whole": -44.0,
+          "cuts": [
+            null,
+            null,
+            null,
+            null,
+            -65.0,
+            -42.0,
+            -18.0,
+            -3.0,
+            18.0,
+            38.0,
+            47.0,
+            50.0
+          ]
+        },
+        "Paraffins": {
+          "whole": 13.1,
+          "cuts": [
+            93.4,
+            39.0,
+            17.7,
+            20.5,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Naphthenes": {
+          "whole": 45.4,
+          "cuts": [
+            6.6,
+            57.2,
+            63.6,
+            62.8,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Aromatics": {
+          "whole": 41.5,
+          "cuts": [
+            0.0,
+            3.8,
+            18.7,
+            16.7,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      },
+      "residue_hydrogen": {
+        "current_balance_estimate_wt_percent": 11.557037713909384,
+        "phillips_extrapolation_wt_percent": 10.37602429382541,
+        "suitable_for_automatic_replacement": false,
+        "reason": "Every isolated 550C+ cut is 100% above 1000F; patent calibration mixtures ranged only to 53.3% above 1000F. SG/K alone do not establish applicability."
+      },
+      "reported_cut_hydrogen_probes": [
+        {
+          "source_cut_index": 2,
+          "reported_h_wt_percent": 13.699999999999998,
+          "predicted_h_wt_percent": 14.905797092511014,
+          "difference_wt_percent": 1.2057970925110162,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 3,
+          "reported_h_wt_percent": 13.699999999999998,
+          "predicted_h_wt_percent": 14.140752095567068,
+          "difference_wt_percent": 0.4407520955670705,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 4,
+          "reported_h_wt_percent": 13.0,
+          "predicted_h_wt_percent": 13.286321807228914,
+          "difference_wt_percent": 0.286321807228914,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 5,
+          "reported_h_wt_percent": 12.9,
+          "predicted_h_wt_percent": 12.599074372267333,
+          "difference_wt_percent": -0.30092562773266707,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 6,
+          "reported_h_wt_percent": 12.400000000000002,
+          "predicted_h_wt_percent": 12.330027506361322,
+          "difference_wt_percent": -0.06997249363868008,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 7,
+          "reported_h_wt_percent": 12.1,
+          "predicted_h_wt_percent": 11.85038335504886,
+          "difference_wt_percent": -0.24961664495113922,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 8,
+          "reported_h_wt_percent": 11.8,
+          "predicted_h_wt_percent": 11.396365930620414,
+          "difference_wt_percent": -0.4036340693795868,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 9,
+          "reported_h_wt_percent": 11.5,
+          "predicted_h_wt_percent": 10.901641232876713,
+          "difference_wt_percent": -0.5983587671232868,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 10,
+          "reported_h_wt_percent": 11.8,
+          "predicted_h_wt_percent": 11.093719077238552,
+          "difference_wt_percent": -0.706280922761449,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        }
+      ],
+      "whole_crude_saturates": {
+        "density15_g_per_cm3": 0.8884,
+        "pour_point_celsius": -44.0,
+        "equation10_wt_percent": 52.25369787555553,
+        "equation11_wt_percent": 52.55474273214131,
+        "reported_input_ranges_pass": true,
+        "note": "Prior estimate, not measured SARA; do not apply the whole-crude equations to isolated cuts."
+      },
+      "pna_plus_asphaltenes_diagnostic_wt_percent": 100.0,
+      "tan_carboxylic_oxygen_equivalent_wt_percent": 0.029086343001463316,
+      "oxygen_note": "Conditional acid-oxygen equivalent only: all titrated acidity assigned to carboxyl groups. Not total oxygen or an unconditional lower bound."
+    },
+    {
+      "id": "dalia",
+      "name": "Dalia",
+      "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/dalia.pdf",
+      "source_pdf_sha256": "02553213cde6cbb7dd0b4fea42029250485781dba2e2d39d092c5e5d6f8dfabc",
+      "source_rows": {
+        "API Gravity": {
+          "whole": 22.6,
+          "cuts": [
+            90.7,
+            57.5,
+            50.9,
+            41.8,
+            35.8,
+            30.8,
+            28.1,
+            23.9,
+            21.6,
+            18.8,
+            17.8,
+            8.8
+          ]
+        },
+        "UOPK": {
+          "whole": null,
+          "cuts": [
+            null,
+            null,
+            11.55,
+            11.42,
+            11.41,
+            11.42,
+            11.56,
+            11.47,
+            11.59,
+            11.73,
+            11.9,
+            11.76
+          ]
+        },
+        "Total Acid Number": {
+          "whole": 1.5,
+          "cuts": [
+            0.01,
+            0.06,
+            0.24,
+            0.7,
+            1.39,
+            2.2,
+            2.82,
+            2.97,
+            2.59,
+            1.7,
+            1.07,
+            0.16
+          ]
+        },
+        "Pour Point": {
+          "whole": -48.0,
+          "cuts": [
+            null,
+            null,
+            null,
+            null,
+            -93.0,
+            -75.0,
+            -57.0,
+            -47.0,
+            -29.0,
+            -8.0,
+            6.0,
+            61.0
+          ]
+        },
+        "Paraffins": {
+          "whole": 11.2,
+          "cuts": [
+            92.6,
+            30.6,
+            13.0,
+            14.6,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Naphthenes": {
+          "whole": 39.9,
+          "cuts": [
+            7.4,
+            69.1,
+            79.2,
+            73.9,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Aromatics": {
+          "whole": 49.0,
+          "cuts": [
+            0.0,
+            0.3,
+            7.7,
+            11.5,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      },
+      "residue_hydrogen": {
+        "current_balance_estimate_wt_percent": 12.255112413388526,
+        "phillips_extrapolation_wt_percent": 10.298422102637208,
+        "suitable_for_automatic_replacement": false,
+        "reason": "Every isolated 550C+ cut is 100% above 1000F; patent calibration mixtures ranged only to 53.3% above 1000F. SG/K alone do not establish applicability."
+      },
+      "reported_cut_hydrogen_probes": [
+        {
+          "source_cut_index": 2,
+          "reported_h_wt_percent": 14.2,
+          "predicted_h_wt_percent": 15.011578114035089,
+          "difference_wt_percent": 0.8115781140350897,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 3,
+          "reported_h_wt_percent": 13.900000000000002,
+          "predicted_h_wt_percent": 14.09009908251587,
+          "difference_wt_percent": 0.19009908251586793,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 4,
+          "reported_h_wt_percent": 13.100000000000001,
+          "predicted_h_wt_percent": 13.47609450687388,
+          "difference_wt_percent": 0.37609450687387813,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 5,
+          "reported_h_wt_percent": 13.0,
+          "predicted_h_wt_percent": 12.940706105976588,
+          "difference_wt_percent": -0.05929389402341201,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 6,
+          "reported_h_wt_percent": 12.7,
+          "predicted_h_wt_percent": 12.715564987468671,
+          "difference_wt_percent": 0.015564987468671632,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 7,
+          "reported_h_wt_percent": 12.3,
+          "predicted_h_wt_percent": 12.165675662805663,
+          "difference_wt_percent": -0.13432433719433767,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 8,
+          "reported_h_wt_percent": 12.3,
+          "predicted_h_wt_percent": 11.951160398432396,
+          "difference_wt_percent": -0.3488396015676045,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 9,
+          "reported_h_wt_percent": 12.2,
+          "predicted_h_wt_percent": 11.674744517631407,
+          "difference_wt_percent": -0.5252554823685927,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 10,
+          "reported_h_wt_percent": 12.2,
+          "predicted_h_wt_percent": 11.642373817816479,
+          "difference_wt_percent": -0.5576261821835207,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        }
+      ],
+      "whole_crude_saturates": {
+        "density15_g_per_cm3": 0.9178,
+        "pour_point_celsius": -48.0,
+        "equation10_wt_percent": 44.04365843312456,
+        "equation11_wt_percent": 45.13482171582751,
+        "reported_input_ranges_pass": false,
+        "note": "Prior estimate, not measured SARA; do not apply the whole-crude equations to isolated cuts."
+      },
+      "pna_plus_asphaltenes_diagnostic_wt_percent": 100.8,
+      "tan_carboxylic_oxygen_equivalent_wt_percent": 0.08554806765136269,
+      "oxygen_note": "Conditional acid-oxygen equivalent only: all titrated acidity assigned to carboxyl groups. Not total oxygen or an unconditional lower bound."
+    },
+    {
+      "id": "cold_lake_blend",
+      "name": "Cold Lake Blend",
+      "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2024/cold_lake_blend.pdf",
+      "source_pdf_sha256": "b15cf7217f38cfde936d27cc3848133b43e602d2db65174f2cb672f14e7921f1",
+      "source_rows": {
+        "API Gravity": {
+          "whole": 19.5,
+          "cuts": [
+            92.8,
+            59.7,
+            54.2,
+            45.3,
+            36.8,
+            29.7,
+            24.7,
+            20.1,
+            16.9,
+            13.9,
+            12.3,
+            0.4
+          ]
+        },
+        "UOPK": {
+          "whole": null,
+          "cuts": [
+            null,
+            null,
+            11.74,
+            11.63,
+            11.48,
+            11.35,
+            11.32,
+            11.19,
+            11.23,
+            11.35,
+            11.47,
+            11.13
+          ]
+        },
+        "Total Acid Number": {
+          "whole": 1.12,
+          "cuts": [
+            0.0,
+            0.01,
+            0.02,
+            0.04,
+            0.11,
+            0.38,
+            0.99,
+            1.53,
+            2.08,
+            2.28,
+            2.03,
+            0.9
+          ]
+        },
+        "Pour Point": {
+          "whole": -20.0,
+          "cuts": [
+            null,
+            null,
+            null,
+            null,
+            -66.0,
+            -47.0,
+            -24.0,
+            -10.0,
+            1.0,
+            8.0,
+            12.0,
+            75.0
+          ]
+        },
+        "Paraffins": {
+          "whole": 15.1,
+          "cuts": [
+            97.3,
+            64.3,
+            34.0,
+            41.1,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Naphthenes": {
+          "whole": 21.6,
+          "cuts": [
+            2.6,
+            31.6,
+            44.9,
+            47.3,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "Aromatics": {
+          "whole": 62.7,
+          "cuts": [
+            0.0,
+            4.2,
+            21.2,
+            11.4,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      },
+      "residue_hydrogen": {
+        "current_balance_estimate_wt_percent": 11.06606828333916,
+        "phillips_extrapolation_wt_percent": 8.5989793252464,
+        "suitable_for_automatic_replacement": false,
+        "reason": "Every isolated 550C+ cut is 100% above 1000F; patent calibration mixtures ranged only to 53.3% above 1000F. SG/K alone do not establish applicability."
+      },
+      "reported_cut_hydrogen_probes": [
+        {
+          "source_cut_index": 2,
+          "reported_h_wt_percent": 13.8,
+          "predicted_h_wt_percent": 15.408110280021539,
+          "difference_wt_percent": 1.6081102800215383,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 3,
+          "reported_h_wt_percent": 14.2,
+          "predicted_h_wt_percent": 14.547621357466065,
+          "difference_wt_percent": 0.3476213574660658,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 4,
+          "reported_h_wt_percent": 13.3,
+          "predicted_h_wt_percent": 13.621073446226976,
+          "difference_wt_percent": 0.32107344622697553,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 5,
+          "reported_h_wt_percent": 12.9,
+          "predicted_h_wt_percent": 12.77653923076923,
+          "difference_wt_percent": -0.1234607692307712,
+          "sg_and_k_ranges_pass": false,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 6,
+          "reported_h_wt_percent": 12.2,
+          "predicted_h_wt_percent": 12.17553709346991,
+          "difference_wt_percent": -0.024462906530089867,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 7,
+          "reported_h_wt_percent": 11.6,
+          "predicted_h_wt_percent": 11.529223298153031,
+          "difference_wt_percent": -0.07077670184696849,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 8,
+          "reported_h_wt_percent": 11.6,
+          "predicted_h_wt_percent": 11.134391024258761,
+          "difference_wt_percent": -0.4656089757412385,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 9,
+          "reported_h_wt_percent": 11.6,
+          "predicted_h_wt_percent": 10.7953745392022,
+          "difference_wt_percent": -0.8046254607977996,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        },
+        {
+          "source_cut_index": 10,
+          "reported_h_wt_percent": 11.5,
+          "predicted_h_wt_percent": 10.640074450625871,
+          "difference_wt_percent": -0.8599255493741289,
+          "sg_and_k_ranges_pass": true,
+          "full_applicability_established": false
+        }
+      ],
+      "whole_crude_saturates": {
+        "density15_g_per_cm3": 0.9367,
+        "pour_point_celsius": -20.0,
+        "equation10_wt_percent": 39.12916451570658,
+        "equation11_wt_percent": 40.625922565289954,
+        "reported_input_ranges_pass": true,
+        "note": "Prior estimate, not measured SARA; do not apply the whole-crude equations to isolated cuts."
+      },
+      "pna_plus_asphaltenes_diagnostic_wt_percent": 109.30000000000001,
+      "tan_carboxylic_oxygen_equivalent_wt_percent": 0.06387589051301748,
+      "oxygen_note": "Conditional acid-oxygen equivalent only: all titrated acidity assigned to carboxyl groups. Not total oxygen or an unconditional lower bound."
+    }
+  ]
+}

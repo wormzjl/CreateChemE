@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:07.687Z" hostname="WORMZ-PC" time="0.408">
+  <properties/>
+  <testcase name="anUnavailableRegroupedModelKeepsClassicalFallbackAvailable()" classname="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" time="0.038"/>
+  <testcase name="aDeclinedHandoffLeavesLnnFirstItsUnchangedClassicalBackup()" classname="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" time="0.078"/>
+  <testcase name="theRampHandoffRecoversACappedCorrectionOnAnAuthoredDrawColumn()" classname="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" time="0.099"/>
+  <testcase name="theHandoffPublishesAnAuditedSolutionOfTheAuthoredRequest()" classname="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" time="0.095"/>
+  <testcase name="theRampHandoffIsSkippedWhenNoCorrectionEverRan()" classname="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" time="0.001"/>
+  <testcase name="theShippedDefaultsCarryNoRecovery()" classname="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" time="0.0"/>
+  <testcase name="theRampHandoffIsSkippedWhenTheRequestCarriesNoAuthoredFeature()" classname="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" time="0.017"/>
+  <testcase name="anExtensionWithoutAnEarlyStopStillTakesItsIterations()" classname="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" time="0.043"/>
+  <testcase name="theRecoveryBudgetIsStatedOrDefaulted()" classname="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" time="0.0"/>
+  <testcase name="anAcceptedLearnedCorrectionIsIdenticalUnderEitherRecoveryRule()" classname="com.wormzjl.createcheme.science.column.v3.V3LearnedRecoveryTest" time="0.037"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

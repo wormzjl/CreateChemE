@@ -1,0 +1,9 @@
+// F3 off-line save-time harness: run fluidRuntimeTest's JVM with a 10 GiB heap and the scheduler's self-verification
+// off (verification re-encodes every reused payload, which would time the check rather than the save). Used only with
+// probe.sh for the F3 timing harness classes; never for a gate.
+gradle.taskGraph.whenReady { graph ->
+    graph.allTasks.findAll { it.name == 'fluidRuntimeTest' }.each { t ->
+        t.maxHeapSize = '10g'
+        t.systemProperty 'createcheme.fluid.scheduler.verify', 'false'
+    }
+}

@@ -1,0 +1,1515 @@
+{
+  "frozenModelProfileComparison": {
+    "candidateMinusIncumbent": {
+      "branchError": {
+        "count": 168,
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p05": 0.0,
+        "p95": 0.0,
+        "sampleSd": 0.0
+      },
+      "invalidPrediction": {
+        "count": 168,
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p05": 0.0,
+        "p95": 0.0,
+        "sampleSd": 0.0
+      },
+      "liquidComponentL1OverFeed": {
+        "count": 168,
+        "max": 2.720043182373047,
+        "mean": -0.003027314253683601,
+        "median": -0.006252005696296692,
+        "min": -2.86257004737854,
+        "p05": -0.4765495747327805,
+        "p95": 0.48088864386081714,
+        "sampleSd": 0.4377461877088195
+      },
+      "liquidTotalMaeOverFeed": {
+        "count": 168,
+        "max": 0.21979084610939026,
+        "mean": -0.001404028031088057,
+        "median": 0.008218176662921906,
+        "min": -0.2396720051765442,
+        "p05": -0.14030635729432106,
+        "p95": 0.1306135326623918,
+        "sampleSd": 0.07407681354193191
+      },
+      "selectionScore": {
+        "count": 168,
+        "max": 2.942152976989746,
+        "mean": -0.07563257918116592,
+        "median": -0.05802229046821594,
+        "min": -3.497236728668213,
+        "p05": -0.9469047784805298,
+        "p95": 0.7628611594438555,
+        "sampleSd": 0.6185602917432537
+      },
+      "temperatureMaeK": {
+        "count": 168,
+        "max": 17.412378311157227,
+        "mean": -1.2241353811252684,
+        "median": -1.1816368103027344,
+        "min": -18.995330810546875,
+        "p05": -11.324515342712402,
+        "p95": 7.311027598381048,
+        "sampleSd": 5.630157117028808
+      },
+      "traceEntries": {
+        "count": 168,
+        "max": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "p05": 0.0,
+        "p95": 0.0,
+        "sampleSd": 0.0
+      },
+      "traceLog10Mae": {
+        "count": 168,
+        "max": 0.8651396036148071,
+        "mean": -0.06235051722753616,
+        "median": -0.04064363241195679,
+        "min": -0.8263860940933228,
+        "p05": -0.5285892277956009,
+        "p95": 0.299050483107567,
+        "sampleSd": 0.25486287084897546
+      },
+      "vaporComponentL1OverFeed": {
+        "count": 168,
+        "max": 2.311988592147827,
+        "mean": -0.03513019046347056,
+        "median": -0.010755844414234161,
+        "min": -2.6116294860839844,
+        "p05": -0.6929926991462707,
+        "p95": 0.35881709456443794,
+        "sampleSd": 0.4318787968846115
+      },
+      "vaporTotalMaeOverFeed": {
+        "count": 168,
+        "max": 0.23769256472587585,
+        "mean": -0.011278779728205077,
+        "median": -0.008899148553609848,
+        "min": -0.24343568086624146,
+        "p05": -0.1551610305905342,
+        "p95": 0.09678155891597276,
+        "sampleSd": 0.07828793627961486
+      }
+    },
+    "cases": 168,
+    "models": {
+      "candidate": {
+        "metrics": {
+          "branchError": {
+            "count": 168,
+            "max": 1.0,
+            "mean": 0.005952380952380952,
+            "median": 0.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 0.0,
+            "sampleSd": 0.07715167498104596
+          },
+          "invalidPrediction": {
+            "count": 168,
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 0.0,
+            "sampleSd": 0.0
+          },
+          "liquidComponentL1OverFeed": {
+            "count": 168,
+            "max": 5.086159706115723,
+            "mean": 0.5167112803485777,
+            "median": 0.3219718337059021,
+            "min": 0.05784987285733223,
+            "p05": 0.11819195598363877,
+            "p95": 1.6643601775169385,
+            "sampleSd": 0.5925829460444155
+          },
+          "liquidTotalMaeOverFeed": {
+            "count": 168,
+            "max": 0.38589274883270264,
+            "mean": 0.11911264657309013,
+            "median": 0.10039590671658516,
+            "min": 0.016569852828979492,
+            "p05": 0.033202586509287355,
+            "p95": 0.27007802128791814,
+            "sampleSd": 0.07283007800390387
+          },
+          "selectionScore": {
+            "count": 168,
+            "max": 6.861947536468506,
+            "mean": 1.0690126866989194,
+            "median": 0.7982138097286224,
+            "min": 0.22238890826702118,
+            "p05": 0.36640083491802217,
+            "p95": 2.6568425416946413,
+            "sampleSd": 0.8470470448158015
+          },
+          "temperatureMaeK": {
+            "count": 168,
+            "max": 33.75312423706055,
+            "mean": 9.537661015277816,
+            "median": 7.751447439193726,
+            "min": 1.1520264148712158,
+            "p05": 2.8897955775260926,
+            "p95": 23.651836967468263,
+            "sampleSd": 6.440435271022621
+          },
+          "traceEntries": {
+            "count": 168,
+            "max": 410.0,
+            "mean": 149.4345238095238,
+            "median": 142.0,
+            "min": 27.0,
+            "p05": 32.0,
+            "p95": 322.25,
+            "sampleSd": 94.90080796214379
+          },
+          "traceLog10Mae": {
+            "count": 168,
+            "max": 2.619856357574463,
+            "mean": 1.0790505721455528,
+            "median": 0.9903983175754547,
+            "min": 0.3873467445373535,
+            "p05": 0.48588081300258634,
+            "p95": 1.964534813165665,
+            "sampleSd": 0.473393544036226
+          },
+          "vaporComponentL1OverFeed": {
+            "count": 168,
+            "max": 5.162295341491699,
+            "mean": 0.5828208506683863,
+            "median": 0.42250317335128784,
+            "min": 0.056120615452528,
+            "p05": 0.13055088743567467,
+            "p95": 1.7048167586326601,
+            "sampleSd": 0.6161981224693561
+          },
+          "vaporTotalMaeOverFeed": {
+            "count": 168,
+            "max": 0.4251169264316559,
+            "mean": 0.11022951874682414,
+            "median": 0.09559403732419014,
+            "min": 0.012830403633415699,
+            "p05": 0.030521081201732157,
+            "p95": 0.2586386069655419,
+            "sampleSd": 0.07070058772778161
+          }
+        },
+        "modelSha256": "7aa7eaa5ecbe4cea51a31bbe4724569e40900b128e98b1d69a6068e5e7d43e5e"
+      },
+      "incumbent": {
+        "metrics": {
+          "branchError": {
+            "count": 168,
+            "max": 1.0,
+            "mean": 0.005952380952380952,
+            "median": 0.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 0.0,
+            "sampleSd": 0.07715167498104596
+          },
+          "invalidPrediction": {
+            "count": 168,
+            "max": 0.0,
+            "mean": 0.0,
+            "median": 0.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 0.0,
+            "sampleSd": 0.0
+          },
+          "liquidComponentL1OverFeed": {
+            "count": 168,
+            "max": 5.016294956207275,
+            "mean": 0.5197385961988142,
+            "median": 0.33698412775993347,
+            "min": 0.07378371059894562,
+            "p05": 0.12725236192345618,
+            "p95": 1.5343870460987092,
+            "sampleSd": 0.5858488479483167
+          },
+          "liquidTotalMaeOverFeed": {
+            "count": 168,
+            "max": 0.3948217034339905,
+            "mean": 0.12051667470396274,
+            "median": 0.09396222978830338,
+            "min": 0.02574322186410427,
+            "p05": 0.03574522491544485,
+            "p95": 0.2762238293886185,
+            "sampleSd": 0.07574018651122491
+          },
+          "selectionScore": {
+            "count": 168,
+            "max": 6.869663715362549,
+            "mean": 1.1446452657026904,
+            "median": 0.8894928991794586,
+            "min": 0.23345527052879333,
+            "p05": 0.40961096435785294,
+            "p95": 2.539228975772858,
+            "sampleSd": 0.8263253422847509
+          },
+          "temperatureMaeK": {
+            "count": 168,
+            "max": 40.968650817871094,
+            "mean": 10.761796397822243,
+            "median": 8.728963375091553,
+            "min": 1.9927184581756592,
+            "p05": 3.631018781661987,
+            "p95": 23.055937767028812,
+            "sampleSd": 6.801591207457823
+          },
+          "traceEntries": {
+            "count": 168,
+            "max": 410.0,
+            "mean": 149.4345238095238,
+            "median": 142.0,
+            "min": 27.0,
+            "p05": 32.0,
+            "p95": 322.25,
+            "sampleSd": 94.90080796214379
+          },
+          "traceLog10Mae": {
+            "count": 168,
+            "max": 2.317491292953491,
+            "mean": 1.141401089373089,
+            "median": 1.0421971082687378,
+            "min": 0.38121089339256287,
+            "p05": 0.517865452170372,
+            "p95": 2.0112425684928894,
+            "sampleSd": 0.46788089257290044
+          },
+          "vaporComponentL1OverFeed": {
+            "count": 168,
+            "max": 5.08433723449707,
+            "mean": 0.6179510421962255,
+            "median": 0.4203316569328308,
+            "min": 0.06068870425224304,
+            "p05": 0.12873611226677895,
+            "p95": 1.7112573683261874,
+            "sampleSd": 0.6103094357126261
+          },
+          "vaporTotalMaeOverFeed": {
+            "count": 168,
+            "max": 0.48294591903686523,
+            "mean": 0.12150829850829073,
+            "median": 0.10545631125569344,
+            "min": 0.018930863589048386,
+            "p05": 0.03893010374158621,
+            "p95": 0.26426801532506944,
+            "sampleSd": 0.07484301650170047
+          }
+        },
+        "modelSha256": "2b94646bc26cc78df54654817a2a0a9c2c731e29c14dd9bbea1b08feb1ad1102"
+      }
+    },
+    "scope": "168 qualified validation references; CPU float32; both models frozen before this diagnostic"
+  },
+  "pairedCandidateVsIncumbent": {
+    "current": {
+      "candidateGains": 0,
+      "candidateLosses": 0
+    },
+    "neural": {
+      "candidateGains": 19,
+      "candidateLosses": 15
+    },
+    "neuralFirst": {
+      "candidateGains": 10,
+      "candidateLosses": 7
+    }
+  },
+  "parity": {
+    "branchWetZeroMasksMatch": true,
+    "cancellationPassed": true,
+    "fixtures": 14,
+    "flowMaxOverFeed": 3.8465159692257485e-07,
+    "malformedShapeRejected": true,
+    "parallelIdenticalPredictions": 32,
+    "temperatureMaxK": 1.4210600284059183e-05
+  },
+  "planSha256": "9a7ff0d424de7d86660156dfc76dae44de2f27448c25b6bc00d37262a1a8aa10",
+  "revision": "transformer-accuracy-v1",
+  "selectedArm": "baseline",
+  "selectedSeed": 20260911,
+  "test": {
+    "candidate": {
+      "journalSha256": "9631c25b5b1931970d03ad7a54a35fe8fc789c9d8faed5ebf1c7f0fc6f6e7e2f",
+      "pairedAgainstCurrent": {
+        "commonQualifiedCases": 58,
+        "firstGains": 28,
+        "firstLosses": 0,
+        "firstMinusCurrentMillis": {
+          "count": 252,
+          "max": 3468.585500000001,
+          "mean": 281.8049388888889,
+          "median": 399.78,
+          "min": -29692.458899999998,
+          "p05": -1633.009265,
+          "p95": 1962.9404449999988,
+          "sampleSd": 2205.591146199024
+        },
+        "firstMinusCurrentMillisCommonQualified": {
+          "count": 58,
+          "max": 1976.0502999999999,
+          "mean": -163.42620344827586,
+          "median": -271.99030000000005,
+          "min": -3993.1897999999997,
+          "p05": -2162.2564049999996,
+          "p95": 1643.3650999999998,
+          "sampleSd": 1165.5626870645392
+        }
+      },
+      "run": {
+        "acceptanceCounterScope": "LNN_ONLY",
+        "accepted": 68,
+        "availableProcessors": 16,
+        "caseCount": 252,
+        "completed": 252,
+        "currentAccepted": 61,
+        "deadlineMillis": 30000,
+        "elapsedSeconds": 2011.6949273,
+        "heapCommittedAtEndBytes": 2166358016,
+        "heapUsedAtEndBytes": 1110079120,
+        "java": "21.0.11",
+        "maximumHeapBytes": 4294967296,
+        "maximumInFlight": 2,
+        "memoryScope": "thread allocated bytes are allocation volume, not retained RAM; heap/RSS values are whole-process measurements",
+        "mode": "benchmark",
+        "modelId": "tjl20-accuracy-v1-baseline-20260911",
+        "modelLoadAllocatedBytes": 44674792,
+        "modelLoadMillis": 112.9573,
+        "modelParameterStorageBytes": 670400,
+        "modelSha256": "7aa7eaa5ecbe4cea51a31bbe4724569e40900b128e98b1d69a6068e5e7d43e5e",
+        "neuralBudgetMillis": 2000,
+        "neuralFirstAccepted": 92,
+        "neuralMaximumIterations": 16,
+        "poolPeakUsage": [
+          {
+            "name": "CodeHeap 'non-nmethods'",
+            "peakUsedBytes": 2996736,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Metaspace",
+            "peakUsedBytes": 8808872,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "CodeHeap 'profiled nmethods'",
+            "peakUsedBytes": 13375488,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Compressed Class Space",
+            "peakUsedBytes": 876632,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "G1 Eden Space",
+            "peakUsedBytes": 1293942784,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Old Gen",
+            "peakUsedBytes": 916890928,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Survivor Space",
+            "peakUsedBytes": 14833648,
+            "type": "HEAP"
+          },
+          {
+            "name": "CodeHeap 'non-profiled nmethods'",
+            "peakUsedBytes": 11284736,
+            "type": "NON_HEAP"
+          }
+        ],
+        "queueCapacity": 2,
+        "source": "build\\neural-transformer\\accuracy-v1\\test.jsonl",
+        "sourceSha256": "d015152993e84478d86a68e1852868c71314fc33c7b09948ab02636009270f0f",
+        "timingScope": "serial JVM, elapsed and thread CPU measured separately",
+        "workers": 1
+      },
+      "strategies": {
+        "current": {
+          "advisoryOnly": 3,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 30902351472.0,
+            "mean": 3417529121.84127,
+            "median": 1487502540.0,
+            "min": 28352808.0,
+            "p05": 135178867.6,
+            "p95": 10429441598.399998,
+            "sampleSd": 5329740945.102906
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 29984.375,
+            "mean": 3469.3700396825398,
+            "median": 1507.8125,
+            "min": 15.625,
+            "p05": 93.75,
+            "p95": 10539.062499999998,
+            "sampleSd": 5595.460563032359
+          },
+          "failed": 191,
+          "ms": {
+            "count": 252,
+            "max": 30016.925,
+            "mean": 3486.2310055555554,
+            "median": 1508.4292999999998,
+            "min": 16.985,
+            "p05": 89.556635,
+            "p95": 10611.126679999998,
+            "sampleSd": 5632.158720315218
+          },
+          "newtonIterations": {
+            "count": 245,
+            "max": 128.0,
+            "mean": 17.13061224489796,
+            "median": 4.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 46.39999999999995,
+            "sampleSd": 27.86808948437022
+          },
+          "qualified": 58
+        },
+        "neural": {
+          "advisoryOnly": 5,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 2499662912.0,
+            "mean": 840881300.7301587,
+            "median": 614073692.0,
+            "min": 871056.0,
+            "p05": 7034449.6000000015,
+            "p95": 2236530584.4,
+            "sampleSd": 792285219.1158665
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 2015.625,
+            "mean": 717.1999007936508,
+            "median": 507.8125,
+            "min": 0.0,
+            "p05": 15.625,
+            "p95": 1984.375,
+            "sampleSd": 673.0274789766459
+          },
+          "failed": 184,
+          "ms": {
+            "count": 252,
+            "max": 2012.7162,
+            "mean": 719.7845341269842,
+            "median": 511.16589999999997,
+            "min": 0.9802,
+            "p05": 6.868045000000002,
+            "p95": 2000.22083,
+            "sampleSd": 676.9243275160092
+          },
+          "newtonIterations": {
+            "count": 252,
+            "max": 16.0,
+            "mean": 9.420634920634921,
+            "median": 16.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 16.0,
+            "sampleSd": 7.217567296736423
+          },
+          "qualified": 63
+        },
+        "neuralFirst": {
+          "advisoryOnly": 6,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 32160007864.0,
+            "mean": 3810450222.571429,
+            "median": 1943364148.0,
+            "min": 11284032.0,
+            "p05": 44825071.2,
+            "p95": 12091589893.999998,
+            "sampleSd": 5442757024.241367
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 29968.75,
+            "mean": 3748.6359126984125,
+            "median": 1726.5625,
+            "min": 0.0,
+            "p05": 31.25,
+            "p95": 12191.40625,
+            "sampleSd": 5614.388653291126
+          },
+          "failed": 160,
+          "ms": {
+            "count": 252,
+            "max": 30006.7582,
+            "mean": 3768.0359444444443,
+            "median": 1730.2379,
+            "min": 8.8882,
+            "p05": 42.594895,
+            "p95": 12238.096365,
+            "sampleSd": 5656.869505886805
+          },
+          "newtonIterations": {
+            "count": 245,
+            "max": 128.0,
+            "mean": 15.408163265306122,
+            "median": 3.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 39.19999999999993,
+            "sampleSd": 26.815335690047895
+          },
+          "qualified": 86
+        }
+      }
+    },
+    "incumbent": {
+      "journalSha256": "e844bdce668250630e74e5b2584d1d8849e3df13b7050ca36c3f189f1859190c",
+      "pairedAgainstCurrent": {
+        "commonQualifiedCases": 58,
+        "firstGains": 25,
+        "firstLosses": 0,
+        "firstMinusCurrentMillis": {
+          "count": 252,
+          "max": 2568.3851000000004,
+          "mean": 399.0738571428571,
+          "median": 357.93235000000004,
+          "min": -6196.1386999999995,
+          "p05": -1209.538845,
+          "p95": 1965.2030549999997,
+          "sampleSd": 1109.057731697265
+        },
+        "firstMinusCurrentMillisCommonQualified": {
+          "count": 58,
+          "max": 2015.6878000000002,
+          "mean": -110.16094482758623,
+          "median": -280.48775,
+          "min": -3803.1616,
+          "p05": -1542.29445,
+          "p95": 1361.4216949999998,
+          "sampleSd": 1043.2923370950618
+        }
+      },
+      "run": {
+        "acceptanceCounterScope": "LNN_ONLY",
+        "accepted": 61,
+        "availableProcessors": 16,
+        "caseCount": 252,
+        "completed": 252,
+        "currentAccepted": 61,
+        "deadlineMillis": 30000,
+        "elapsedSeconds": 2044.3699627,
+        "heapCommittedAtEndBytes": 2124414976,
+        "heapUsedAtEndBytes": 1756297416,
+        "java": "21.0.11",
+        "maximumHeapBytes": 4294967296,
+        "maximumInFlight": 2,
+        "memoryScope": "thread allocated bytes are allocation volume, not retained RAM; heap/RSS values are whole-process measurements",
+        "mode": "benchmark",
+        "modelId": "tjl20-transformer-20260912-native-v1",
+        "modelLoadAllocatedBytes": 43259304,
+        "modelLoadMillis": 108.96,
+        "modelParameterStorageBytes": 670400,
+        "modelSha256": "2b94646bc26cc78df54654817a2a0a9c2c731e29c14dd9bbea1b08feb1ad1102",
+        "neuralBudgetMillis": 2000,
+        "neuralFirstAccepted": 87,
+        "neuralMaximumIterations": 16,
+        "poolPeakUsage": [
+          {
+            "name": "CodeHeap 'non-nmethods'",
+            "peakUsedBytes": 3608320,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Metaspace",
+            "peakUsedBytes": 8800568,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "CodeHeap 'profiled nmethods'",
+            "peakUsedBytes": 13291776,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Compressed Class Space",
+            "peakUsedBytes": 876568,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "G1 Eden Space",
+            "peakUsedBytes": 1268776960,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Old Gen",
+            "peakUsedBytes": 898598824,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Survivor Space",
+            "peakUsedBytes": 14373072,
+            "type": "HEAP"
+          },
+          {
+            "name": "CodeHeap 'non-profiled nmethods'",
+            "peakUsedBytes": 11465088,
+            "type": "NON_HEAP"
+          }
+        ],
+        "queueCapacity": 2,
+        "source": "build\\neural-transformer\\accuracy-v1\\test.jsonl",
+        "sourceSha256": "d015152993e84478d86a68e1852868c71314fc33c7b09948ab02636009270f0f",
+        "timingScope": "serial JVM, elapsed and thread CPU measured separately",
+        "workers": 1
+      },
+      "strategies": {
+        "current": {
+          "advisoryOnly": 3,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 34275819024.0,
+            "mean": 3401762092.952381,
+            "median": 1488168316.0,
+            "min": 28364936.0,
+            "p05": 135231568.4,
+            "p95": 10429854140.8,
+            "sampleSd": 5276773352.370942
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 29953.125,
+            "mean": 3469.4940476190477,
+            "median": 1578.125,
+            "min": 15.625,
+            "p05": 86.71875000000001,
+            "p95": 10487.499999999993,
+            "sampleSd": 5586.27727376174
+          },
+          "failed": 191,
+          "ms": {
+            "count": 252,
+            "max": 30016.5303,
+            "mean": 3491.6064908730154,
+            "median": 1576.6691,
+            "min": 19.9542,
+            "p05": 87.989545,
+            "p95": 10511.235679999994,
+            "sampleSd": 5617.923231681207
+          },
+          "newtonIterations": {
+            "count": 245,
+            "max": 128.0,
+            "mean": 17.13061224489796,
+            "median": 4.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 46.39999999999995,
+            "sampleSd": 27.86808948437022
+          },
+          "qualified": 58
+        },
+        "neural": {
+          "advisoryOnly": 2,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 2560777056.0,
+            "mean": 841229595.6507937,
+            "median": 616474328.0,
+            "min": 871064.0,
+            "p05": 7063776.800000001,
+            "p95": 2256187793.6,
+            "sampleSd": 786759545.7219567
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 2015.625,
+            "mean": 716.3318452380952,
+            "median": 476.5625,
+            "min": 0.0,
+            "p05": 15.625,
+            "p95": 2000.0,
+            "sampleSd": 676.1293174346821
+          },
+          "failed": 191,
+          "ms": {
+            "count": 252,
+            "max": 2025.933,
+            "mean": 721.1657067460317,
+            "median": 478.416,
+            "min": 0.8289,
+            "p05": 6.911575000000001,
+            "p95": 2000.62047,
+            "sampleSd": 682.8481991200524
+          },
+          "newtonIterations": {
+            "count": 252,
+            "max": 16.0,
+            "mean": 9.698412698412698,
+            "median": 16.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 16.0,
+            "sampleSd": 7.283961359587625
+          },
+          "qualified": 59
+        },
+        "neuralFirst": {
+          "advisoryOnly": 4,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 36321722264.0,
+            "mean": 3941633028.6031747,
+            "median": 2046223608.0,
+            "min": 21007224.0,
+            "p05": 45252723.6,
+            "p95": 12392438793.199993,
+            "sampleSd": 5644465718.285462
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 29937.5,
+            "mean": 3873.2638888888887,
+            "median": 1992.1875,
+            "min": 15.625,
+            "p05": 31.25,
+            "p95": 12093.749999999989,
+            "sampleSd": 5793.221501276654
+          },
+          "failed": 165,
+          "ms": {
+            "count": 252,
+            "max": 30011.987,
+            "mean": 3890.680348015873,
+            "median": 2006.40105,
+            "min": 13.6302,
+            "p05": 37.026545000000006,
+            "p95": 12145.942854999988,
+            "sampleSd": 5817.797603730666
+          },
+          "newtonIterations": {
+            "count": 245,
+            "max": 128.0,
+            "mean": 15.616326530612245,
+            "median": 3.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 43.19999999999993,
+            "sampleSd": 26.872950527563496
+          },
+          "qualified": 83
+        }
+      }
+    }
+  },
+  "validation": {
+    "baseline": {
+      "metrics": {
+        "branchError": {
+          "count": 3,
+          "max": 0.005952380952380952,
+          "mean": 0.005952380952380952,
+          "median": 0.005952380952380952,
+          "min": 0.005952380952380952,
+          "p05": 0.005952380952380952,
+          "p95": 0.005952380952380952,
+          "sampleSd": 0.0
+        },
+        "invalidPrediction": {
+          "count": 3,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p05": 0.0,
+          "p95": 0.0,
+          "sampleSd": 0.0
+        },
+        "liquidComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.5578274588499751,
+          "mean": 0.5287603596077552,
+          "median": 0.5166791837130275,
+          "min": 0.5117744362602631,
+          "p05": 0.5122649110055395,
+          "p95": 0.5537126313362803,
+          "sampleSd": 0.025292021086928664
+        },
+        "liquidTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.12326389163111647,
+          "mean": 0.12043103104871179,
+          "median": 0.1191164117439517,
+          "min": 0.11891278977106724,
+          "p05": 0.11893315196835569,
+          "p95": 0.12284914364239999,
+          "sampleSd": 0.0024554408537912097
+        },
+        "selectionScore": {
+          "count": 3,
+          "max": 1.1557252030110075,
+          "mean": 1.1114978042268564,
+          "median": 1.1098075431904622,
+          "min": 1.0689606664790994,
+          "p05": 1.0730453541502356,
+          "p95": 1.151133437028953,
+          "sampleSd": 0.04340695723818438
+        },
+        "temperatureMaeK": {
+          "count": 3,
+          "max": 10.620405013362566,
+          "mean": 10.167415403184435,
+          "median": 10.344750661935125,
+          "min": 9.537090534255618,
+          "p05": 9.61785654702357,
+          "p95": 10.592839578219822,
+          "sampleSd": 0.5630083575381626
+        },
+        "traceEntries": {
+          "count": 3,
+          "max": 149.4345238095238,
+          "mean": 149.4345238095238,
+          "median": 149.4345238095238,
+          "min": 149.4345238095238,
+          "p05": 149.4345238095238,
+          "p95": 149.4345238095238,
+          "sampleSd": 0.0
+        },
+        "traceLog10Mae": {
+          "count": 3,
+          "max": 1.111011620078768,
+          "mean": 1.091079102385612,
+          "median": 1.0832971240438165,
+          "min": 1.0789285630342507,
+          "p05": 1.0793654191352073,
+          "p95": 1.108240170475273,
+          "sampleSd": 0.01739971343196684
+        },
+        "vaporComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.613853079000754,
+          "mean": 0.597435425405228,
+          "median": 0.5956615631779035,
+          "min": 0.5827916340370264,
+          "p05": 0.5840786269511141,
+          "p95": 0.612033927418469,
+          "sampleSd": 0.015606514063358824
+        },
+        "vaporTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.11945691916515075,
+          "mean": 0.11635621638584231,
+          "median": 0.1193781945510723,
+          "min": 0.11023353544130389,
+          "p05": 0.11114800135228073,
+          "p95": 0.1194490467037429,
+          "sampleSd": 0.005302543338123311
+        }
+      },
+      "trainingSeconds": {
+        "count": 3,
+        "max": 23.13484210000024,
+        "mean": 22.872249133331934,
+        "median": 22.809860899986234,
+        "min": 22.672044400009327,
+        "p05": 22.685826050007016,
+        "p95": 23.102343979998842,
+        "sampleSd": 0.23762290824796006
+      }
+    },
+    "decoded": {
+      "metrics": {
+        "branchError": {
+          "count": 3,
+          "max": 0.005952380952380952,
+          "mean": 0.005952380952380952,
+          "median": 0.005952380952380952,
+          "min": 0.005952380952380952,
+          "p05": 0.005952380952380952,
+          "p95": 0.005952380952380952,
+          "sampleSd": 0.0
+        },
+        "invalidPrediction": {
+          "count": 3,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p05": 0.0,
+          "p95": 0.0,
+          "sampleSd": 0.0
+        },
+        "liquidComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.534748633126063,
+          "mean": 0.5275335828625848,
+          "median": 0.5323777142690406,
+          "min": 0.5154744011926509,
+          "p05": 0.5171647325002898,
+          "p95": 0.5345115412403608,
+          "sampleSd": 0.010510623719266114
+        },
+        "liquidTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.1334696299773419,
+          "mean": 0.1294319699407511,
+          "median": 0.12861883426306858,
+          "min": 0.12620744558184274,
+          "p05": 0.12644858444996532,
+          "p95": 0.1329845504059146,
+          "sampleSd": 0.003698746107980112
+        },
+        "selectionScore": {
+          "count": 3,
+          "max": 1.1404791848645324,
+          "mean": 1.1225788075890806,
+          "median": 1.117233463696071,
+          "min": 1.1100237742066383,
+          "p05": 1.1107447431555817,
+          "p95": 1.1381546127476863,
+          "sampleSd": 0.015915795160347544
+        },
+        "temperatureMaeK": {
+          "count": 3,
+          "max": 10.63715474236579,
+          "mean": 10.486711778101466,
+          "median": 10.480729611856598,
+          "min": 10.342250980082012,
+          "p05": 10.35609884325947,
+          "p95": 10.621512229314872,
+          "sampleSd": 0.14754286491395588
+        },
+        "traceEntries": {
+          "count": 3,
+          "max": 149.4345238095238,
+          "mean": 149.4345238095238,
+          "median": 149.4345238095238,
+          "min": 149.4345238095238,
+          "p05": 149.4345238095238,
+          "p95": 149.4345238095238,
+          "sampleSd": 0.0
+        },
+        "traceLog10Mae": {
+          "count": 3,
+          "max": 1.2971703802191077,
+          "mean": 1.2536434586795548,
+          "median": 1.2907359887446677,
+          "min": 1.1730240070748896,
+          "p05": 1.1847952052418673,
+          "p95": 1.2965269410716638,
+          "sampleSd": 0.06989257708218607
+        },
+        "vaporComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.585067993473439,
+          "mean": 0.5721646039820616,
+          "median": 0.5703321792007912,
+          "min": 0.5610936392719547,
+          "p05": 0.5620174932648383,
+          "p95": 0.5835944120461741,
+          "sampleSd": 0.012091763737305552
+        },
+        "vaporTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.12680261545548482,
+          "mean": 0.12396861870388783,
+          "median": 0.12395071915705644,
+          "min": 0.12115252149912219,
+          "p05": 0.12143234126491562,
+          "p95": 0.126517425825642,
+          "sampleSd": 0.0028250895073013127
+        }
+      },
+      "trainingSeconds": {
+        "count": 3,
+        "max": 31.745420300023397,
+        "mean": 31.553641666677624,
+        "median": 31.49323770002229,
+        "min": 31.422266999987187,
+        "p05": 31.429364069990697,
+        "p95": 31.72020204002329,
+        "sampleSd": 0.16983372227519272
+      }
+    },
+    "regularized-05": {
+      "metrics": {
+        "branchError": {
+          "count": 3,
+          "max": 0.005952380952380952,
+          "mean": 0.005952380952380952,
+          "median": 0.005952380952380952,
+          "min": 0.005952380952380952,
+          "p05": 0.005952380952380952,
+          "p95": 0.005952380952380952,
+          "sampleSd": 0.0
+        },
+        "invalidPrediction": {
+          "count": 3,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p05": 0.0,
+          "p95": 0.0,
+          "sampleSd": 0.0
+        },
+        "liquidComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.5599439065637333,
+          "mean": 0.5348253401203288,
+          "median": 0.5268244257728968,
+          "min": 0.5177076880243563,
+          "p05": 0.5186193617992103,
+          "p95": 0.5566319584846496,
+          "sampleSd": 0.022225784843795962
+        },
+        "liquidTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.12427489988372795,
+          "mean": 0.12172911087760613,
+          "median": 0.12174235103607532,
+          "min": 0.11917008171301513,
+          "p05": 0.11942730864532115,
+          "p95": 0.12402164499896268,
+          "sampleSd": 0.0025524348405703036
+        },
+        "selectionScore": {
+          "count": 3,
+          "max": 1.1553781713758196,
+          "mean": 1.124112336733748,
+          "median": 1.1115073158982254,
+          "min": 1.105451522927199,
+          "p05": 1.1060571022243018,
+          "p95": 1.15099108582806,
+          "sampleSd": 0.027245778921256854
+        },
+        "temperatureMaeK": {
+          "count": 3,
+          "max": 10.337396531587554,
+          "mean": 10.161579994691742,
+          "median": 10.18956205816496,
+          "min": 9.957781394322714,
+          "p05": 9.980959460706938,
+          "p95": 10.322613084245296,
+          "sampleSd": 0.19134826891643233
+        },
+        "traceEntries": {
+          "count": 3,
+          "max": 149.4345238095238,
+          "mean": 149.4345238095238,
+          "median": 149.4345238095238,
+          "min": 149.4345238095238,
+          "p05": 149.4345238095238,
+          "p95": 149.4345238095238,
+          "sampleSd": 0.0
+        },
+        "traceLog10Mae": {
+          "count": 3,
+          "max": 1.2822634297467412,
+          "mean": 1.2717629811238673,
+          "median": 1.2749865205869788,
+          "min": 1.2580389930378824,
+          "p05": 1.259733745792792,
+          "p95": 1.2815357388307649,
+          "sampleSd": 0.012429772261310925
+        },
+        "vaporComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.6305685476621702,
+          "mean": 0.6072307666246263,
+          "median": 0.5977224299595469,
+          "min": 0.5934013222521615,
+          "p05": 0.5938334330229,
+          "p95": 0.6272839358919079,
+          "sampleSd": 0.02032626406332377
+        },
+        "vaporTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.12330365613369006,
+          "mean": 0.11766636885133469,
+          "median": 0.1175341864249536,
+          "min": 0.1121612639953604,
+          "p05": 0.11269855623831972,
+          "p95": 0.12272670916281642,
+          "sampleSd": 0.0055723720071851465
+        }
+      },
+      "trainingSeconds": {
+        "count": 3,
+        "max": 23.35647150001023,
+        "mean": 23.159834333336523,
+        "median": 23.071714599995175,
+        "min": 23.051316900004167,
+        "p05": 23.053356670003268,
+        "p95": 23.327995810008723,
+        "sampleSd": 0.1705979133205556
+      }
+    },
+    "regularized-05-decoded": {
+      "metrics": {
+        "branchError": {
+          "count": 3,
+          "max": 0.005952380952380952,
+          "mean": 0.005952380952380952,
+          "median": 0.005952380952380952,
+          "min": 0.005952380952380952,
+          "p05": 0.005952380952380952,
+          "p95": 0.005952380952380952,
+          "sampleSd": 0.0
+        },
+        "invalidPrediction": {
+          "count": 3,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p05": 0.0,
+          "p95": 0.0,
+          "sampleSd": 0.0
+        },
+        "liquidComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.5644214724057487,
+          "mean": 0.5289686738129055,
+          "median": 0.5180942140785711,
+          "min": 0.5043903349543966,
+          "p05": 0.5057607228668141,
+          "p95": 0.5597887465730309,
+          "sampleSd": 0.031458302112654254
+        },
+        "liquidTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.1303441327043055,
+          "mean": 0.12616061108807722,
+          "median": 0.12818658037022465,
+          "min": 0.11995112018970151,
+          "p05": 0.12077466620775383,
+          "p95": 0.13012837747089742,
+          "sampleSd": 0.0054847142980589715
+        },
+        "selectionScore": {
+          "count": 3,
+          "max": 1.1813787074670905,
+          "mean": 1.1313626906938024,
+          "median": 1.1223070337658836,
+          "min": 1.0904023308484327,
+          "p05": 1.0935928011401779,
+          "p95": 1.1754715400969697,
+          "sampleSd": 0.04615927823809733
+        },
+        "temperatureMaeK": {
+          "count": 3,
+          "max": 10.776777372473763,
+          "mean": 10.552363563861165,
+          "median": 10.531266412564687,
+          "min": 10.349046906545048,
+          "p05": 10.367268857147012,
+          "p95": 10.752226276482855,
+          "sampleSd": 0.21464425269621995
+        },
+        "traceEntries": {
+          "count": 3,
+          "max": 149.4345238095238,
+          "mean": 149.4345238095238,
+          "median": 149.4345238095238,
+          "min": 149.4345238095238,
+          "p05": 149.4345238095238,
+          "p95": 149.4345238095238,
+          "sampleSd": 0.0
+        },
+        "traceLog10Mae": {
+          "count": 3,
+          "max": 1.4655015837578547,
+          "mean": 1.437898310403975,
+          "median": 1.4352234190418607,
+          "min": 1.4129699284122104,
+          "p05": 1.4151952774751755,
+          "p95": 1.4624737672862553,
+          "sampleSd": 0.026367783110980834
+        },
+        "vaporComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.6239388478210285,
+          "mean": 0.5822598042617005,
+          "median": 0.5687472327567992,
+          "min": 0.5540933322072739,
+          "p05": 0.5555587222622264,
+          "p95": 0.6184196863146055,
+          "sampleSd": 0.03683125309223288
+        },
+        "vaporTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.12543221416750125,
+          "mean": 0.12065510002023999,
+          "median": 0.1224720725523574,
+          "min": 0.11406101334086131,
+          "p05": 0.11490211926201092,
+          "p95": 0.12513620000598685,
+          "sampleSd": 0.005899329957443985
+        }
+      },
+      "trainingSeconds": {
+        "count": 3,
+        "max": 32.283864700002596,
+        "mean": 31.84433319999759,
+        "median": 31.77547079999931,
+        "min": 31.473664099990856,
+        "p05": 31.5038447699917,
+        "p95": 32.23302531000227,
+        "sampleSd": 0.40946645242924085
+      }
+    },
+    "regularized-10": {
+      "metrics": {
+        "branchError": {
+          "count": 3,
+          "max": 0.005952380952380952,
+          "mean": 0.005952380952380952,
+          "median": 0.005952380952380952,
+          "min": 0.005952380952380952,
+          "p05": 0.005952380952380952,
+          "p95": 0.005952380952380952,
+          "sampleSd": 0.0
+        },
+        "invalidPrediction": {
+          "count": 3,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p05": 0.0,
+          "p95": 0.0,
+          "sampleSd": 0.0
+        },
+        "liquidComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.5676496714087469,
+          "mean": 0.537265844790945,
+          "median": 0.5276868978870057,
+          "min": 0.5164609650770823,
+          "p05": 0.5175835583580746,
+          "p95": 0.5636533940565728,
+          "sampleSd": 0.026905168310544268
+        },
+        "liquidTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.1233162302302108,
+          "mean": 0.12146151541835731,
+          "median": 0.1213134612577657,
+          "min": 0.11975485476709548,
+          "p05": 0.1199107154161625,
+          "p95": 0.12311595333296628,
+          "sampleSd": 0.0017852979648146485
+        },
+        "selectionScore": {
+          "count": 3,
+          "max": 1.1732374708212556,
+          "mean": 1.1324736542763219,
+          "median": 1.1184594829877217,
+          "min": 1.105724009019988,
+          "p05": 1.1069975564167613,
+          "p95": 1.1677596720379022,
+          "sampleSd": 0.03587219854953795
+        },
+        "temperatureMaeK": {
+          "count": 3,
+          "max": 10.383338492541085,
+          "mean": 10.250768359691378,
+          "median": 10.217161629881177,
+          "min": 10.151804956651869,
+          "p05": 10.1583406239748,
+          "p95": 10.366720806275094,
+          "sampleSd": 0.11936919107015256
+        },
+        "traceEntries": {
+          "count": 3,
+          "max": 149.4345238095238,
+          "mean": 149.4345238095238,
+          "median": 149.4345238095238,
+          "min": 149.4345238095238,
+          "p05": 149.4345238095238,
+          "p95": 149.4345238095238,
+          "sampleSd": 0.0
+        },
+        "traceLog10Mae": {
+          "count": 3,
+          "max": 1.3591187663731121,
+          "mean": 1.3439037578091735,
+          "median": 1.3419396848905654,
+          "min": 1.330652822163843,
+          "p05": 1.3317815084365152,
+          "p95": 1.3574008582248573,
+          "sampleSd": 0.01433424855908093
+        },
+        "vaporComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.6499911102776726,
+          "mean": 0.6132517293139937,
+          "median": 0.6003915554222962,
+          "min": 0.5893725222420125,
+          "p05": 0.5904744255600409,
+          "p95": 0.645031154792135,
+          "sampleSd": 0.032290731770165795
+        },
+        "vaporTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.1181970943829843,
+          "mean": 0.11617442560086529,
+          "median": 0.11804171682645877,
+          "min": 0.11228446559315282,
+          "p05": 0.11286019071648341,
+          "p95": 0.11818155662733175,
+          "sampleSd": 0.0033696998668234237
+        }
+      },
+      "trainingSeconds": {
+        "count": 3,
+        "max": 23.782749200006947,
+        "mean": 23.369662366671644,
+        "median": 23.171551400009776,
+        "min": 23.154686499998206,
+        "p05": 23.156372989999362,
+        "p95": 23.72162942000723,
+        "sampleSd": 0.35784305934213956
+      }
+    },
+    "regularized-10-decoded": {
+      "metrics": {
+        "branchError": {
+          "count": 3,
+          "max": 0.005952380952380952,
+          "mean": 0.005952380952380952,
+          "median": 0.005952380952380952,
+          "min": 0.005952380952380952,
+          "p05": 0.005952380952380952,
+          "p95": 0.005952380952380952,
+          "sampleSd": 0.0
+        },
+        "invalidPrediction": {
+          "count": 3,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p05": 0.0,
+          "p95": 0.0,
+          "sampleSd": 0.0
+        },
+        "liquidComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.5616821734057296,
+          "mean": 0.5325072754824918,
+          "median": 0.5244876363181642,
+          "min": 0.5113520167235818,
+          "p05": 0.51266557868304,
+          "p95": 0.557962719696973,
+          "sampleSd": 0.026105882998988948
+        },
+        "liquidTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.1299067605619452,
+          "mean": 0.12734893276282247,
+          "median": 0.12811181706465072,
+          "min": 0.1240282206618715,
+          "p05": 0.12443658030214942,
+          "p95": 0.12972726621221575,
+          "sampleSd": 0.0030126072068345717
+        },
+        "selectionScore": {
+          "count": 3,
+          "max": 1.1644230596721172,
+          "mean": 1.1364668874986588,
+          "median": 1.1235455068803968,
+          "min": 1.1214320959434623,
+          "p05": 1.1216434370371557,
+          "p95": 1.1603353043929452,
+          "sampleSd": 0.024233804868223414
+        },
+        "temperatureMaeK": {
+          "count": 3,
+          "max": 10.668036294834954,
+          "mean": 10.55016648816684,
+          "median": 10.532148188068753,
+          "min": 10.45031498159681,
+          "p05": 10.458498302244005,
+          "p95": 10.654447484158334,
+          "sampleSd": 0.10997334637699267
+        },
+        "traceEntries": {
+          "count": 3,
+          "max": 149.4345238095238,
+          "mean": 149.4345238095238,
+          "median": 149.4345238095238,
+          "min": 149.4345238095238,
+          "p05": 149.4345238095238,
+          "p95": 149.4345238095238,
+          "sampleSd": 0.0
+        },
+        "traceLog10Mae": {
+          "count": 3,
+          "max": 1.5247114517149472,
+          "mean": 1.5130423610172574,
+          "median": 1.5230888536288625,
+          "min": 1.4913267777079628,
+          "p05": 1.4945029853000529,
+          "p95": 1.5245491919063388,
+          "sampleSd": 0.01882373833712179
+        },
+        "vaporComponentL1OverFeed": {
+          "count": 3,
+          "max": 0.6164920521190479,
+          "mean": 0.5842881999200299,
+          "median": 0.5711914299588118,
+          "min": 0.5651811176822299,
+          "p05": 0.5657821489098881,
+          "p95": 0.6119619899030243,
+          "sampleSd": 0.028050793852539307
+        },
+        "vaporTotalMaeOverFeed": {
+          "count": 3,
+          "max": 0.1245789807178967,
+          "mean": 0.12127818507955423,
+          "median": 0.12263513999503284,
+          "min": 0.11662043452573319,
+          "p05": 0.11722190507266315,
+          "p95": 0.12438459664561032,
+          "sampleSd": 0.004149169718772811
+        }
+      },
+      "trainingSeconds": {
+        "count": 3,
+        "max": 32.748997300019255,
+        "mean": 32.526902633350495,
+        "median": 32.72641430000658,
+        "min": 32.10529630002566,
+        "p05": 32.16740810002375,
+        "p95": 32.74673900001799,
+        "sampleSd": 0.3652963498272406
+      }
+    }
+  }
+}

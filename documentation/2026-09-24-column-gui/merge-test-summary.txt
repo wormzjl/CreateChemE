@@ -1,0 +1,6 @@
+Candidate: 43bf7c5; main base: 4b21bd0
+Command: gradlew.bat check compileFluidGameTestJava compileMcpCompatJava --console=plain
+BUILD SUCCESSFUL in 3m 52s
+{'tests': 1093, 'failures': 0, 'errors': 0, 'skipped': 0}
+Product jar: createcheme-0.5.0.jar; version metadata and bundled presets verified; no MCP helpers.
+No tests overlapped a dev client.

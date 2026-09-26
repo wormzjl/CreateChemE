@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-26T07:49:05.157Z" hostname="WORMZ-PC" time="0.195">
+  <properties/>
+  <testcase name="aMenuFollowsItsDeviceToItsNewIslandsBucket()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.013"/>
+  <testcase name="firstRequestedOpeningReplaysLastBucketWithoutAnyScienceWorkOrDeadlineShift()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.004"/>
+  <testcase name="cachedReplayDoesNotConsumePendingInputRepliesOrUseANewerUnpublishedRevision()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.004"/>
+  <testcase name="presentationCostsNothingPerTickUnlessABucketHasWork()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.009"/>
+  <testcase name="anInputIsAnsweredOnTheFollowingBucketAndNeverBefore()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.004"/>
+  <testcase name="scientificProgressIsIdenticalWithAndWithoutViewers()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.097"/>
+  <testcase name="openMenusReceiveOneLivePayloadPerBucketAndTheStaticPartOnlyWhenTheRevisionChanges()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.016"/>
+  <testcase name="noPublishedSnapshotOrNoActiveRequestCannotTriggerAReplayOrNewView()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.001"/>
+  <testcase name="loadedDevicesArePresentedOnTheirIslandsBucketAndUnloadedOnesNever()" classname="com.wormzjl.createcheme.runtime.fluid.PresentationBucketTest" time="0.016"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

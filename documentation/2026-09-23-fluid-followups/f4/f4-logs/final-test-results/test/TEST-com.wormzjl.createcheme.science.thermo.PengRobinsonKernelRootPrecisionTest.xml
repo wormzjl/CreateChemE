@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.thermo.PengRobinsonKernelRootPrecisionTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:58.324Z" hostname="WORMZ-PC" time="0.021">
+  <properties/>
+  <testcase name="coalescenceBandPreservesLegacyClassificationWhileNearbyRootsCannotCrossExtrema()" classname="com.wormzjl.createcheme.science.thermo.PengRobinsonKernelRootPrecisionTest" time="0.001"/>
+  <testcase name="zeroCovolumeBoundaryKeepsTwoRootsAboveTheExistingPhysicalMargin()" classname="com.wormzjl.createcheme.science.thermo.PengRobinsonKernelRootPrecisionTest" time="0.009"/>
+  <testcase name="threePhysicalRootsRetainLiquidVaporOrderingAndSeparation()" classname="com.wormzjl.createcheme.science.thermo.PengRobinsonKernelRootPrecisionTest" time="0.006"/>
+  <testcase name="alreadyBackwardAccurateAnalyticRootKeepsItsOriginalBits()" classname="com.wormzjl.createcheme.science.thermo.PengRobinsonKernelRootPrecisionTest" time="0.0"/>
+  <testcase name="[1] 0.3649214093189222, 0.022388334423851432" classname="com.wormzjl.createcheme.science.thermo.PengRobinsonKernelRootPrecisionTest" time="0.001"/>
+  <testcase name="[2] 0.3649214101832813, 0.022388334454425896" classname="com.wormzjl.createcheme.science.thermo.PengRobinsonKernelRootPrecisionTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

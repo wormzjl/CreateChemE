@@ -1,0 +1,240 @@
+=== GUPRPRPR
+  node[0] id=1 GENERATOR y=64.0 P=101325.000 T=298.1500 mass=996.008376 liq=0.00000 water=1.00000 vap=0.00000
+  node[1] id=2 JUNCTION y=64.0 P=101325.000 T=298.1500 mass=996.008376 liq=0.00000 water=1.00000 vap=0.00000
+  node[2] id=4 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[3] id=6 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[4] id=8 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  pipe id=4501053670907088488 0->1 Passive[] sections=1
+  pipe id=319370355060279419 1->2 Pump[targetVolumeFlow=0.01, maximumAddedPressure=500000.0, efficiency=1.0] sections=1
+  pipe id=5088084889401103891 2->3 Passive[] sections=1
+  pipe id=6066135674095160195 3->4 Passive[] sections=1
+ interval 1 OK 2062.6 ms accepted=244 rejected=84 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 0.2003037709984694, 0.016222208774613785] reasons={Newton line search stalled at residual #; active-set pass=#=2, Negative/nonfinite inventory=8, Embedded pipe error #=51, Step refinement error #=23}
+   tanks [P=102342.5 liq=0.0490] [P=102275.9 liq=0.0009] [P=102272.9 liq=0.0000]
+ interval 2 OK 3.9 ms accepted=5 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.960056050459698, 9.960056050459698, 0.3854867736573226, 0.010609211281300096] reasons={Embedded pipe error #=1}
+   tanks [P=105034.8 liq=0.0971] [P=104867.9 liq=0.0028] [P=104864.7 liq=0.0000]
+ interval 3 OK 2.0 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 0.7077913522017724, 0.016208934056907442] reasons={Embedded pipe error #=1}
+   tanks [P=107504.9 liq=0.1436] [P=107215.4 liq=0.0062] [P=107211.5 liq=0.0001]
+ interval 4 OK 2.4 ms accepted=3 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 1.032559423317592, 0.025332490437495005] reasons={Embedded pipe error #=1}
+   tanks [P=109926.0 liq=0.1885] [P=109515.0 liq=0.0113] [P=109509.6 liq=0.0002]
+ interval 5 OK 2.1 ms accepted=3 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 1.3506378402376875, 0.039151233118724565] reasons={}
+   tanks [P=112382.4 liq=0.2317] [P=111847.2 liq=0.0178] [P=111839.3 liq=0.0004]
+ interval 6 OK 3.1 ms accepted=3 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 1.67075906698009, 0.05948033089724725] reasons={Embedded pipe error #=1}
+   tanks [P=114891.3 liq=0.2734] [P=114224.3 liq=0.0259] [P=114212.1 liq=0.0007]
+ interval 7 OK 2.3 ms accepted=3 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 1.9971121117152795, 0.0883324131322289] reasons={Newton iteration limit at residual #; active-set pass=#=1}
+   tanks [P=117446.7 liq=0.3134] [P=116638.4 liq=0.0355] [P=116619.6 liq=0.0011]
+ interval 8 OK 2.3 ms accepted=3 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 2.3286833202787607, 0.12719043986866557] reasons={Newton iteration limit at residual #; active-set pass=#=1}
+   tanks [P=120040.0 liq=0.3517] [P=119082.8 liq=0.0465] [P=119054.5 liq=0.0017]
+ interval 9 OK 2.2 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 2.6608464949880792, 0.17630500566556956] reasons={Embedded pipe error #=1}
+   tanks [P=122669.5 liq=0.3884] [P=121559.5 liq=0.0590] [P=121518.7 liq=0.0026]
+ interval 10 OK 1.3 ms accepted=2 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 2.9881020283957627, 0.23484737740237538] reasons={}
+   tanks [P=125342.5 liq=0.4234] [P=124079.9 liq=0.0728] [P=124023.8 liq=0.0037]
+ interval 11 OK 1.9 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 3.3064762903787672, 0.30153940843101584] reasons={Embedded pipe error #=1}
+   tanks [P=128072.8 liq=0.4568] [P=126659.8 liq=0.0879] [P=126586.1 liq=0.0052]
+ interval 12 OK 0.6 ms accepted=1 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 3.614134220413683, 0.375674083342424] reasons={}
+   tanks [P=130876.2 liq=0.4887] [P=129315.9 liq=0.1041] [P=129222.2 liq=0.0071]
+=== GUPRPRPRPRPRPR
+  node[0] id=1 GENERATOR y=64.0 P=101325.000 T=298.1500 mass=996.008376 liq=0.00000 water=1.00000 vap=0.00000
+  node[1] id=2 JUNCTION y=64.0 P=101325.000 T=298.1500 mass=996.008376 liq=0.00000 water=1.00000 vap=0.00000
+  node[2] id=4 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[3] id=6 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[4] id=8 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[5] id=10 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[6] id=12 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[7] id=14 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  pipe id=4501053670907088488 0->1 Passive[] sections=1
+  pipe id=319370355060279419 1->2 Pump[targetVolumeFlow=0.01, maximumAddedPressure=500000.0, efficiency=1.0] sections=1
+  pipe id=5088084889401103891 2->3 Passive[] sections=1
+  pipe id=6066135674095160195 3->4 Passive[] sections=1
+  pipe id=5088509435969366107 4->5 Passive[] sections=1
+  pipe id=1085235698056479723 5->6 Passive[] sections=1
+  pipe id=7425753335991216275 6->7 Passive[] sections=1
+ interval 1 OK 8305.2 ms accepted=335 rejected=143 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459697, 9.960056050459697, 0.23899892295970124, 0.020742153126245826, 0.0033449380135848416, 0.0017900946776276208, 8.925862465956443E-4] reasons={Negative/nonfinite inventory=6, Embedded pipe error #=99, Step refinement error #=31, Newton line search stalled at residual #; active-set pass=#=2, Newton iteration limit at residual #; active-set pass=#=5}
+   tanks [P=102033.8 liq=0.0489] [P=101899.7 liq=0.0011] [P=101886.5 liq=0.0000] [P=101881.2 liq=0.0000] [P=101879.2 liq=0.0000] [P=101878.6 liq=0.0000]
+ interval 2 OK 93.6 ms accepted=8 rejected=2 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459698, 9.960056050459698, 0.5506151179802853, 0.02892099991956046, 0.009915737569550212, 0.003987702056826605, 0.001977751783388244] reasons={Embedded pipe error #=2}
+   tanks [P=103477.1 liq=0.0961] [P=103139.2 liq=0.0037] [P=103117.1 liq=0.0001] [P=103109.0 liq=0.0000] [P=103108.4 liq=0.0000] [P=103108.3 liq=0.0000]
+ interval 3 OK 816.6 ms accepted=80 rejected=16 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 1.0171177769014477, 0.05868414224550593, 0.013396322335895567, 0.0025619883391651073, 0.0011962446496859638] reasons={Step refinement error #=5, Embedded pipe error #=11}
+   tanks [P=104334.6 liq=0.1411] [P=103880.2 liq=0.0085] [P=103859.4 liq=0.0003] [P=103855.5 liq=0.0000] [P=103854.0 liq=0.0000] [P=103853.7 liq=0.0000]
+ interval 4 OK 39.3 ms accepted=5 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 1.2605038189828124, 0.07256850055512507, 0.009272561807834527, 0.00449780092276711, 0.0019947985897484934] reasons={Embedded pipe error #=1}
+   tanks [P=105739.4 liq=0.1848] [P=105135.5 liq=0.0145] [P=105104.7 liq=0.0007] [P=105100.4 liq=0.0000] [P=105098.9 liq=0.0000] [P=105098.6 liq=0.0000]
+ interval 5 OK 19.8 ms accepted=3 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 1.6254029615685752, 0.11334862646856714, 0.011471407386458797, 0.004847739080521087, 0.0019045002062191535] reasons={}
+   tanks [P=107120.1 liq=0.2267] [P=106342.6 liq=0.0221] [P=106294.7 liq=0.0012] [P=106289.4 liq=0.0000] [P=106287.6 liq=0.0000] [P=106287.4 liq=0.0000]
+ interval 6 OK 39.9 ms accepted=5 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 2.0034585687865403, 0.1719953875382339, 0.015477794248766658, 0.0056891041293710455, 0.001745845146663976] reasons={Embedded pipe error #=1}
+   tanks [P=108432.2 liq=0.2666] [P=107460.1 liq=0.0313] [P=107383.9 liq=0.0019] [P=107376.3 liq=0.0001] [P=107373.7 liq=0.0000] [P=107373.5 liq=0.0000]
+ interval 7 OK 72.0 ms accepted=9 rejected=2 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 2.415756463727534, 0.2635116733561129, 0.02462399824812092, 0.008293847675615754, 0.0012978298847601609] reasons={Embedded pipe error #=2}
+   tanks [P=109578.0 liq=0.3045] [P=108340.0 liq=0.0421] [P=108196.6 liq=0.0031] [P=108179.3 liq=0.0002] [P=108172.3 liq=0.0000] [P=108172.2 liq=0.0000]
+ interval 8 OK 471.6 ms accepted=68 rejected=15 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 2.8505285265125107, 0.3653047141428113, 0.033783743575633116, 0.009070311570938662, 0.0014739841455004487] reasons={Step refinement error #=6, Embedded pipe error #=9}
+   tanks [P=110484.2 liq=0.3403] [P=109176.0 liq=0.0545] [P=109049.6 liq=0.0048] [P=109040.8 liq=0.0003] [P=109039.2 liq=0.0000] [P=109038.9 liq=0.0000]
+ interval 9 OK 20.0 ms accepted=4 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 3.00612730284838, 0.3941319248080501, 0.03174000252965416, 0.005436918850486477, 0.0020775202549813583] reasons={Embedded pipe error #=1}
+   tanks [P=111818.4 liq=0.3752] [P=110401.8 liq=0.0677] [P=110247.8 liq=0.0066] [P=110237.3 liq=0.0004] [P=110235.6 liq=0.0000] [P=110235.3 liq=0.0000]
+ interval 10 OK 11.8 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 3.3087364747572474, 0.48635933217231564, 0.0408163496377319, 0.00595093921125971, 0.002153284490814357] reasons={Embedded pipe error #=1}
+   tanks [P=113207.9 liq=0.4086] [P=111635.1 liq=0.0818] [P=111443.3 liq=0.0088] [P=111429.9 liq=0.0006] [P=111428.1 liq=0.0000] [P=111427.7 liq=0.0000]
+ interval 11 OK 7.8 ms accepted=2 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 3.6214977488361493, 0.592165534291131, 0.05277453797913658, 0.00671328502832782, 0.0022857854764426573] reasons={}
+   tanks [P=114607.8 liq=0.4405] [P=112877.4 liq=0.0970] [P=112641.8 liq=0.0115] [P=112624.7 liq=0.0008] [P=112622.6 liq=0.0000] [P=112622.2 liq=0.0000]
+ interval 12 OK 11.9 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 3.9274737201890275, 0.7096967599814417, 0.06806587829911685, 0.007773928576321617, 0.002485066226660186] reasons={Embedded pipe error #=1}
+   tanks [P=116011.5 liq=0.4708] [P=114124.0 liq=0.1132] [P=113838.2 liq=0.0148] [P=113816.0 liq=0.0011] [P=113813.5 liq=0.0000] [P=113813.0 liq=0.0000]
+=== RUPR
+  node[0] id=1 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[1] id=2 JUNCTION y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[2] id=4 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  pipe id=4501053670907088488 0->1 Passive[] sections=1
+  pipe id=319370355060279419 1->2 Pump[targetVolumeFlow=0.01, maximumAddedPressure=500000.0, efficiency=1.0] sections=1
+ interval 1 OK 3.2 ms accepted=7 rejected=0 modes=[PASSIVE, PUMP_TARGET] flows=[0.011171532654363646, 0.011171532654363646] reasons={}
+   tanks [P=94469.8 liq=0.0000] [P=108320.6 liq=0.0000]
+ interval 2 OK 0.5 ms accepted=1 rejected=0 modes=[PASSIVE, PUMP_TARGET] flows=[0.010627656578541539, 0.010627656578541539] reasons={}
+   tanks [P=88077.5 liq=0.0000] [P=115124.3 liq=0.0000]
+ interval 3 OK 0.5 ms accepted=1 rejected=0 modes=[PASSIVE, PUMP_TARGET] flows=[0.010109298533495915, 0.010109298533495915] reasons={}
+   tanks [P=82117.7 liq=0.0000] [P=121753.8 liq=0.0000]
+ interval 4 OK 0.5 ms accepted=1 rejected=0 modes=[PASSIVE, PUMP_TARGET] flows=[0.009616223325928076, 0.009616223325928076] reasons={}
+   tanks [P=76561.4 liq=0.0000] [P=128226.8 liq=0.0000]
+ interval 5 HELD 83.0 ms: Substep refinement exhausted: Newton iteration limit at residual 0.09571166727086529; active-set pass=0
+ interval 5 HELD 92.7 ms: Substep refinement exhausted: Newton iteration limit at residual 0.0820386128943617; active-set pass=0
+ interval 5 HELD 617.2 ms: Interval substep limit; no partial interval may commit: advanced=1.8579920767848583 of 5.0 s, accepted=492, rejected=532, reasons={Newton line search stalled at residual #; active-set pass=#=34, Newton iteration limit at residual #; active-set pass=#=498}, last=Newton iteration limit at residual 0.15142983998100687; active-set pass=0
+  node[0] id=1 RESERVOIR y=64.0 P=76561.382 T=275.1998 mass=0.937730 liq=0.00000 water=0.00000 vap=1.00000
+  node[1] id=2 JUNCTION y=64.0 P=76557.741 T=275.1998 mass=1.145353 liq=0.00000 water=0.00000 vap=1.22147
+  node[2] id=4 RESERVOIR y=64.0 P=128226.784 T=319.3585 mass=1.352977 liq=0.00000 water=0.00000 vap=1.00000
+  pipe id=4501053670907088488 0->1 Passive[] sections=1
+  pipe id=319370355060279419 1->2 Pump[targetVolumeFlow=0.01, maximumAddedPressure=500000.0, efficiency=1.0] sections=1
+=== RUPRPR
+  node[0] id=1 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[1] id=2 JUNCTION y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[2] id=4 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[3] id=6 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  pipe id=4501053670907088488 0->1 Passive[] sections=1
+  pipe id=319370355060279419 1->2 Pump[targetVolumeFlow=0.01, maximumAddedPressure=500000.0, efficiency=1.0] sections=1
+  pipe id=5088084889401103891 2->3 Passive[] sections=1
+ interval 1 OK 17.6 ms accepted=23 rejected=6 modes=[PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.011171520558233653, 0.011171520558233653, 0.005586256473110327] reasons={Embedded pipe error #=6}
+   tanks [P=94469.8 liq=0.0000] [P=104806.3 liq=0.0000] [P=104804.0 liq=0.0000]
+ interval 2 OK 0.7 ms accepted=1 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.010627657167612586, 0.010627657167612586, 0.005327978205521178] reasons={}
+   tanks [P=88077.5 liq=0.0000] [P=108155.4 liq=0.0000] [P=108153.3 liq=0.0000]
+ interval 3 OK 0.6 ms accepted=1 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.01010929909545288, 0.01010929909545288, 0.005089223253800833] reasons={}
+   tanks [P=82117.7 liq=0.0000] [P=111383.1 liq=0.0000] [P=111381.2 liq=0.0000]
+ interval 4 OK 0.6 ms accepted=1 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.009616223860232934, 0.009616223860232934, 0.004870517360652221] reasons={}
+   tanks [P=76561.4 liq=0.0000] [P=114498.6 liq=0.0000] [P=114496.9 liq=0.0000]
+ interval 5 HELD 93.5 ms: Substep refinement exhausted: Newton iteration limit at residual 0.07517641320853834; active-set pass=0
+ interval 5 HELD 804.9 ms: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178166996; active-set pass=0
+ interval 5 HELD 809.5 ms: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178149549; active-set pass=0
+  node[0] id=1 RESERVOIR y=64.0 P=76561.394 T=275.1999 mass=0.937730 liq=0.00000 water=0.00000 vap=1.00000
+  node[1] id=2 JUNCTION y=64.0 P=76557.753 T=275.1999 mass=1.145353 liq=0.00000 water=0.00000 vap=1.22147
+  node[2] id=4 RESERVOIR y=64.0 P=114498.620 T=309.0288 mass=1.248607 liq=0.00000 water=0.00000 vap=1.00000
+  node[3] id=6 RESERVOIR y=64.0 P=114496.918 T=308.7490 mass=1.249723 liq=0.00000 water=0.00000 vap=1.00000
+  pipe id=4501053670907088488 0->1 Passive[] sections=1
+  pipe id=319370355060279419 1->2 Pump[targetVolumeFlow=0.01, maximumAddedPressure=500000.0, efficiency=1.0] sections=1
+  pipe id=5088084889401103891 2->3 Passive[] sections=1
+=== RPRUPRPR
+  node[0] id=1 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[1] id=3 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[2] id=4 JUNCTION y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[3] id=6 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[4] id=8 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  pipe id=5284748521047816263 0->1 Passive[] sections=1
+  pipe id=1140438233829562326 1->2 Passive[] sections=1
+  pipe id=1797148878547291489 2->3 Pump[targetVolumeFlow=0.01, maximumAddedPressure=500000.0, efficiency=1.0] sections=1
+  pipe id=6066135674095160195 3->4 Passive[] sections=1
+ interval 1 OK 21.6 ms accepted=23 rejected=6 modes=[PASSIVE, PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.005653450739540917, 0.01131098927352184, 0.01131098927352184, 0.0056547810084527275] reasons={Embedded pipe error #=6}
+   tanks [P=97838.7 liq=0.0000] [P=97836.2 liq=0.0000] [P=104849.2 liq=0.0000] [P=104846.9 liq=0.0000]
+ interval 2 OK 0.8 ms accepted=1 rejected=0 modes=[PASSIVE, PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.0055159925127037275, 0.011031979613137417, 0.011031979613137417, 0.005522663597025299] reasons={}
+   tanks [P=94471.1 liq=0.0000] [P=94468.6 liq=0.0000] [P=108321.7 liq=0.0000] [P=108319.5 liq=0.0000]
+ interval 3 OK 0.7 ms accepted=1 rejected=0 modes=[PASSIVE, PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.005379802389983337, 0.010759597733890893, 0.010759597733890893, 0.005396102537585566] reasons={}
+   tanks [P=91219.4 liq=0.0000] [P=91217.0 liq=0.0000] [P=111746.1 liq=0.0000] [P=111744.0 liq=0.0000]
+ interval 4 OK 0.7 ms accepted=1 rejected=0 modes=[PASSIVE, PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.00524697484693184, 0.010493941118764796, 0.010493941118764796, 0.00527672480873303] reasons={}
+   tanks [P=88079.6 liq=0.0000] [P=88077.3 liq=0.0000] [P=115124.7 liq=0.0000] [P=115122.7 liq=0.0000]
+ interval 5 OK 0.8 ms accepted=1 rejected=0 modes=[PASSIVE, PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.0051174268599407996, 0.010234843715129893, 0.010234843715129893, 0.005163887161907911] reasons={}
+   tanks [P=85048.0 liq=0.0000] [P=85045.7 liq=0.0000] [P=118459.8 liq=0.0000] [P=118457.9 liq=0.0000]
+ interval 6 OK 0.7 ms accepted=1 rejected=0 modes=[PASSIVE, PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.004991077454980104, 0.009982143569777207, 0.009982143569777207, 0.005057037045084646] reasons={}
+   tanks [P=82120.8 liq=0.0000] [P=82118.5 liq=0.0000] [P=121753.6 liq=0.0000] [P=121751.8 liq=0.0000]
+ interval 7 OK 0.7 ms accepted=1 rejected=0 modes=[PASSIVE, PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.004867847657777012, 0.009735682729263877, 0.009735682729263877, 0.0049556955790846105] reasons={}
+   tanks [P=79294.3 liq=0.0000] [P=79292.1 liq=0.0000] [P=125008.3 liq=0.0000] [P=125006.6 liq=0.0000]
+ interval 8 OK 0.7 ms accepted=1 rejected=0 modes=[PASSIVE, PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.004747660443398983, 0.009495307139067767, 0.009495307139067767, 0.004859444245151766] reasons={}
+   tanks [P=76565.1 liq=0.0000] [P=76563.0 liq=0.0000] [P=128226.0 liq=0.0000] [P=128224.4 liq=0.0000]
+ interval 9 HELD 980.7 ms: Interval substep limit; no partial interval may commit: advanced=3.7250333598872487 of 5.0 s, accepted=490, rejected=534, reasons={Newton line search stalled at residual #; active-set pass=#=36, Newton iteration limit at residual #; active-set pass=#=498}, last=Newton iteration limit at residual 0.03356213948881956; active-set pass=0
+ interval 9 HELD 842.7 ms: Interval substep limit; no partial interval may commit: advanced=3.725082471338514 of 5.0 s, accepted=492, rejected=532, reasons={Newton iteration limit at residual #; active-set pass=#=498, Newton line search stalled at residual #; active-set pass=#=34}, last=Newton iteration limit at residual 0.09083830405337259; active-set pass=0
+ interval 9 HELD 137.3 ms: Substep refinement exhausted: Newton iteration limit at residual 0.09083830403854434; active-set pass=0
+  node[0] id=1 RESERVOIR y=64.0 P=76565.105 T=275.2066 mass=0.937752 liq=0.00000 water=0.00000 vap=1.00000
+  node[1] id=3 RESERVOIR y=64.0 P=76562.954 T=275.2048 mass=0.937732 liq=0.00000 water=0.00000 vap=1.00000
+  node[2] id=4 JUNCTION y=64.0 P=76559.312 T=275.2048 mass=1.145353 liq=0.00000 water=0.00000 vap=1.22147
+  node[3] id=6 RESERVOIR y=64.0 P=128226.026 T=319.7885 mass=1.351144 liq=0.00000 water=0.00000 vap=1.00000
+  node[4] id=8 RESERVOIR y=64.0 P=128224.415 T=318.9277 mass=1.354785 liq=0.00000 water=0.00000 vap=1.00000
+  pipe id=5284748521047816263 0->1 Passive[] sections=1
+  pipe id=1140438233829562326 1->2 Passive[] sections=1
+  pipe id=1797148878547291489 2->3 Pump[targetVolumeFlow=0.01, maximumAddedPressure=500000.0, efficiency=1.0] sections=1
+  pipe id=6066135674095160195 3->4 Passive[] sections=1
+=== GUPRPRPRPV
+  node[0] id=1 GENERATOR y=64.0 P=101325.000 T=298.1500 mass=996.008376 liq=0.00000 water=1.00000 vap=0.00000
+  node[1] id=2 JUNCTION y=64.0 P=101325.000 T=298.1500 mass=996.008376 liq=0.00000 water=1.00000 vap=0.00000
+  node[2] id=4 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[3] id=6 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[4] id=8 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[5] id=10 VOID y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  pipe id=4501053670907088488 0->1 Passive[] sections=1
+  pipe id=319370355060279419 1->2 Pump[targetVolumeFlow=0.01, maximumAddedPressure=500000.0, efficiency=1.0] sections=1
+  pipe id=5088084889401103891 2->3 Passive[] sections=1
+  pipe id=6066135674095160195 3->4 Passive[] sections=1
+  pipe id=5088509435969366107 4->5 Passive[] sections=1
+ interval 1 OK 2011.0 ms accepted=274 rejected=88 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 0.2578680452063892, 0.02418908472157808, 0.0068154556870830465] reasons={Newton line search stalled at residual #; active-set pass=#=2, Negative/nonfinite inventory=8, Embedded pipe error #=52, Step refinement error #=26}
+   tanks [P=101645.3 liq=0.0488] [P=101389.8 liq=0.0012] [P=101350.7 liq=0.0000]
+ interval 2 OK 2.6 ms accepted=4 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 0.708380282328102, 0.04982986588794604, 0.020045560986773427] reasons={}
+   tanks [P=101863.9 liq=0.0953] [P=101387.4 liq=0.0045] [P=101343.6 liq=0.0002]
+ interval 3 OK 2.5 ms accepted=3 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 1.1367120231177723, 0.086724944313144, 0.020622286996806877] reasons={Embedded pipe error #=1}
+   tanks [P=102098.5 liq=0.1396] [P=101409.4 liq=0.0098] [P=101344.2 liq=0.0005]
+ interval 4 OK 1.8 ms accepted=3 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 1.5496532011785065, 0.14334699840096693, 0.02475044522476719] reasons={}
+   tanks [P=102339.1 liq=0.1819] [P=101444.0 liq=0.0168] [P=101346.5 liq=0.0011]
+ interval 5 OK 1.8 ms accepted=3 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 1.9458664849666385, 0.21729457934985286, 0.031758787040875223] reasons={}
+   tanks [P=102582.6 liq=0.2221] [P=101489.1 liq=0.0255] [P=101350.5 liq=0.0021]
+ interval 6 OK 2.4 ms accepted=3 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 2.3252825347462904, 0.3065999502819369, 0.042187502577052775] reasons={Embedded pipe error #=1}
+   tanks [P=102828.1 liq=0.2605] [P=101543.8 liq=0.0357] [P=101356.4 liq=0.0034]
+ interval 7 OK 2.5 ms accepted=3 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 2.688309449457335, 0.409603464154935, 0.05662166775882773] reasons={Embedded pipe error #=1}
+   tanks [P=103075.1 liq=0.2971] [P=101607.5 liq=0.0471] [P=101364.7 liq=0.0052]
+ interval 8 OK 1.9 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 3.03551273427085, 0.5248082417787543, 0.07553515832593313] reasons={Embedded pipe error #=1}
+   tanks [P=103323.2 liq=0.3319] [P=101679.8 liq=0.0597] [P=101375.3 liq=0.0075]
+ interval 9 OK 1.1 ms accepted=2 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 3.3674317531351354, 0.6508948526381085, 0.09930531850636191] reasons={}
+   tanks [P=103572.2 liq=0.3650] [P=101760.1 liq=0.0734] [P=101388.7 liq=0.0102]
+ interval 10 OK 1.8 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 3.6846298365769634, 0.78662890770506, 0.1282099788640643] reasons={Embedded pipe error #=1}
+   tanks [P=103821.7 liq=0.3965] [P=101847.8 liq=0.0880] [P=101404.7 liq=0.0135]
+ interval 11 OK 1.8 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 3.987627734658465, 0.9308907068023657, 0.16246240327816355] reasons={Embedded pipe error #=1}
+   tanks [P=104071.5 liq=0.4265] [P=101942.7 liq=0.1033] [P=101423.6 liq=0.0174]
+ interval 12 OK 1.8 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 4.276974611963326, 1.0826176144688304, 0.2021975015116219] reasons={Embedded pipe error #=1}
+   tanks [P=104321.4 liq=0.4551] [P=102044.0 liq=0.1194] [P=101445.3 liq=0.0218]
+=== GUPRPRPRPRPRPRPV
+  node[0] id=1 GENERATOR y=64.0 P=101325.000 T=298.1500 mass=996.008376 liq=0.00000 water=1.00000 vap=0.00000
+  node[1] id=2 JUNCTION y=64.0 P=101325.000 T=298.1500 mass=996.008376 liq=0.00000 water=1.00000 vap=0.00000
+  node[2] id=4 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[3] id=6 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[4] id=8 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[5] id=10 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[6] id=12 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[7] id=14 RESERVOIR y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  node[8] id=16 VOID y=64.0 P=101325.000 T=298.1500 mass=1.145353 liq=0.00000 water=0.00000 vap=1.00000
+  pipe id=4501053670907088488 0->1 Passive[] sections=1
+  pipe id=319370355060279419 1->2 Pump[targetVolumeFlow=0.01, maximumAddedPressure=500000.0, efficiency=1.0] sections=1
+  pipe id=5088084889401103891 2->3 Passive[] sections=1
+  pipe id=6066135674095160195 3->4 Passive[] sections=1
+  pipe id=5088509435969366107 4->5 Passive[] sections=1
+  pipe id=1085235698056479723 5->6 Passive[] sections=1
+  pipe id=7425753335991216275 6->7 Passive[] sections=1
+  pipe id=9167076297911355571 7->8 Passive[] sections=1
+ interval 1 HELD 8393.4 ms: Substep refinement exhausted: Newton iteration limit at residual 3.7309328365239903E-7; active-set pass=0
+ interval 1 HELD 8164.5 ms: Substep refinement exhausted: Newton iteration limit at residual 1.3135115379446931E-8; active-set pass=0
+ interval 1 OK 8931.2 ms accepted=369 rejected=152 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459695, 9.960056050459695, 0.2672639948765175, 0.024837253794018323, 0.006775560063683248, 0.0054133308738820544, 0.005340788544500443, 0.005312738140217173] reasons={Newton line search stalled at residual #; active-set pass=#=6, Negative/nonfinite inventory=13, Embedded pipe error #=100, Step refinement error #=33}
+   tanks [P=101696.2 liq=0.0487] [P=101441.2 liq=0.0012] [P=101402.6 liq=0.0000] [P=101377.1 liq=0.0000] [P=101359.8 liq=0.0000] [P=101342.5 liq=0.0000]
+ interval 2 OK 956.1 ms accepted=67 rejected=21 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 0.713754447905947, 0.0505961556258049, 0.020203175344544133, 0.008791386721149663, 0.008646160982038069, 0.008653111951883962] reasons={Step refinement error #=16, Embedded pipe error #=5}
+   tanks [P=101870.6 liq=0.0952] [P=101413.9 liq=0.0045] [P=101376.3 liq=0.0002] [P=101361.4 liq=0.0000] [P=101348.7 liq=0.0000] [P=101336.7 liq=0.0000]
+ interval 3 OK 71.4 ms accepted=10 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 1.1301097808975864, 0.08649249477270757, 0.02046287641219116, 0.016471423730634465, 0.01464113366182565, 0.01458670043780772] reasons={Embedded pipe error #=1}
+   tanks [P=102138.7 liq=0.1396] [P=101447.9 liq=0.0098] [P=101382.1 liq=0.0005] [P=101362.8 liq=0.0000] [P=101347.6 liq=0.0000] [P=101336.3 liq=0.0000]
+ interval 4 OK 25.4 ms accepted=4 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 1.5521219692136563, 0.14431117052994474, 0.02495399977836621, 0.016313120854464108, 0.011314135542167486, 0.011136913273413894] reasons={}
+   tanks [P=102368.8 liq=0.1818] [P=101470.4 liq=0.0169] [P=101371.8 liq=0.0012] [P=101350.1 liq=0.0001] [P=101335.5 liq=0.0000] [P=101330.2 liq=0.0000]
+ interval 5 OK 454.7 ms accepted=47 rejected=15 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459697, 9.960056050459697, 1.9447147594214507, 0.21695375269640108, 0.03165282734005266, 0.01619042306720277, 0.010016215266946047, 0.009499277812454328] reasons={Step refinement error #=13, Embedded pipe error #=2}
+   tanks [P=102613.8 liq=0.2221] [P=101527.2 liq=0.0256] [P=101389.4 liq=0.0021] [P=101364.1 liq=0.0002] [P=101350.0 liq=0.0000] [P=101337.1 liq=0.0000]
+ interval 6 OK 11.8 ms accepted=3 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 2.3227157100174396, 0.30660478830053933, 0.04222634783782134, 0.017034885386877634, 0.014812286118298624, 0.013304764217277141] reasons={}
+   tanks [P=102865.6 liq=0.2605] [P=101581.5 liq=0.0357] [P=101393.9 liq=0.0034] [P=101362.4 liq=0.0003] [P=101347.9 liq=0.0000] [P=101335.2 liq=0.0000]
+ interval 7 OK 15.8 ms accepted=3 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 2.6883827654489822, 0.41003582342584943, 0.05674849004159992, 0.018492531638946548, 0.014746834960085425, 0.011865538875763991] reasons={Embedded pipe error #=1}
+   tanks [P=103111.7 liq=0.2970] [P=101643.7 liq=0.0471] [P=101400.4 liq=0.0052] [P=101360.6 liq=0.0005] [P=101345.2 liq=0.0000] [P=101332.8 liq=0.0000]
+ interval 8 OK 15.2 ms accepted=3 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.960056050459702, 9.960056050459702, 3.035938622554894, 0.5252940122511276, 0.07568527131726144, 0.020700328258554994, 0.014820946183091249, 0.009749122616353084] reasons={Embedded pipe error #=1}
+   tanks [P=103358.2 liq=0.3318] [P=101714.3 liq=0.0598] [P=101409.4 liq=0.0075] [P=101358.9 liq=0.0008] [P=101342.1 liq=0.0001] [P=101329.7 liq=0.0000]
+ interval 9 OK 31.4 ms accepted=11 rejected=10 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 3.365655318625579, 0.6497998478700019, 0.09900412332256044, 0.023668539555439842, 0.014948307404280641, 0.011895122469499904] reasons={Step refinement error #=1, Embedded pipe error #=9}
+   tanks [P=103610.7 liq=0.3650] [P=101801.5 liq=0.0734] [P=101431.0 liq=0.0102] [P=101367.5 liq=0.0012] [P=101349.0 liq=0.0001] [P=101336.6 liq=0.0000]
+ interval 10 OK 2.3 ms accepted=2 rejected=0 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 3.682486129904187, 0.7859528376204219, 0.128069098418927, 0.02793898677068939, 0.015449852930616991, 0.014013624983324438] reasons={}
+   tanks [P=103864.4 liq=0.3965] [P=101892.1 liq=0.0880] [P=101449.6 liq=0.0135] [P=101370.1 liq=0.0017] [P=101349.2 liq=0.0002] [P=101336.5 liq=0.0000]
+ interval 11 OK 3.5 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 3.986134633623262, 0.9300809201174655, 0.16220986749783234, 0.03339368636826222, 0.016122820784478603, 0.013999918625091565] reasons={Embedded pipe error #=1}
+   tanks [P=104117.3 liq=0.4265] [P=101990.0 liq=0.1033] [P=101471.8 liq=0.0174] [P=101373.6 liq=0.0023] [P=101349.5 liq=0.0003] [P=101336.4 liq=0.0000]
+ interval 12 OK 3.7 ms accepted=2 rejected=1 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 4.2753421127083815, 1.081430971040262, 0.2017560649105873, 0.04030554628170477, 0.01707390578492033, 0.01404307255096517] reasons={Embedded pipe error #=1}
+   tanks [P=104370.7 liq=0.4551] [P=102095.2 liq=0.1194] [P=101497.9 liq=0.0218] [P=101378.1 liq=0.0031] [P=101350.0 liq=0.0004] [P=101336.4 liq=0.0000]

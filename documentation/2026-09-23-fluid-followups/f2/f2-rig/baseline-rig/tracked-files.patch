@@ -1,0 +1,69 @@
+diff --git a/build.gradle b/build.gradle
+index 1adc737..ab1c0ab 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -59,6 +59,20 @@ repositories {
+     }
+ }
+ 
++// In-game performance rig (fluid scheduling WP5) for the client and server runs; every switch is opt-in and absent
++// by default. -PfluidRigDiagnosticTicks=N logs a fluid_diag summary every N server ticks (FluidInGameDiagnostics),
++// -PfluidRigHeapMiB=N sets -Xmx, -PfluidClientQuickPlay=<save folder> opens that singleplayer world at client launch.
++def fluidRigDiagnosticTicks = providers.gradleProperty('fluidRigDiagnosticTicks').getOrElse('')
++if (fluidRigDiagnosticTicks && !(fluidRigDiagnosticTicks ==~ /[1-9][0-9]{0,6}/)) throw new GradleException('fluidRigDiagnosticTicks must be a positive tick count')
++def fluidRigHeapMiB = providers.gradleProperty('fluidRigHeapMiB').getOrElse('')
++if (fluidRigHeapMiB && !(fluidRigHeapMiB ==~ /[0-9]+/ && fluidRigHeapMiB.toInteger() >= 1024 && fluidRigHeapMiB.toInteger() <= 32768)) throw new GradleException('fluidRigHeapMiB must be between 1024 and 32768')
++def fluidClientQuickPlay = providers.gradleProperty('fluidClientQuickPlay').getOrElse('')
++if (fluidClientQuickPlay && !(fluidClientQuickPlay ==~ /[A-Za-z0-9_-]+/)) throw new GradleException('fluidClientQuickPlay must be an alphanumeric save folder name')
++def fluidRig = { run ->
++    if (fluidRigDiagnosticTicks) run.systemProperty 'createcheme.fluid.diagnostics.logTicks', fluidRigDiagnosticTicks
++    if (fluidRigHeapMiB) run.jvmArguments.add("-Xmx${fluidRigHeapMiB}m")
++}
++
+ neoForge {
+     version = neo_version
+     addModdingDependenciesTo sourceSets.fluidGameTest
+@@ -73,12 +87,15 @@ neoForge {
+         client {
+             client()
+             systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
++            fluidRig(delegate)
++            if (fluidClientQuickPlay) programArguments.addAll('--quickPlaySingleplayer', fluidClientQuickPlay)
+         }
+ 
+         server {
+             server()
+             programArgument '--nogui'
+             systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
++            fluidRig(delegate)
+         }
+ 
+         gameTestServer {
+diff --git a/src/main/java/com/wormzjl/createcheme/CreateChemE.java b/src/main/java/com/wormzjl/createcheme/CreateChemE.java
+index 85cb829..f37de12 100644
+--- a/src/main/java/com/wormzjl/createcheme/CreateChemE.java
++++ b/src/main/java/com/wormzjl/createcheme/CreateChemE.java
+@@ -179,6 +179,10 @@ public final class CreateChemE {
+         gameEventBus.addListener(CreateChemE::onServerStopping);
+         gameEventBus.addListener(CreateChemE::onServerStopped);
+         gameEventBus.addListener(CreateChemE::onFluidChunkLoaded);
++        // Opt-in in-game measurement log (WP5 rig); registers nothing unless its system property is set.
++        com.wormzjl.createcheme.runtime.fluid.FluidInGameDiagnostics.register(gameEventBus);
++        if(com.wormzjl.createcheme.runtime.fluid.FluidInGameDiagnostics.enabled()&&net.neoforged.fml.loading.FMLEnvironment.dist.isClient())
++            com.wormzjl.createcheme.runtime.fluid.FluidInGameClientDiagnostics.register(gameEventBus);
+     }
+     private static void onFluidChunkLoaded(net.neoforged.neoforge.event.level.ChunkEvent.Load event) {
+         if(event.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+diff --git a/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidWorldAuthority.java b/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidWorldAuthority.java
+index b69cb29..0c4fdb2 100644
+--- a/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidWorldAuthority.java
++++ b/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidWorldAuthority.java
+@@ -100,6 +100,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
+     public List<String> components(){owned();return componentNames;}
+     public Map<String,MaterialName> materialNames(){owned();var result=new LinkedHashMap<String,MaterialName>();for(String id:componentNames)result.put(id,catalog.name(id));return Map.copyOf(result);}
+     public long onlineTick(){owned();return topology.onlineTick();}
++    /** WP5 rig (uncommitted, baseline only): every island's stored snapshot, for FluidInGameDiagnostics. */
++    public List<IslandCoordinator.Snapshot> diagnosticSnapshots(){owned();return runtime.coordinator().snapshots();}
+     /** Optional read-only diagnostics; all values are immutable and callbacks run on the server thread. */
+     public void observe(java.util.function.BiConsumer<List<IslandCoordinator.Snapshot>,Map<Long,IslandCoordinator.Metrics>> observer){owned();this.observer=observer;}
+     public Map<Long,WorldTopologyLedger.Registration> registrations(){owned();if(latest==null)latest=topology.latest();return latest;}

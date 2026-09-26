@@ -1,0 +1,104 @@
+diff --git a/src/test/java/com/wormzjl/createcheme/science/fluid/network/DirectLiquidChainDeviationProbe.java b/src/test/java/com/wormzjl/createcheme/science/fluid/network/DirectLiquidChainDeviationProbe.java
+new file mode 100644
+index 0000000..a02c3cf
+--- /dev/null
++++ b/src/test/java/com/wormzjl/createcheme/science/fluid/network/DirectLiquidChainDeviationProbe.java
+@@ -0,0 +1,98 @@
++package com.wormzjl.createcheme.science.fluid.network;
++
++import static org.junit.jupiter.api.Assertions.*;
++import com.google.gson.JsonParser;
++import com.wormzjl.createcheme.fluid.support.LegacyLiquidPath;
++import com.wormzjl.createcheme.runtime.fluid.FluidPresetCatalog;
++import com.wormzjl.createcheme.runtime.fluid.RetainedSolver;
++import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
++import com.wormzjl.createcheme.science.fluid.solver.PhaseLayout;
++import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
++import com.wormzjl.createcheme.science.material.MaterialCatalog;
++import java.nio.file.*;
++import java.util.*;
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
++
++/**
++ * P3 WP4 measurement probe (detach at WP11): replays chain-100 exactly as {@code FluidSolverRegressionTest} does (the
++ * harness's cosine chain, one 5 s interval, the shipped trace cutoff) and writes the per-node deviation of the direct
++ * liquid path's end state against the pinned reference {@code src/test/resources/fluid/regression/chain-100.json}, with
++ * the plan's first-order check (section 2.5, step 3): each node's hydrocarbon-liquid volume deviation is explained by
++ * the compressibility difference between the retired global {@code k = 1e-9 1/Pa} and the equation of state's own
++ * {@code kappa_EOS} at that node, {@code (kappa_EOS - k)(2 MPa - P)}, plus the anchor term {@code sum x_i dc_i / v}
++ * (the translations now anchored at their own pressure), plus the node's change of hydrocarbon inventory (the fixture
++ * scales each node's moles to fill 1 m3, and the liquid is now denser); it must agree with the observed deviation within
++ * 10 % of that deviation. Run with {@code CREATECHEME_WP4_CHAIN_PROBE=1 gradlew fluidScienceTest --tests '*DirectLiquidChainDeviationProbe'}.
++ */
++@EnabledIfEnvironmentVariable(named="CREATECHEME_WP4_CHAIN_PROBE",matches="1")
++class DirectLiquidChainDeviationProbe {
++    @Test void chain100DeviationAgainstThePinnedReferenceAndTheFirstOrderCheck() throws Exception {
++        var catalog=MaterialCatalog.bundled();
++        var model=FluidThermodynamics.forNetwork(catalog,FluidPresetCatalog.NETWORK_PACKAGE,FluidThermodynamics.DEFAULT_MAXIMUM_VELOCITY,
++                FluidThermodynamics.DEFAULT_TRACE_CUTOFF_MOLE_FRACTION);
++        var legacy=new LegacyLiquidPath(catalog,FluidPresetCatalog.NETWORK_PACKAGE);
++        var start=cosineChain(model,100);
++        var result=new RetainedSolver().solve(model,start,5,PassiveIntervalSolver.Settings.defaults(),()->{});
++        var reference=JsonParser.parseString(Files.readString(Path.of("src","test","resources","fluid","regression","chain-100.json"))).getAsJsonObject()
++                .getAsJsonArray("intervals").get(0).getAsJsonObject();
++        var nodes=reference.getAsJsonArray("nodes");int water=model.componentCount()-1;
++        var csv=new StringBuilder("node,pressure_ref_Pa,pressure_rel,temperature_dK,mass_rel,hc_moles_rel,liquid_volume_rel,water_volume_rel,vapor_volume_rel,"
++                +"kappa_eos_per_Pa,pressure_term,anchor_term,first_order_liquid_rel,exact_formulation_rel,check_residual_of_deviation,water_kappa_per_Pa,water_first_order_rel\n");
++        double[] max=new double[9],sum=new double[9];double worstCheck=0;int count=0;
++        for(int k=0;k<nodes.size();k++) {
++            var ref=nodes.get(k).getAsJsonObject();var node=result.graph().reservoirs().get(k);var s=node.state();
++            assertEquals(ref.get("id").getAsLong(),node.id());
++            double[] moles=PhaseLayout.totalAmounts(s);var refMoles=ref.getAsJsonArray("moles");
++            double hc=0,refHc=0;for(int c=0;c<water;c++){hc+=moles[c];refHc+=refMoles.get(c).getAsDouble();}
++            double pressure=s.pressure()/ref.get("pressure").getAsDouble()-1,temperature=s.temperature()-ref.get("temperature").getAsDouble();
++            double mass=s.mass()/ref.get("mass").getAsDouble()-1,amount=hc/refHc-1;
++            double liquid=s.liquidVolume()/ref.get("liquidVolume").getAsDouble()-1;
++            double waterVolume=ref.get("waterVolume").getAsDouble()>0?s.waterVolume()/ref.get("waterVolume").getAsDouble()-1:Double.NaN;
++            double vapour=s.vaporVolume()/ref.get("vaporVolume").getAsDouble()-1;
++            // First order, at this node's own state: the pressure term and the anchor term of the liquid's molar volume.
++            double[] x=s.liquid();double nl=0;for(double v:x)nl+=v;for(int i=0;i<x.length;i++)x[i]/=nl;
++            double kappa=s.liquidProperties().isothermalCompressibility(),span=LegacyLiquidPath.REFERENCE_PRESSURE-s.pressure();
++            double v=s.liquidProperties().molarVolume(),anchor=0;
++            for(int i=0;i<x.length;i++)anchor+=x[i]*(legacy.directShift(i)-legacy.legacyShift(i));
++            double pressureTerm=(kappa-legacy.compressibility())*span,anchorTerm=anchor/v;
++            double firstOrder=(1+pressureTerm+anchorTerm)*(1+amount)-1;
++            double exact=v/legacy.liquid(s.temperature(),s.pressure(),x).molarVolume()-1;
++            double residual=Math.abs(liquid-firstOrder)/Math.abs(liquid);
++            worstCheck=Math.max(worstCheck,residual);
++            double kappaWater=s.waterCompressibility(),waterFirst=(kappaWater-legacy.compressibility())*span;
++            csv.append(String.format(Locale.ROOT,"%d,%.6f,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4f,%.4e,%.4e%n",node.id(),ref.get("pressure").getAsDouble(),
++                    pressure,temperature,mass,amount,liquid,waterVolume,vapour,kappa,pressureTerm,anchorTerm,firstOrder,exact,residual,kappaWater,waterFirst));
++            double[] values={Math.abs(pressure),Math.abs(temperature),Math.abs(mass),Math.abs(amount),Math.abs(liquid),Double.isNaN(waterVolume)?0:Math.abs(waterVolume),Math.abs(vapour),kappa,residual};
++            for(int q=0;q<values.length;q++){max[q]=Math.max(max[q],values[q]);sum[q]+=values[q];}
++            count++;
++        }
++        Files.createDirectories(Path.of("build","reports","fluid"));
++        Files.writeString(Path.of("build","reports","fluid","chain-100-direct-liquid-deviation.csv"),csv.toString());
++        String[] names={"|pressure| rel","|temperature| K","|mass| rel","|hydrocarbon moles| rel","|liquid volume| rel","|water volume| rel","|vapour volume| rel","kappa_EOS 1/Pa","first-order check residual / deviation"};
++        var summary=new StringBuilder("chain-100 direct-liquid deviation, "+count+" nodes (max / mean):\n");
++        for(int q=0;q<names.length;q++)summary.append(String.format(Locale.ROOT,"  %s: %.4e / %.4e%n",names[q],max[q],sum[q]/count));
++        summary.append("accepted/rejected substeps ").append(result.acceptedSubsteps()).append('/').append(result.rejectedSubsteps())
++                .append(" (reference ").append(reference.get("accepted").getAsInt()).append('/').append(reference.get("rejected").getAsInt()).append(")\n");
++        System.out.print(summary);
++        System.out.print(csv.substring(0,Math.min(csv.length(),2000)));
++        assertTrue(worstCheck<=.1,"the first-order prediction explains every node's liquid-volume deviation within 10 %: worst "+worstCheck);
++    }
++
++    /** {@code SolverRegressionHarness.cosineChain}, verbatim: the harness is package-private to the benchmark package. */
++    private static PassiveNetwork cosineChain(FluidThermodynamics model,int count) {
++        var crude=V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane");
++        var feed=crude.crudeFeed("createcheme:tia_juana_light_methane").moleFractions();
++        var composition=new double[model.componentCount()];
++        for(int c=0;c<feed.length;c++)composition[model.components().indexOf(crude.componentBasis().componentId(c))]=feed[c];
++        composition[model.components().indexOf("Nitrogen")]=.1;composition[model.components().indexOf("Water")]=.2;
++        var nodes=new ArrayList<PassiveNetwork.Reservoir>();var pipes=new ArrayList<PassiveNetwork.Pipe>();
++        for(int i=0;i<count;i++) {
++            double pressure=150000+1000*Math.cos(i*.7);var n=composition.clone();var unit=model.flashTP(350,pressure,n,()->{});
++            for(int c=0;c<n.length;c++)n[c]/=unit.volume();var state=model.flashTP(350,pressure,n,()->{});
++            nodes.add(new PassiveNetwork.Reservoir(i+1,0,state,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,n,state.internalEnergy())));
++            if(i>0)pipes.add(new PassiveNetwork.Pipe(i,i-1,i,new PipeResistance.Geometry(100,.05,.000045,0)));
++        }
++        return new PassiveNetwork(nodes,pipes);
++    }
++}

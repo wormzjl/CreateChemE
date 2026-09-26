@@ -1,0 +1,66 @@
+gradle.projectsEvaluated {
+    gradle.rootProject.sourceSets.test.java.srcDir(new File(gradle.startParameter.initScripts.find { it.name == 'holdup.init.gradle' }.parentFile, '.'))
+    gradle.rootProject.tasks.withType(Test).configureEach {
+        systemProperty 'createcheme.junctionHoldup', gradle.rootProject.findProperty('junctionHoldup') ?: '0'
+        systemProperty 'junction.jacobianDump', gradle.rootProject.findProperty('jacobianDump') ?: '0'
+        systemProperty 'junction.steps', gradle.rootProject.findProperty('junctionSteps') ?: '100'
+        systemProperty 'junction.ledgerDebug', gradle.rootProject.findProperty('ledgerDebug') ?: 'false'
+        systemProperty 'junction.energyTolerance', gradle.rootProject.findProperty('energyTolerance') ?: '1e-7'
+        systemProperty 'junction.flowFloor', gradle.rootProject.findProperty('flowFloor') ?: '1'
+        systemProperty 'junction.capForm', gradle.rootProject.findProperty('capForm') ?: 'old'
+        systemProperty 'junction.boundaryDump', gradle.rootProject.findProperty('boundaryDump') ?: '0'
+        systemProperty 'junction.rateForm', gradle.rootProject.findProperty('rateForm') ?: 'regularised'
+        systemProperty 'junction.rateWarmStart', gradle.rootProject.findProperty('rateWarmStart') ?: 'previous'
+        systemProperty 'junction.rateWarmStartTrace', gradle.rootProject.findProperty('rateWarmStartTrace') ?: 'false'
+        systemProperty 'junction.voidStart', gradle.rootProject.findProperty('voidStart') ?: 'off'
+        systemProperty 'junction.voidStartTrace', gradle.rootProject.findProperty('voidStartTrace') ?: 'false'
+        systemProperty 'junction.mintHoldup', gradle.rootProject.findProperty('mintHoldup') ?: 'off'
+        systemProperty 'junction.stageForm', gradle.rootProject.findProperty('stageForm') ?: 'explicit'
+        systemProperty 'junction.stageFormTrace', gradle.rootProject.findProperty('stageFormTrace') ?: 'false'
+        systemProperty 'junction.holdupTau', gradle.rootProject.findProperty('holdupTau') ?: '0'
+        systemProperty 'junction.pinMass', gradle.rootProject.findProperty('pinMass') ?: 'off'
+        systemProperty 'junction.sizeTrace', gradle.rootProject.findProperty('sizeTrace') ?: 'false'
+        systemProperty 'junction.pinTrace', gradle.rootProject.findProperty('pinTrace') ?: 'false'
+        systemProperty 'junction.stageClip', gradle.rootProject.findProperty('stageClip') ?: 'off'
+        systemProperty 'junction.stageClipTrace', gradle.rootProject.findProperty('stageClipTrace') ?: 'false'
+        systemProperty 'junction.solverDiag', gradle.rootProject.findProperty('solverDiag') ?: 'false'
+        systemProperty 'junction.integrator', gradle.rootProject.findProperty('integrator') ?: 'trbdf2'
+        systemProperty 'junction.beStateCap', gradle.rootProject.findProperty('beStateCap') ?: '0.02'
+        systemProperty 'junction.beModeRule', gradle.rootProject.findProperty('beModeRule') ?: 'strict'
+        systemProperty 'junction.beColdStart', gradle.rootProject.findProperty('beColdStart') ?: 'seed'
+        systemProperty 'junction.approxTrace', gradle.rootProject.findProperty('approxTrace') ?: 'false'
+        systemProperty 'junction.beTrace', gradle.rootProject.findProperty('beTrace') ?: 'false'
+        systemProperty 'junction.acceptance', gradle.rootProject.findProperty('acceptance') ?: 'full'
+        systemProperty 'junction.cases', gradle.rootProject.findProperty('junctionCases') ?: ''
+        // Review 8.7 (runs 91+).
+        systemProperty 'junction.interval', gradle.rootProject.findProperty('junctionInterval') ?: '0.1'
+        systemProperty 'junction.startStep', gradle.rootProject.findProperty('startStep') ?: 'initial'
+        systemProperty 'junction.predictor', gradle.rootProject.findProperty('predictor') ?: 'none'
+        systemProperty 'junction.jacobianReuse', gradle.rootProject.findProperty('jacobianReuse') ?: 'off'
+        systemProperty 'junction.rowForm', gradle.rootProject.findProperty('rowForm') ?: 'rate'
+        systemProperty 'junction.newtonTolerance', gradle.rootProject.findProperty('newtonTolerance') ?: '1e-9'
+        systemProperty 'junction.reuseTrace', gradle.rootProject.findProperty('reuseTrace') ?: 'false'
+        systemProperty 'junction.lowAlloc', gradle.rootProject.findProperty('lowAlloc') ?: 'off'
+        systemProperty 'junction.phaseCheck', gradle.rootProject.findProperty('phaseCheck') ?: 'both'
+        // Review 8.8 (runs 100+).
+        systemProperty 'junction.boundaryReopen', gradle.rootProject.findProperty('boundaryReopen') ?: 'off'
+        systemProperty 'junction.reopenTrace', gradle.rootProject.findProperty('reopenTrace') ?: 'false'
+        systemProperty 'junction.eventCases', gradle.rootProject.findProperty('eventCases') ?: 'clog,passiveFill,pumpFill,gasPump,drainReopen,withdrawReopen,blowdown,flush,ramp,domainFloor,domainHot'
+        systemProperty 'junction.eventCadences', gradle.rootProject.findProperty('eventCadences') ?: '0.1,5'
+        systemProperty 'junction.eventReopen', gradle.rootProject.findProperty('eventReopen') ?: 'off,on'
+        systemProperty 'junction.eventPumpStart', gradle.rootProject.findProperty('eventPumpStart') ?: 'carry'
+        systemProperty 'junction.pumpReopenStart', gradle.rootProject.findProperty('pumpReopenStart') ?: 'carry'
+        // Review 8.9 (runs 112+).
+        systemProperty 'junction.replayTrace', gradle.rootProject.findProperty('replayTrace') ?: 'false'
+        systemProperty 'junction.replayDeterministic', gradle.rootProject.findProperty('replayDeterministic') ?: 'off'
+        systemProperty 'junction.pumpColumn', gradle.rootProject.findProperty('pumpColumn') ?: 'off'
+        // -PexcludeTests=<pattern>[,<pattern>]: tests left out of the run (run 122: a JUnit timeout in a separate thread broke the
+        // coordinator tests' thread ownership; run 121: a REST certificate's infinite horizon made one test loop forever).
+        def excluded = gradle.rootProject.findProperty('excludeTests')
+        if (excluded) { excluded.toString().split(',').each { pattern -> filter.excludeTestsMatching(pattern) } }
+        // -Pjfr=<file.jfr>: a flight recording of the test JVM (profile settings, allocation samples unthrottled to 20000/s).
+        def jfr = gradle.rootProject.findProperty('jfr')
+        if (jfr) jvmArgs "-XX:StartFlightRecording=filename=${jfr},settings=profile,jdk.ObjectAllocationSample#throttle=20000/s,jdk.ExecutionSample#period=2ms"
+        outputs.upToDateWhen { false }
+    }
+}

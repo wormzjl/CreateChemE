@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlannerTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:44:44.403Z" hostname="WORMZ-PC" time="0.881">
+  <properties/>
+  <testcase name="requestedTwentyAndEightyKgCommitAsSeparateIntervalsWithoutReplay()" classname="com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlannerTest" time="0.035"/>
+  <testcase name="withdrawalProducesOnlyActuallyIntegratedMaterialAndCancellationPropagates()" classname="com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlannerTest" time="0.002"/>
+  <testcase name="overfullDeliveryIsReducedToAFeasiblePortionAndOtherDueInputStillAdvances()" classname="com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlannerTest" time="0.785"/>
+  <testcase name="solidsArrivingDuringAnIntervalRefuseOnlyTheAffectedWithdrawal()" classname="com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlannerTest" time="0.048"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

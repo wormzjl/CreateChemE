@@ -1,0 +1,228 @@
+{
+  "enumerated": 600,
+  "accepted": 561,
+  "statuses": [
+    {
+      "status": "OK",
+      "count": 561
+    },
+    {
+      "status": "SCREENED_DP",
+      "count": 39
+    }
+  ],
+  "metrics": {
+    "cp0_error": {
+      "count": 561,
+      "median": 0.014210496528671164,
+      "p95": 0.8950361219727845,
+      "maximum": 0.8950362627428663,
+      "above10Percent": 221
+    },
+    "cp1_error": {
+      "count": 561,
+      "median": 1.6759559296759594E-06,
+      "p95": 0.09587487074703453,
+      "maximum": 0.611986071489304,
+      "above10Percent": 27
+    },
+    "table_error": {
+      "count": 561,
+      "median": 2.734617526108738E-06,
+      "p95": 0.0003573024510037745,
+      "maximum": 0.0004608746101062055,
+      "above10Percent": 0
+    },
+    "frozen_error": {
+      "count": 561,
+      "median": 0.17477006878258952,
+      "p95": 3.681480069629294,
+      "maximum": 6.501383308076502,
+      "above10Percent": 307
+    },
+    "one_error": {
+      "count": 561,
+      "median": 0.0011354299652763153,
+      "p95": 0.8554707891017074,
+      "maximum": 6.494391019529834,
+      "above10Percent": 84
+    },
+    "two_error": {
+      "count": 561,
+      "median": 0.000365929896776197,
+      "p95": 0.4000796729594067,
+      "maximum": 2.348345960955906,
+      "above10Percent": 60
+    },
+    "gated_error": {
+      "count": 561,
+      "median": 0.004651639619986684,
+      "p95": 0.8554707891017074,
+      "maximum": 6.494391019529834,
+      "above10Percent": 85
+    },
+    "flow_one_error": {
+      "count": 561,
+      "median": 0.0023560292676239637,
+      "p95": 1.2092632298375054,
+      "maximum": 6.641734507662361,
+      "above10Percent": 107
+    },
+    "refinement_error": {
+      "count": 65,
+      "median": 8.857672356232054E-08,
+      "p95": 0.00017657964164662126,
+      "maximum": 0.0019224403538123493,
+      "above10Percent": 0
+    },
+    "energy_residual": {
+      "count": 561,
+      "median": 1.4367853556410281E-16,
+      "p95": 2.0550195807907632E-13,
+      "maximum": 7.139058698614619E-11,
+      "above10Percent": 0
+    },
+    "nine_error": {
+      "count": 561,
+      "median": 3.516247025713042E-06,
+      "p95": 0.009640927865576703,
+      "maximum": 0.14510354481557308,
+      "above10Percent": 11
+    },
+    "seventeen_error": {
+      "count": 561,
+      "median": 1.3149758131233735E-06,
+      "p95": 0.00975928708952209,
+      "maximum": 0.07102950017784929,
+      "above10Percent": 0
+    }
+  },
+  "perFluid": [
+    {
+      "fluid": "crude-cooling",
+      "count": 60,
+      "cpFailures": 28,
+      "correctedCpFailures": 0,
+      "oneCorrectionFailures": 9
+    },
+    {
+      "fluid": "heavy-liquid",
+      "count": 51,
+      "cpFailures": 14,
+      "correctedCpFailures": 0,
+      "oneCorrectionFailures": 9
+    },
+    {
+      "fluid": "methane-cooling",
+      "count": 60,
+      "cpFailures": 44,
+      "correctedCpFailures": 0,
+      "oneCorrectionFailures": 1
+    },
+    {
+      "fluid": "methane-heating",
+      "count": 60,
+      "cpFailures": 43,
+      "correctedCpFailures": 0,
+      "oneCorrectionFailures": 3
+    },
+    {
+      "fluid": "pentane-condensing",
+      "count": 60,
+      "cpFailures": 39,
+      "correctedCpFailures": 13,
+      "oneCorrectionFailures": 25
+    },
+    {
+      "fluid": "pentane-liquid",
+      "count": 54,
+      "cpFailures": 0,
+      "correctedCpFailures": 0,
+      "oneCorrectionFailures": 0
+    },
+    {
+      "fluid": "steam-condensing",
+      "count": 60,
+      "cpFailures": 53,
+      "correctedCpFailures": 14,
+      "oneCorrectionFailures": 33
+    },
+    {
+      "fluid": "steam-sensible",
+      "count": 60,
+      "cpFailures": 0,
+      "correctedCpFailures": 0,
+      "oneCorrectionFailures": 0
+    },
+    {
+      "fluid": "water-cooling",
+      "count": 48,
+      "cpFailures": 0,
+      "correctedCpFailures": 0,
+      "oneCorrectionFailures": 2
+    },
+    {
+      "fluid": "water-heating",
+      "count": 48,
+      "cpFailures": 0,
+      "correctedCpFailures": 0,
+      "oneCorrectionFailures": 2
+    }
+  ],
+  "referenceChecks": [
+    {
+      "kind": "independent-rk",
+      "error": {
+        "count": 20,
+        "median": 3.9737357530260845E-14,
+        "p95": 1.0251518880785735E-11,
+        "maximum": 3.74496258721546E-11,
+        "above10Percent": 0
+      },
+      "refinement": {
+        "count": 20,
+        "median": 8.796819314756342E-14,
+        "p95": 1.8205982799238107E-11,
+        "maximum": 9.442228745174055E-11,
+        "above10Percent": 0
+      }
+    },
+    {
+      "kind": "worst-reference",
+      "error": {
+        "count": 20,
+        "median": 2.500999246338941E-05,
+        "p95": 0.001199812510233785,
+        "maximum": 0.0028121279810248735,
+        "above10Percent": 0
+      },
+      "refinement": {
+        "count": 20,
+        "median": 2.710838479573658E-07,
+        "p95": 7.446293465267177E-06,
+        "maximum": 8.472391365648242E-05,
+        "above10Percent": 0
+      }
+    }
+  ],
+  "serialTimings": [
+    {
+      "fluid": "heavy-liquid",
+      "medianExchangeMicroseconds": 0.18319000000000002,
+      "medianProfileAndModelBuildMilliseconds": 4.0964,
+      "medianOneCorrectionMicroseconds": 7.3808
+    },
+    {
+      "fluid": "methane-cooling",
+      "medianExchangeMicroseconds": 0.15705,
+      "medianProfileAndModelBuildMilliseconds": 4.3631,
+      "medianOneCorrectionMicroseconds": 7.159
+    },
+    {
+      "fluid": "steam-condensing",
+      "medianExchangeMicroseconds": 0.44891000000000003,
+      "medianProfileAndModelBuildMilliseconds": 4.231,
+      "medianOneCorrectionMicroseconds": 9.829600000000001
+    }
+  ]
+}

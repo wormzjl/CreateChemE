@@ -1,0 +1,1 @@
+[["forwards the properties (`-PsolverDiag`,","forwards the properties (`-PjunctionInterval`, `-PstartStep`, `-Ppredictor`, `-PjacobianReuse`, `-ProwForm`, `-PnewtonTolerance`, `-PreuseTrace`, `-PlowAlloc`, `-PphaseCheck` and the `-Pjfr=<file>` recording added 2026-09-26 for runs 91+; `-PsolverDiag`,"]]

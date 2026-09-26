@@ -1,0 +1,17 @@
+WARN StatusConsoleListener Advanced terminal features are not available in this environment
+island 43 committed 22178 status RESTING: no flow since 342.7 s
+  vessel 21: 298.150 K 101325.0 Pa liquid false vapour true water 0.000e+00 crystals [] moles [40.88681104154507, 0.0, 0.0, 0.0, 0.0]
+  one 5 s interval: 48.7 ms, 312 checkpoints, substeps 7 rejected 0
+island 46 committed 9619 status HELD: Substep refinement exhausted: Negative/nonfinite inventory
+  vessel 11: 298.150 K 101325.0 Pa liquid false vapour true water 0.000e+00 crystals [] moles [40.88681104154507, 0.0, 0.0, 0.0, 0.0]
+  one 5 s interval refused after 63.5 ms, 4819 checkpoints: Substep refinement exhausted: Negative/nonfinite inventory
+island 47 committed 14275 status HELD: round deadline or worker failure
+  vessel 5: 212.222 K 381703.8 Pa liquid false vapour true water 0.000e+00 crystals [Stock[crystal=createcheme:crystal_carbon_dioxide_i, component=3, moles=19.8631185523367]] moles [2.343659264905438E-5, 0.0, 0.0, 229.27924777125924, 0.0]
+  one 5 s interval refused after 2735.5 ms, 7984032 checkpoints: Interval substep limit; no partial interval may commit: advanced=0.020315767896766666 of 5.0 s, accepted=489, rejected=535, reasons={Crystal equilibrium (UV) did not converge: the specified internal energy # J lies in a step of U(T) at the specified volume between # and # K (the engine's U # J, V # m#, totals [#, #, #, #, #])=535}, last=Crystal equilibrium (UV) did not converge: the specified internal energy -9.972099514183599E7 J lies in a step of U(T) at the specified volume between 212.22164568001782 and 212.22164568161602 K (the engine's U -9.972099514183599E7 J, V 1.0 m3, totals [2.3343237938573707E-5, 0.0, 0.0, 249.14350068449468, 0.0])
+island 62 committed 17406 status HELD: Substep refinement exhausted: Negative/nonfinite inventory
+  vessel 52: 298.150 K 101325.0 Pa liquid false vapour true water 0.000e+00 crystals [] moles [40.88681104154507, 0.0, 0.0, 0.0, 0.0]
+  one 5 s interval refused after 26.2 ms, 4477 checkpoints: Substep refinement exhausted: Negative/nonfinite inventory
+island 78 committed 22147 status FULL
+  vessel 71: 204.405 K 217111.2 Pa liquid false vapour true water 0.000e+00 crystals [Stock[crystal=createcheme:crystal_carbon_dioxide_i, component=3, moles=388.22557970855576]] moles [2.3851875210878974E-8, 1.030288493723164E-5, 0.0, 130.96981665618978, 0.0]
+  one 5 s interval: 93.7 ms, 174418 checkpoints, substeps 8 rejected 1
+

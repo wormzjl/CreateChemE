@@ -1,0 +1,671 @@
+{
+ "revision": "benchmark-population-manifest-v1",
+ "liquidSupplyScreenRatio": 0.3,
+ "rule": {
+  "REQUEST_ONLY_TYPED": "The promoted branch's request-only admission (totalDraw >= totalFeed, V3LiquidSupplyScreen at the production ratio, V3HeatFeasibility.availableCoolingWatts static cooling admission) types the input INFEASIBLE_SPECIFICATION. Measured by V3ColumnCalculator.requestOnlyAdmission; no solve is performed.",
+  "STATE_GATE_NEVER_SOLVED": "The archived classical control typed the input INFEASIBLE_SPECIFICATION while the retired condensationCappedTray / requireCoolingBelowBaseCondenserDuty gates still published that code, AND no archived arm, in any mode or block, reached strict or advisory on it.",
+  "retained": "Advisory-only and never-converged cases are not excluded; they are the open set recorded in open-set.json."
+ },
+ "populations": {
+  "validation": {
+   "source": {
+    "path": "tools/transformer-promotion/inputs/validation-inputs.jsonl",
+    "sha256": "95d773b06126b1637492e07cc5e7ab62b819655f5ac221c98c961bff436a9a0a",
+    "selection": "all rows"
+   },
+   "prepared": {
+    "path": "build/benchmark-population/inputs/validation.jsonl",
+    "sha256": "95d773b06126b1637492e07cc5e7ab62b819655f5ac221c98c961bff436a9a0a",
+    "rows": 405
+   },
+   "admissionProbe": {
+    "sha256": "32b18106eec06063efa59c5370a26a1842edbf084170dd97e6ed8bfd3e16efa0"
+   },
+   "classicalControl": {
+    "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-capacity-followup/v1/validation-case-evidence.jsonl",
+    "sha256": "20f9bb72709a44cb64666c5715fd03796dc12bb8f7406c138cc296b207760393",
+    "note": "capacity followup, pipeline F0, mode current, pre-fix solver",
+    "blockDisagreements": []
+   },
+   "armSources": [
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-capacity-followup/v1/validation-case-evidence.jsonl",
+     "sha256": "20f9bb72709a44cb64666c5715fd03796dc12bb8f7406c138cc296b207760393",
+     "arms": 42,
+     "note": "capacity followup, 7 pipelines x 3 modes x 2 blocks"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-trace-followup/v1/validation-case-evidence.jsonl",
+     "sha256": "c547dc0a4311bd5e87168f097bcfa76802bcf3968979e2e96ff0bd13f25f947e",
+     "arms": 72,
+     "note": "trace followup, 12 pipelines x 3 modes x 2 blocks"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/tools/neural/generation-comparison-case-map.jsonl",
+     "sha256": "8c84c7542de5d775557c5c4e7c2ab3af09787172c5b5d2b54e60e4eb41cf4062",
+     "arms": 18,
+     "note": "generation comparison, 3 models x 3 modes (hash-verified)"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-hybrid-learning/v1/case-map.jsonl",
+     "sha256": "e949a224aedd6d7e964be3e4975c557111652919b1ad1b3c1c2ef1545cf5fdf8",
+     "arms": 48,
+     "note": "hybrid learning, 8 pipelines x 3 modes x 2 blocks (id join only)"
+    },
+    {
+     "path": "tools/neural-budget/evidence/case-block1-F0-baseline.jsonl.gz",
+     "sha256": "6a6407a8f5cdaebe74bb6a35c8593ae8518069b5d9c3a195851b299704835fec",
+     "arms": 3,
+     "note": "R2 neural budget F0-baseline block 1"
+    },
+    {
+     "path": "tools/neural-budget/evidence/case-block2-F0-baseline.jsonl.gz",
+     "sha256": "d97438b398c7e711c1b504095aef321d7e08cc855ebdd529da6b226da9dd597e",
+     "arms": 3,
+     "note": "R2 neural budget F0-baseline block 2"
+    },
+    {
+     "path": "tools/neural-budget/evidence/case-block1-F0-progress.jsonl.gz",
+     "sha256": "95fb3b5fdffca14256236b7547e7a106fa710f7669d4ef12c383789633063688",
+     "arms": 3,
+     "note": "R2 neural budget F0-progress block 1"
+    },
+    {
+     "path": "tools/neural-budget/evidence/case-block2-F0-progress.jsonl.gz",
+     "sha256": "0d76f364ed96f8d32521ebb872f43569b31414e012e0fa89683775fe25689ebd",
+     "arms": 3,
+     "note": "R2 neural budget F0-progress block 2"
+    },
+    {
+     "path": "tools/neural-budget/evidence/case-block1-F0-phase-floor.jsonl.gz",
+     "sha256": "6e8810a9b42693a0de397bc6e924293b7997a7180a97362bd025517655ad6c6f",
+     "arms": 3,
+     "note": "R2 neural budget F0-phase-floor block 1"
+    },
+    {
+     "path": "tools/neural-budget/evidence/case-block2-F0-phase-floor.jsonl.gz",
+     "sha256": "87ac45cde8c26521833db57670ee213d6b1f073ac5a53f3226c7011f9218274a",
+     "arms": 3,
+     "note": "R2 neural budget F0-phase-floor block 2"
+    },
+    {
+     "path": "tools/neural-budget/evidence/case-block1-F0-progress-phase-floor.jsonl.gz",
+     "sha256": "096d88c82324db3ceeb08d19650657c6a3b8b15c5ab95e5bbbea563339e70d51",
+     "arms": 3,
+     "note": "R2 neural budget F0-progress-phase-floor block 1"
+    },
+    {
+     "path": "tools/neural-budget/evidence/case-block2-F0-progress-phase-floor.jsonl.gz",
+     "sha256": "4a1f604ae77b58ad623cebf750e6620a4e35e8a8a1d7a795ba4289e937c6363a",
+     "arms": 3,
+     "note": "R2 neural budget F0-progress-phase-floor block 2"
+    },
+    {
+     "path": "tools/transformer-promotion/evidence/case-block1.jsonl.gz",
+     "sha256": "8ec10abdda5106958390766c16fcb69edf3bdc00a71cd7b786e1d8406e8b1072",
+     "arms": 3,
+     "note": "production-path promotion block 1"
+    },
+    {
+     "path": "tools/transformer-promotion/evidence/case-block2.jsonl.gz",
+     "sha256": "6b96ca1c769a0f2c631f6717821a4a10591a1fcc183f4902c5a901d36b063813",
+     "arms": 3,
+     "note": "production-path promotion block 2"
+    }
+   ],
+   "counts": {
+    "population": 405,
+    "excluded": 75,
+    "excludedByReason": {
+     "REQUEST_ONLY_TYPED": 16,
+     "STATE_GATE_NEVER_SOLVED": 59
+    },
+    "cleaned": 330,
+    "openSet": 116,
+    "openSetNeverConverged": 101,
+    "openSetAdvisoryOnly": 15,
+    "strictCeilingOnCleaned": 214,
+    "classicalControlTypedInfeasible": 108,
+    "archivedArms": 198,
+    "everSolvedAnyArm": 229,
+    "everStrictAnyArm": 214,
+    "stateGateUnderStrictOnlyReading": 64,
+    "stateGateStrictOnlyTotalIncludingRequestOnly": 66,
+    "advisoryRescuedFromStateGate": [
+     "gd-s03-w1-p4-d0-r00",
+     "gd-s10-w1-p4-d2-r00",
+     "gd-s24-w1-p3-d3-r00",
+     "gd-s24-w1-p4-d2-r00",
+     "gd-s59-w1-p4-d2-r00"
+    ],
+    "advisoryRescueEvidence": {
+     "gd-s03-w1-p4-d0-r00": [
+      "budget:F0-phase-floor:neural:b1",
+      "budget:F0-phase-floor:neural:b2",
+      "budget:F0-phase-floor:neuralFirst:b1",
+      "budget:F0-phase-floor:neuralFirst:b2",
+      "budget:F0-progress-phase-floor:neural:b1",
+      "budget:F0-progress-phase-floor:neural:b2",
+      "budget:F0-progress-phase-floor:neuralFirst:b1",
+      "budget:F0-progress-phase-floor:neuralFirst:b2"
+     ],
+     "gd-s10-w1-p4-d2-r00": [
+      "budget:F0-baseline:neural:b1",
+      "budget:F0-baseline:neural:b2",
+      "budget:F0-baseline:neuralFirst:b1",
+      "budget:F0-baseline:neuralFirst:b2",
+      "budget:F0-phase-floor:neural:b1",
+      "budget:F0-phase-floor:neural:b2",
+      "budget:F0-phase-floor:neuralFirst:b1",
+      "budget:F0-phase-floor:neuralFirst:b2"
+     ],
+     "gd-s24-w1-p3-d3-r00": [
+      "budget:F0-phase-floor:neural:b1",
+      "budget:F0-phase-floor:neural:b2",
+      "budget:F0-phase-floor:neuralFirst:b1",
+      "budget:F0-phase-floor:neuralFirst:b2",
+      "budget:F0-progress-phase-floor:neural:b1",
+      "budget:F0-progress-phase-floor:neural:b2",
+      "budget:F0-progress-phase-floor:neuralFirst:b1",
+      "budget:F0-progress-phase-floor:neuralFirst:b2"
+     ],
+     "gd-s24-w1-p4-d2-r00": [
+      "budget:F0-progress-phase-floor:neural:b1",
+      "budget:F0-progress-phase-floor:neural:b2",
+      "budget:F0-progress-phase-floor:neuralFirst:b1",
+      "budget:F0-progress-phase-floor:neuralFirst:b2",
+      "capacity:L2-20260913-s2080:neural:b1",
+      "capacity:L2-20260913-s2080:neural:b2",
+      "capacity:L2-20260913-s2080:neuralFirst:b1",
+      "capacity:L2-20260913-s2080:neuralFirst:b2"
+     ],
+     "gd-s59-w1-p4-d2-r00": [
+      "budget:F0-phase-floor:neural:b2",
+      "budget:F0-phase-floor:neuralFirst:b2",
+      "capacity:L2-20260913-s2080:neural:b1",
+      "capacity:L2-20260913-s2080:neuralFirst:b1",
+      "trace:C-20260911-s4640:neural:b2",
+      "trace:K-20260911-s4160:neuralFirst:b2",
+      "trace:T-20260911-s3120:neural:b1",
+      "trace:T-20260911-s3120:neural:b2"
+     ]
+    }
+   },
+   "files": {
+    "exclusions.json": "d85d4b9f64aa2806ef0ec1b0959dca2bf55c62619a6d8cc63aadae7060316d80",
+    "open-set.json": "8e1273774dc408653527dcd48b4e0cc1fcbcaa92e87c2c3e737d90d2d73cf63a",
+    "validation-inputs.jsonl": {
+     "sha256": "321d9501b4b909c556970860b40377b0a6402bb807d54a0312dc4c4e3f3d346d",
+     "rows": 330
+    }
+   }
+  },
+  "g4fresh": {
+   "source": {
+    "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/dependencies.zip!build/neural-transformer/data-v2/fresh-holdout.jsonl",
+    "sha256": "29ec169eb278bba62b1612166942efcc4fce9e38dd73a20cd0a90298de714082",
+    "archiveSha256": "785f4842e771bc909ea3abb21afa3e2fb01e62c5c268f19b525889bc2a7ab6d0",
+    "selection": "all rows"
+   },
+   "prepared": {
+    "path": "build/benchmark-population/inputs/g4fresh.jsonl",
+    "sha256": "b4f6dc5f4a94a14e186fdae4a15d4948ce09c541f2a5a564e0d0abca1cbdf89f",
+    "rows": 252
+   },
+   "admissionProbe": {
+    "sha256": "80f2018d91597d0327c688f7de6ed3fed19b89d6a3fc293ffb4eb2791b913532"
+   },
+   "classicalControl": {
+    "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/dependencies.zip!build/neural-transformer/native-v1/fresh-current/cases.jsonl",
+    "sha256": "791b36020124e523716560684f05edfe7924eb8874ec5a6ace0465fc788dcf71",
+    "note": "unified evaluation classical control",
+    "blockDisagreements": []
+   },
+   "armSources": [
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/dependencies.zip!build/neural-transformer/native-v1/fresh-current/cases.jsonl",
+     "sha256": "791b36020124e523716560684f05edfe7924eb8874ec5a6ace0465fc788dcf71",
+     "arms": 1,
+     "note": "unified evaluation classical control"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/dependencies.zip!build/neural-transformer/native-v1/fresh-transformer/evaluation.jsonl",
+     "sha256": "abb62dbcaee8c3f6f8abbc1ee95892c8d00a0773bf9d5d4eb0922d2d3b9864dd",
+     "arms": 1,
+     "note": "unified evaluation transformer, ONLY mode"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/study.zip!transformer/evaluation.jsonl",
+     "sha256": "39c759f490508bb106bfdc7cd78230e81cdbb703fae81fb33eb03c6b5b0eba1f",
+     "arms": 3,
+     "note": "unified evaluation transformer, all three modes"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/dependencies.zip!build/neural-transformer/native-v1/fresh-mlp/evaluation.jsonl",
+     "sha256": "ec1a2a32619c5166feb643d023f688efd901d61746ec0b98d794a59f3c1db613",
+     "arms": 1,
+     "note": "unified evaluation mlp, ONLY mode"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/study.zip!mlp/evaluation.jsonl",
+     "sha256": "1ecbfaef2fd118ce3cab8bf0009720e698aa9f340459b0bc8f3551f5c7c53ede",
+     "arms": 3,
+     "note": "unified evaluation mlp, all three modes"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/dependencies.zip!build/neural-transformer/native-v1/fresh-gen3-factorized/evaluation.jsonl",
+     "sha256": "ebe8b5d3154ce750f0b9c5d5eae1e3ec7a9244b5d7ca8c7f65aaf47d66cc1f0c",
+     "arms": 1,
+     "note": "unified evaluation gen3-factorized, ONLY mode"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/study.zip!gen3-factorized/evaluation.jsonl",
+     "sha256": "f2b495c161b1c61c045aa79130723ef96fb1ca0d2e65d09debb27cb52e57e2ec",
+     "arms": 3,
+     "note": "unified evaluation gen3-factorized, all three modes"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/dependencies.zip!build/neural-transformer/native-v1/fresh-nearest-k1/evaluation.jsonl",
+     "sha256": "de01c7db33349da57bb3f12353fb0c2a29e6f227274c9346b6fa981fe737cd17",
+     "arms": 1,
+     "note": "unified evaluation nearest-k1, ONLY mode"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/unified-evaluation-v1/study.zip!nearest-k1/evaluation.jsonl",
+     "sha256": "97b0ef30454e06ffe1d31bc16ae552595ec4adfded9c704cb48542aa41fd1f45",
+     "arms": 3,
+     "note": "unified evaluation nearest-k1, all three modes"
+    }
+   ],
+   "counts": {
+    "population": 252,
+    "excluded": 60,
+    "excludedByReason": {
+     "REQUEST_ONLY_TYPED": 11,
+     "STATE_GATE_NEVER_SOLVED": 49
+    },
+    "cleaned": 192,
+    "openSet": 82,
+    "openSetNeverConverged": 73,
+    "openSetAdvisoryOnly": 9,
+    "strictCeilingOnCleaned": 110,
+    "classicalControlTypedInfeasible": 74,
+    "archivedArms": 17,
+    "everSolvedAnyArm": 119,
+    "everStrictAnyArm": 110,
+    "stateGateUnderStrictOnlyReading": 53,
+    "stateGateStrictOnlyTotalIncludingRequestOnly": 56,
+    "advisoryRescuedFromStateGate": [
+     "g4fresh-s04-w1-p2-d3-r00",
+     "g4fresh-s07-w1-p4-d1-r00",
+     "g4fresh-s10-w1-p4-d3-r00",
+     "g4fresh-s16-w1-p4-d2-r00"
+    ],
+    "advisoryRescueEvidence": {
+     "g4fresh-s04-w1-p2-d3-r00": [
+      "unified:fresh-nearest-k1",
+      "unified:fresh-transformer",
+      "unified:study-nearest-k1:neural",
+      "unified:study-nearest-k1:neuralFirst",
+      "unified:study-transformer:neural",
+      "unified:study-transformer:neuralFirst"
+     ],
+     "g4fresh-s07-w1-p4-d1-r00": [
+      "unified:fresh-mlp",
+      "unified:fresh-transformer",
+      "unified:study-mlp:neural",
+      "unified:study-mlp:neuralFirst",
+      "unified:study-transformer:neural",
+      "unified:study-transformer:neuralFirst"
+     ],
+     "g4fresh-s10-w1-p4-d3-r00": [
+      "unified:fresh-nearest-k1",
+      "unified:study-nearest-k1:neural",
+      "unified:study-nearest-k1:neuralFirst"
+     ],
+     "g4fresh-s16-w1-p4-d2-r00": [
+      "unified:fresh-gen3-factorized",
+      "unified:fresh-mlp",
+      "unified:study-gen3-factorized:neural",
+      "unified:study-gen3-factorized:neuralFirst",
+      "unified:study-mlp:neural",
+      "unified:study-mlp:neuralFirst"
+     ]
+    }
+   },
+   "files": {
+    "exclusions.json": "96b12806d7f927bf99603399a99dfa27ea81464ce75b4763312985220f98d1e4",
+    "open-set.json": "8f1a0bd42908d3c24b599dd588ca4702cb610abf44257c41266e76c031c85835",
+    "g4fresh-inputs.jsonl": {
+     "sha256": "3fb87d30efe3ee1abdacb511141c2647a6bc1e8b75581183a74a6706e4241f3a",
+     "rows": 192
+    }
+   }
+  },
+  "g6fresh": {
+   "source": {
+    "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-transformer/selection-v1/test.jsonl",
+    "sha256": "c9675240401adca6e95e4ac46863cb85f40f32da9a3a8ea7f35d0001db3fd165",
+    "selection": "all rows"
+   },
+   "prepared": {
+    "path": "build/benchmark-population/inputs/g6fresh.jsonl",
+    "sha256": "c9675240401adca6e95e4ac46863cb85f40f32da9a3a8ea7f35d0001db3fd165",
+    "rows": 252
+   },
+   "admissionProbe": {
+    "sha256": "9ecf734bbc6f6567fb5bc9486a03fb9d0e29deda0d3affae45a8002562128b9a"
+   },
+   "classicalControl": {
+    "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+    "sha256": "3ca95440cb3402d882c5dc620c2da5464f5b180ff1295c952c48daf61a89b5ed",
+    "note": "generation comparison transformer journal, 'current' mode",
+    "blockDisagreements": []
+   },
+   "armSources": [
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/tools/neural/generation-comparison-case-map.jsonl",
+     "sha256": "8c84c7542de5d775557c5c4e7c2ab3af09787172c5b5d2b54e60e4eb41cf4062",
+     "arms": 18,
+     "note": "generation comparison test fold, 3 models x 3 modes"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/checkpoint-selection-v2/study.zip!build/neural-transformer/selection-v2/test/20260911/evaluation.jsonl",
+     "sha256": "3ca95440cb3402d882c5dc620c2da5464f5b180ff1295c952c48daf61a89b5ed",
+     "arms": 3,
+     "note": "checkpoint selection v2 test fold, all three modes"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/gen2/evaluation.jsonl",
+     "sha256": "f737b4c487c7c52abe4417847afe2aa04bf03852363e75820ef9bf1a9a1036a2",
+     "arms": 3,
+     "note": "generation comparison gen2 test journal"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/gen3/evaluation.jsonl",
+     "sha256": "c915c2c8a84750d183f8fc7410f66cc7e8bb535ec85c0b8bad5e73e37268f619",
+     "arms": 3,
+     "note": "generation comparison gen3 test journal"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+     "sha256": "3ca95440cb3402d882c5dc620c2da5464f5b180ff1295c952c48daf61a89b5ed",
+     "arms": 3,
+     "note": "generation comparison transformer test journal"
+    }
+   ],
+   "counts": {
+    "population": 252,
+    "excluded": 46,
+    "excludedByReason": {
+     "REQUEST_ONLY_TYPED": 10,
+     "STATE_GATE_NEVER_SOLVED": 36
+    },
+    "cleaned": 206,
+    "openSet": 119,
+    "openSetNeverConverged": 113,
+    "openSetAdvisoryOnly": 6,
+    "strictCeilingOnCleaned": 87,
+    "classicalControlTypedInfeasible": 54,
+    "archivedArms": 21,
+    "everSolvedAnyArm": 93,
+    "everStrictAnyArm": 87,
+    "stateGateUnderStrictOnlyReading": 36,
+    "stateGateStrictOnlyTotalIncludingRequestOnly": 38,
+    "advisoryRescuedFromStateGate": [],
+    "advisoryRescueEvidence": {}
+   },
+   "files": {
+    "exclusions.json": "1cdf90c8eb3f102d26cfdc215964c2c104fe28e4d392679caf7c556d32844fab",
+    "open-set.json": "e49023fb141a7aa3398aa53c282dbee76467823d3d68ae50c653ef79fac3f593",
+    "g6fresh-inputs.jsonl": {
+     "sha256": "9d10eb870e7364770faace8842c4d90522878eafc7a8deea5b93032ed5cebe67",
+     "rows": 206
+    }
+   }
+  },
+  "historical-test": {
+   "source": {
+    "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+    "sha256": "a54ffc39a394dbe85a1dd73ab47dc89d0a53fe79e455d2b4992a0d51d44244f4",
+    "selection": "split == 'test'"
+   },
+   "prepared": {
+    "path": "build/benchmark-population/inputs/historical-test.jsonl",
+    "sha256": "6d5c37fe91f13f735ef8362a93c9052c5c79de096dac30a3202351bffa1be308",
+    "rows": 395
+   },
+   "admissionProbe": {
+    "sha256": "cd56b9f948dc8ca12c0ce297f69ade75b46aba36d4bbd4d511c0cbe47f523e43"
+   },
+   "classicalControl": {
+    "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+    "sha256": "a54ffc39a394dbe85a1dd73ab47dc89d0a53fe79e455d2b4992a0d51d44244f4",
+    "note": "generalized design matrix acquisition (test fold), classical control",
+    "blockDisagreements": []
+   },
+   "armSources": [
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+     "sha256": "a54ffc39a394dbe85a1dd73ab47dc89d0a53fe79e455d2b4992a0d51d44244f4",
+     "arms": 1,
+     "note": "generalized design matrix acquisition, classical control"
+    },
+    {
+     "path": "tools/neural/generalized-case-map.jsonl.gz",
+     "sha256": "814800f126804c51a15d6ec6df41bfcb95b1a485cddbbf5f371a2dc739f7baf0",
+     "arms": 2,
+     "note": "generalized campaign map: classical and general neural"
+    },
+    {
+     "path": "tools/neural/gen3-case-map.jsonl.gz",
+     "sha256": "fea9ed24a4d8b5c6ff2eb03191b9204d77391915788fd4b9dcef3aabc968290d",
+     "arms": 8,
+     "note": "gen3 recovery campaign observations"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/salvage-nplus1-v1/certified-campaign.zip!audit.jsonl",
+     "sha256": "e6fd48ee94d2b837c04692fd832cae338ae2c34c97cc55aa00d6d6675df167f5",
+     "arms": 1,
+     "note": "salvage N+1 certified campaign acquisition audit"
+    }
+   ],
+   "counts": {
+    "population": 395,
+    "excluded": 68,
+    "excludedByReason": {
+     "REQUEST_ONLY_TYPED": 20,
+     "STATE_GATE_NEVER_SOLVED": 48
+    },
+    "cleaned": 327,
+    "openSet": 141,
+    "openSetNeverConverged": 134,
+    "openSetAdvisoryOnly": 7,
+    "strictCeilingOnCleaned": 186,
+    "classicalControlTypedInfeasible": 73,
+    "archivedArms": 12,
+    "everSolvedAnyArm": 193,
+    "everStrictAnyArm": 186,
+    "stateGateUnderStrictOnlyReading": 49,
+    "stateGateStrictOnlyTotalIncludingRequestOnly": 51,
+    "advisoryRescuedFromStateGate": [
+     "gd-s07-w1-p4-d2-r00"
+    ],
+    "advisoryRescueEvidence": {
+     "gd-s07-w1-p4-d2-r00": [
+      "gen3:gen2",
+      "gen3:gen3-factorized",
+      "gen3:gen3-mlp",
+      "generalized:generalNeural",
+      "salvage:certified-acquisition"
+     ]
+    }
+   },
+   "files": {
+    "exclusions.json": "621aa8de243da87d2325f1c6842ecca7322f9fb898b918ab59ce434266f20a9c",
+    "open-set.json": "e425fbb214a008986019900a91439331c70bfeaba08294464ba64bb870533f15",
+    "historical-test-inputs.jsonl": {
+     "sha256": "4a479a880c546b579339d0b03c6b80b8fc0955327e5a619cac43e172c97d6528",
+     "rows": 327
+    }
+   }
+  },
+  "train": {
+   "source": {
+    "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+    "sha256": "a54ffc39a394dbe85a1dd73ab47dc89d0a53fe79e455d2b4992a0d51d44244f4",
+    "selection": "split == 'train'"
+   },
+   "prepared": {
+    "path": "build/benchmark-population/inputs/train.jsonl",
+    "sha256": "4be73317d10f82ff73a336d0c7355310639d39f63c4e719577d1b01dd7de39e6",
+    "rows": 1993
+   },
+   "admissionProbe": {
+    "sha256": "da763f504d8222588569fc0a0501082564c23c23d6940b779474bb7d4bfe1564"
+   },
+   "classicalControl": {
+    "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+    "sha256": "a54ffc39a394dbe85a1dd73ab47dc89d0a53fe79e455d2b4992a0d51d44244f4",
+    "note": "generalized design matrix acquisition (train fold), classical control",
+    "blockDisagreements": []
+   },
+   "armSources": [
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+     "sha256": "a54ffc39a394dbe85a1dd73ab47dc89d0a53fe79e455d2b4992a0d51d44244f4",
+     "arms": 1,
+     "note": "generalized design matrix acquisition, classical control"
+    },
+    {
+     "path": "tools/neural/generalized-case-map.jsonl.gz",
+     "sha256": "814800f126804c51a15d6ec6df41bfcb95b1a485cddbbf5f371a2dc739f7baf0",
+     "arms": 2,
+     "note": "generalized campaign map: classical and general neural"
+    },
+    {
+     "path": "tools/neural/gen3-case-map.jsonl.gz",
+     "sha256": "fea9ed24a4d8b5c6ff2eb03191b9204d77391915788fd4b9dcef3aabc968290d",
+     "arms": 10,
+     "note": "gen3 recovery campaign observations"
+    },
+    {
+     "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/salvage-nplus1-v1/certified-campaign.zip!audit.jsonl",
+     "sha256": "e6fd48ee94d2b837c04692fd832cae338ae2c34c97cc55aa00d6d6675df167f5",
+     "arms": 1,
+     "note": "salvage N+1 certified campaign acquisition audit"
+    }
+   ],
+   "counts": {
+    "population": 1993,
+    "excluded": 444,
+    "excludedByReason": {
+     "REQUEST_ONLY_TYPED": 96,
+     "STATE_GATE_NEVER_SOLVED": 348
+    },
+    "cleaned": 1549,
+    "openSet": 736,
+    "openSetNeverConverged": 675,
+    "openSetAdvisoryOnly": 61,
+    "strictCeilingOnCleaned": 813,
+    "classicalControlTypedInfeasible": 456,
+    "archivedArms": 14,
+    "everSolvedAnyArm": 874,
+    "everStrictAnyArm": 813,
+    "stateGateUnderStrictOnlyReading": 362,
+    "stateGateStrictOnlyTotalIncludingRequestOnly": 374,
+    "advisoryRescuedFromStateGate": [
+     "gd-s04-w1-p3-d1-r01",
+     "gd-s04-w1-p4-d0-r00",
+     "gd-s05-w1-p4-d0-r00",
+     "gd-s11-w1-p2-d3-r00",
+     "gd-s13-w1-p3-d3-r00",
+     "gd-s13-w1-p4-d2-r00",
+     "gd-s18-w1-p4-d3-r00",
+     "gd-s22-w1-p4-d0-r01",
+     "gd-s25-w1-p1-d1-r00",
+     "gd-s25-w1-p4-d2-r00",
+     "gd-s26-w1-p3-d2-r00",
+     "gd-s39-w1-p2-d3-r00",
+     "gd-s41-w1-p4-d1-r00",
+     "gd-s50-w1-p4-d0-r00"
+    ],
+    "advisoryRescueEvidence": {
+     "gd-s04-w1-p3-d1-r01": [
+      "generalized:generalNeural",
+      "salvage:certified-acquisition"
+     ],
+     "gd-s04-w1-p4-d0-r00": [
+      "generalized:generalNeural",
+      "salvage:certified-acquisition"
+     ],
+     "gd-s05-w1-p4-d0-r00": [
+      "generalized:generalNeural",
+      "salvage:certified-acquisition"
+     ],
+     "gd-s11-w1-p2-d3-r00": [
+      "generalized:generalNeural",
+      "salvage:certified-acquisition"
+     ],
+     "gd-s13-w1-p3-d3-r00": [
+      "gen3:full-recovery:gen3-factorized",
+      "salvage:certified-acquisition"
+     ],
+     "gd-s13-w1-p4-d2-r00": [
+      "gen3:full-recovery:gen3-factorized",
+      "gen3:gen3-factorized",
+      "salvage:certified-acquisition"
+     ],
+     "gd-s18-w1-p4-d3-r00": [
+      "salvage:certified-acquisition"
+     ],
+     "gd-s22-w1-p4-d0-r01": [
+      "gen3:full-recovery:gen3-factorized",
+      "salvage:certified-acquisition"
+     ],
+     "gd-s25-w1-p1-d1-r00": [
+      "salvage:certified-acquisition"
+     ],
+     "gd-s25-w1-p4-d2-r00": [
+      "salvage:certified-acquisition"
+     ],
+     "gd-s26-w1-p3-d2-r00": [
+      "salvage:certified-acquisition"
+     ],
+     "gd-s39-w1-p2-d3-r00": [
+      "gen3:full-recovery:nearest-k1",
+      "salvage:certified-acquisition"
+     ],
+     "gd-s41-w1-p4-d1-r00": [
+      "salvage:certified-acquisition"
+     ],
+     "gd-s50-w1-p4-d0-r00": [
+      "gen3:full-recovery:nearest-k1"
+     ]
+    }
+   },
+   "files": {
+    "exclusions.json": "47c6ba68726ee5177d3a85bb910ad1f3433b8c72d33e92c5afd23b8ce3ef2d97",
+    "open-set.json": "c9d1a4c44d4df5c245913c3d1b4b0323638983789c54d8f6ce9ee5fa911a4139",
+    "train-inputs.jsonl": {
+     "sha256": "444971a9216097454b7caaf8fdb17b1103997c08fae9cdb4e8a4e1af444068ce",
+     "rows": 1549
+    }
+   }
+  }
+ },
+ "certifiedLabelSets": {
+  "N": {
+   "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/salvage-nplus1-v1/certified-campaign.zip!N.jsonl",
+   "sha256": "3d123dd631996b54e791c193cc2ef730dd354954b8ea3de420a4615664d40f01",
+   "labels": 805,
+   "labelsOnExcludedTrainInputs": []
+  },
+  "Nplus1": {
+   "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/salvage-nplus1-v1/certified-campaign.zip!Nplus1-certified.jsonl",
+   "sha256": "e0dc4194ce3dc02812399deded1686c37fdb351afc1b63a98374223e06478972",
+   "labels": 906,
+   "labelsOnExcludedTrainInputs": []
+  }
+ }
+}

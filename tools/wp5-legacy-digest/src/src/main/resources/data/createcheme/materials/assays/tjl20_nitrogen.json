@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:tia_juana_light_methane",
+  "package": "createcheme:tjl20_methane_nitrogen",
+  "basis": "mole",
+  "appearance": {
+    "color": "#45301E",
+    "transparency": 0.05,
+    "estimated": true
+  },
+  "revision": "crude-regrouped-r1",
+  "amounts_by_component": {
+    "Methane": 0.005,
+    "Ethane": 0.0011908995509034746,
+    "Propane": 0.010591918105298614,
+    "Isobutane": 0.006510980717557731,
+    "N-butane": 0.022259252368408596,
+    "Isopentane": 0.016631764286692427,
+    "N-pentane": 0.024555314957131147,
+    "crude_pc01": 0.1662936276997043,
+    "crude_pc02": 0.12314847499525973,
+    "crude_pc03": 0.11774907568688317,
+    "crude_pc04": 0.10469103210175801,
+    "crude_pc05": 0.08701659237073238,
+    "crude_pc06": 0.0733645532561968,
+    "crude_pc07": 0.06154184102834705,
+    "crude_pc08": 0.060570024230585474,
+    "crude_pc09": 0.06607465545777227,
+    "crude_pc10": 0.029676312755272435,
+    "crude_pc11": 0.015001342402485258,
+    "crude_pc12": 0.00813233802901105
+  }
+}

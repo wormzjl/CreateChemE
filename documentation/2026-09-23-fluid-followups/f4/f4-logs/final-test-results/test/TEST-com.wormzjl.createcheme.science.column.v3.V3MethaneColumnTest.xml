@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3MethaneColumnTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:13.808Z" hostname="WORMZ-PC" time="5.243">
+  <properties/>
+  <testcase name="freshPresetAndSavedInputRetainTheMethaneAxis()" classname="com.wormzjl.createcheme.science.column.v3.V3MethaneColumnTest" time="0.001"/>
+  <testcase name="methaneFeedConvergesWithCurrentInitializer()" classname="com.wormzjl.createcheme.science.column.v3.V3MethaneColumnTest" time="1.63"/>
+  <testcase name="defaultNeuralFirstModeSolvesTheMethaneColumnThroughTheBundledModel()" classname="com.wormzjl.createcheme.science.column.v3.V3MethaneColumnTest" time="3.612"/>
+  <system-out><![CDATA[Methane CURRENT_ONLY elapsed ms=1627.1463
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

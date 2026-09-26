@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-26T08:18:30.308Z" hostname="WORMZ-PC" time="0.309">
+  <properties/>
+  <testcase name="aCertifiedIslandReplaysItsJunctionHoldupsExactly()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.309"/>
+  <system-out><![CDATA[junction replay: certified at tick 10700 Certified[drift 4.462869572243965E-6, since 10700, base 10700, horizon 11200, largest flow 0.20318609563324733], 1 junctions, largest junction component change 1.2231222091263483E-6 mol per interval
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

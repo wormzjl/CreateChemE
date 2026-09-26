@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.TrBdf2Test" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:47:54.121Z" hostname="WORMZ-PC" time="0.237">
+  <properties/>
+  <testcase name="valveTransitionMatchesRefinedBackwardEulerWithoutFlowAfterClosure()" classname="com.wormzjl.createcheme.science.fluid.network.TrBdf2Test" time="0.093"/>
+  <testcase name="pumpWorkIncludesAllStagesAndElevationEnergy()" classname="com.wormzjl.createcheme.science.fluid.network.TrBdf2Test" time="0.001"/>
+  <testcase name="embeddedControlAgreesWithStepDoublingAndFixedStepsShowSecondOrder()" classname="com.wormzjl.createcheme.science.fluid.network.TrBdf2Test" time="0.121"/>
+  <testcase name="waterAppearanceConservesNitrogenAndTheIntegratedBoundaryLedger()" classname="com.wormzjl.createcheme.science.fluid.network.TrBdf2Test" time="0.008"/>
+  <testcase name="sourceAndVoidKeepSeparateNonzeroLedgersDespiteZeroNetTransfer()" classname="com.wormzjl.createcheme.science.fluid.network.TrBdf2Test" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

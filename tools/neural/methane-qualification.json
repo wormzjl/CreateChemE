@@ -1,0 +1,279 @@
+{
+  "packageId": "createcheme:tjl20_methane",
+  "propertyRevision": "tjl20-methane-nist-r1",
+  "mode": "CURRENT_ONLY",
+  "methaneFeedMolPerSecond": 3.6884981665004175,
+  "hydrocarbonFeedMolPerSecond": 737.6996333000836,
+  "input": {
+    "schemaVersion": 1,
+    "packageId": "createcheme:tjl20_methane",
+    "assayId": "createcheme:tia_juana_light_methane",
+    "componentBasis": {
+      "componentIds": [
+        "Methane",
+        "Ethane",
+        "Propane",
+        "Isobutane",
+        "N-butane",
+        "Isopentane",
+        "N-pentane",
+        "TJL_PC01",
+        "TJL_PC02",
+        "TJL_PC03",
+        "TJL_PC04",
+        "TJL_PC05",
+        "TJL_PC06",
+        "TJL_PC07",
+        "TJL_PC08",
+        "TJL_PC09",
+        "TJL_PC10",
+        "TJL_PC11",
+        "TJL_PC12",
+        "TJL_PC13"
+      ]
+    },
+    "feedComponentMolarFlowsMolPerSecond": [
+      3.6884981665004175,
+      0.8773877535095029,
+      7.803529042154975,
+      4.7969240903548656,
+      16.39936417433585,
+      12.253347726372104,
+      18.09097384461255,
+      122.5157842403243,
+      90.72886436327974,
+      86.7508908844223,
+      77.13045940664543,
+      64.1089271049672,
+      54.05087315705946,
+      45.34056428666575,
+      36.3647389882385,
+      45.53119586898614,
+      27.011386209109105,
+      17.176612948929296,
+      6.067978939403129,
+      1.0113321042130041
+    ],
+    "feedTemperatureKelvin": 638.15,
+    "stageCount": 40,
+    "feedStageNumber": 37,
+    "topPressurePascal": 250000.0,
+    "stagePressureDropPascal": 0.0,
+    "specifications": [
+      {
+        "kelvin": 332.15
+      },
+      {
+        "ratio": 4.17
+      },
+      {
+        "watts": 0.0
+      }
+    ],
+    "sideDraws": [
+      {
+        "trayNumber": 10,
+        "molarFlowMolPerSecond": 136.38888888888889
+      },
+      {
+        "trayNumber": 18,
+        "molarFlowMolPerSecond": 143.05555555555554
+      },
+      {
+        "trayNumber": 28,
+        "molarFlowMolPerSecond": 45.833333333333336
+      }
+    ],
+    "steamFeeds": [
+      {
+        "stageNumber": 41,
+        "molarFlowMolPerSecond": 333.3333333333333,
+        "temperatureKelvin": 533.15
+      }
+    ],
+    "pumparounds": [
+      {
+        "returnTray": 8,
+        "drawTray": 10,
+        "dutyWatts": -12840000.0,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 16,
+        "drawTray": 18,
+        "dutyWatts": -17890000.0,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 26,
+        "drawTray": 28,
+        "dutyWatts": -11200000.0,
+        "split": "UNIFORM"
+      }
+    ]
+  },
+  "inputSha256": "be423933c5aa8f8ff98e4a402e53b01f24276a0943a9c7bd13c3866c627e8770",
+  "solvePath": "cold/stage-continuation/4-8-15-30-40/fine-fd/full-budget/draw-ramp-1.0/draws-3/steam-1/heat-3",
+  "maximumScaledResidual": 7.632783294297951e-14,
+  "convergenceEvidence": {
+    "hasFinalNewtonStep": true,
+    "finalLinearBackwardError": 2.555960552377417e-17,
+    "maximumLogFlowChange": 1.4420464822251233e-11,
+    "maximumTemperatureChangeKelvin": 6.821210263296962e-13,
+    "maximumTemperatureStepRatio": 4.6195368893794845e-07,
+    "closureTolerance": 1e-08
+  },
+  "acceptanceAudit": {
+    "checks": [
+      {
+        "family": "FINITE_TOPOLOGY",
+        "value": 0.0,
+        "limit": 0.0,
+        "passed": true,
+        "detail": "all active flows and topology phases are finite"
+      },
+      {
+        "family": "SIDE_DRAW_SPLIT",
+        "value": 0.17528069953330516,
+        "limit": 1.0,
+        "passed": true,
+        "detail": "all side draws leave positive liquid downflow"
+      },
+      {
+        "family": "WATER_PROFILE",
+        "value": 0.0,
+        "limit": 1e-12,
+        "passed": true,
+        "detail": "known free-water profile and overhead split recomputed from authored steam feeds"
+      },
+      {
+        "family": "WATER_BALANCE",
+        "value": 0.0,
+        "limit": 1e-08,
+        "passed": true,
+        "detail": "steam in 1200.00 kmol/h; overhead vapor 7.60248, decanted 1192.40, bottoms free water 0.00000 kmol/h"
+      },
+      {
+        "family": "WATER_DEW_POINT",
+        "value": 1.0341911058743842,
+        "limit": 1.0,
+        "passed": true,
+        "detail": "warning: tray 1 at 87.2 C is below the water dew point 88.1 C (steam partial pressure 65.3 kPa) without a free-water phase; the free-water tray set did not admit it"
+      },
+      {
+        "family": "FREE_WATER_SPLIT",
+        "value": 0.9936645984092337,
+        "limit": 0.0,
+        "passed": true,
+        "detail": "saturated condenser drum decants a positive free-water boot"
+      },
+      {
+        "family": "LOCAL_COMPONENT_BALANCE",
+        "value": 6.309990815019848e-15,
+        "limit": 1.0,
+        "passed": true,
+        "detail": "fresh residual recomputation"
+      },
+      {
+        "family": "EQUILIBRIUM",
+        "value": 7.632783294297951e-14,
+        "limit": 1e-08,
+        "passed": true,
+        "detail": "fresh residual recomputation"
+      },
+      {
+        "family": "ENERGY_BALANCE",
+        "value": 2.2219446199134453e-15,
+        "limit": 1.0,
+        "passed": true,
+        "detail": "fresh residual recomputation"
+      },
+      {
+        "family": "TRUNCATION_MASS_DEFECT",
+        "value": 9.507219471154013e-11,
+        "limit": 5.44602238020717e-10,
+        "passed": true,
+        "detail": "fresh sink-edge defect as a fraction of authored feed"
+      },
+      {
+        "family": "PHASE_TRUNCATION_DEFECT",
+        "value": 8.187875481191173e-11,
+        "limit": 2e-09,
+        "passed": true,
+        "detail": "largest equilibrium-implied absent-phase flow as a fraction of its component feed"
+      },
+      {
+        "family": "CONDENSER_PHASE",
+        "value": 0.0,
+        "limit": 1e-08,
+        "passed": true,
+        "detail": "independent water-adjusted TP phase fallback; component split separately audited"
+      },
+      {
+        "family": "GLOBAL_ENERGY_BALANCE",
+        "value": 1.862645149230957e-08,
+        "limit": 101.06386351492087,
+        "passed": true,
+        "detail": "fresh boundary closure 1.86265e-08 W; condenser=-4.26045e+07 W, stage heat=-4.19300e+07 W"
+      },
+      {
+        "family": "CONDENSER_ENERGY_BALANCE",
+        "value": 0.0,
+        "limit": 42.60450835607978,
+        "passed": true,
+        "detail": "fresh condenser-node closure -4.26045e+07 W vs published -4.26045e+07 W; water vapor out=2418.70 W, free water out=-1.38211e+07 W"
+      }
+    ],
+    "advisoryEvidence": [
+      "RECONSTRUCTED_PETROLEUM_PROPERTIES: frozen TJL19 reconstruction, not original HYSYS properties; 60 F standard-liquid basis assumed",
+      "ESTIMATED_HEAVY_RESIDUE: empirical critical-property extrapolation retained for flagged petroleum fractions",
+      "THERMAL_FIT: degree-five Cp fit, analytic H relative to 298.15 K; validated over 298.15..900 K",
+      "PR78_MODEL_DIFFERENCE: V3 low-omega coefficient 1.54226; reconstruction source 1.5422",
+      "METHANE_EXTENSION: NIST ideal-gas Cp fit; CoolProp PR constants; methane binary interactions assumed zero, not fitted",
+      "METHANE_ASSAY: synthetic 0.5 mol% methane blend; hypothetical liquid-density metadata is unused by the molar feed and PR equations",
+      "smallest cooled-tray vapor leaving/entering ratio: tray 8 at 0.9056",
+      "Warning: tray 1 at 87.2 C is below the water dew point 88.1 C (steam partial pressure 65.3 kPa) without a free-water phase; the free-water tray set did not admit it"
+    ]
+  },
+  "products": [
+    {
+      "streamId": "overhead_vapor",
+      "molarFlowMolPerSecond": 27.725246007925392,
+      "methaneMoleFraction": 0.12359402289076876
+    },
+    {
+      "streamId": "distillate_liquid",
+      "molarFlowMolPerSecond": 177.59750946325556,
+      "methaneMoleFraction": 0.0014302663993857835
+    },
+    {
+      "streamId": "side_liquid_tray_10",
+      "molarFlowMolPerSecond": 136.38888888888889,
+      "methaneMoleFraction": 2.501980072986724e-05
+    },
+    {
+      "streamId": "side_liquid_tray_18",
+      "molarFlowMolPerSecond": 143.05555555555554,
+      "methaneMoleFraction": 2.3202566040739236e-05
+    },
+    {
+      "streamId": "side_liquid_tray_28",
+      "molarFlowMolPerSecond": 45.83333333333334,
+      "methaneMoleFraction": 2.356467376926703e-05
+    },
+    {
+      "streamId": "bottoms_liquid",
+      "molarFlowMolPerSecond": 209.2109005112452,
+      "methaneMoleFraction": 0.0
+    },
+    {
+      "streamId": "free_water",
+      "molarFlowMolPerSecond": 331.2215328030779,
+      "methaneMoleFraction": 0
+    }
+  ],
+  "timing": {
+    "elapsedMilliseconds": 4547.167201
+  },
+  "timingNote": "One local run; includes evidence serialization; not a speedup claim."
+}

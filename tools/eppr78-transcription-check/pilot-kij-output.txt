@@ -1,0 +1,130 @@
+1. Record against Table S4
+record createcheme:eppr78_2022 revision eppr78-2022-si-table-s4-r2: 40 groups, 356 pairs; Table S4 numeric off-diagonal cells 356, NA 424; mismatched or missing 0; pairs not in Table S4 0
+
+2. Table S4 against the Clapeyron.jl transcription (revision eppr78-2022-clapeyron-0778184-r1), row by row
+Table S4 356 numeric off-diagonal pairs, transcription 355 pairs; identical 274 (55 of them differ in decimal text only, e.g. trailing zeros); discrepancies 83; absent from both 423
+  A = 0 with the printed B                 75
+  A = 0 with another B                     3
+  another B                                2
+  another A                                0
+  another A and B                          0
+  missing from the transcription           2
+  in the transcription, NA in Table S4     1
+  groups in the 'A = 0 with the printed B' class (number: pairs): 18 CH2_alkenic: 29, 11 CH_cyclic: 19, 20 CH_cycloalkenic: 13, 8 Caro: 9, 25 CF_double_bond: 9, 1 CH3: 4, 7 CHaro: 4, 12 CO2: 4, 17 C2H4: 4, 36 NO2: 4, 2 CH2: 3, 3 CH: 3, 6 C2H6: 3, 10 CH2_cyclic: 3, 21 H2: 3, 23 CF3: 3, 39 CH_alkynic: 3, 4 C: 2, 9 Cfused_aromatic: 2, 13 N2: 2, 16 H2O: 2, 19 C_alkenic: 2, 22 C2F6: 2, 29 He: 2, 30 Ar: 2, 31 SO2: 2, 32 O2: 2, 40 C_alkynic: 2, 5 CH4: 1, 14 H2S: 1, 15 SH: 1, 24 CF2: 1, 26 C2H4F2: 1, 27 C2H2F4: 1, 28 CO: 1, 38 C2H2: 1
+
+Pilot pairs (groups 5 CH4, 6 C2H6, 12 CO2, 13 N2):
+  5-6 (CH4/C2H6): Table S4 A=9.951 B=13.73; transcription A=9.951 B=13.73 IDENTICAL
+  5-12 (CH4/CO2): Table S4 A=136.6 B=214.8; transcription A=136.6 B=214.8 IDENTICAL
+  5-13 (CH4/N2): Table S4 A=30.88 B=37.06; transcription A=30.88 B=37.06 IDENTICAL
+  6-12 (C2H6/CO2): Table S4 A=136.2 B=235.7; transcription A=136.2 B=235.7 IDENTICAL
+  6-13 (C2H6/N2): Table S4 A=61.59 B=84.92; transcription A=61.59 B=84.92 IDENTICAL
+  12-13 (CO2/N2): Table S4 A=113.9 B=212.4; transcription A=113.9 B=212.4 IDENTICAL
+
+Discrepancies, row by row:
+  A = 0 with the printed B: 1-11 (CH3/CH_cyclic): Table S4 A=293.4 B=170.9; transcription A=0.0 B=170.9
+  A = 0 with the printed B: 1-18 (CH3/CH2_alkenic): Table S4 A=48.73 B=44.27; transcription A=0.0 B=44.27
+  A = 0 with the printed B: 1-20 (CH3/CH_cycloalkenic): Table S4 A=47.01 B=169.5; transcription A=0.0 B=169.5
+  A = 0 with the printed B: 1-25 (CH3/CF_double_bond): Table S4 A=-12.29 B=16.54; transcription A=0.0 B=16.54
+  another B: 1-27 (CH3/C2H2F4): Table S4 A=158.5 B=356.5; transcription A=158.5 B=3565.0
+  A = 0 with the printed B: 2-11 (CH2/CH_cyclic): Table S4 A=63.48 B=-74.46; transcription A=0.0 B=-74.46
+  A = 0 with the printed B: 2-18 (CH2/CH2_alkenic): Table S4 A=9.608 B=50.79; transcription A=0.0 B=50.79
+  A = 0 with the printed B: 2-20 (CH2/CH_cycloalkenic): Table S4 A=34.31 B=51.13; transcription A=0.0 B=51.13
+  A = 0 with the printed B: 3-11 (CH/CH_cyclic): Table S4 A=-120.8 B=18.53; transcription A=0.0 B=18.53
+  A = 0 with the printed B: 3-18 (CH/CH2_alkenic): Table S4 A=84.76 B=193.2; transcription A=0.0 B=193.2
+  A = 0 with the printed B: 3-20 (CH/CH_cycloalkenic): Table S4 A=0.52 B=-7.20; transcription A=0.0 B=-7.2
+  A = 0 with the printed B: 4-11 (C/CH_cyclic): Table S4 A=25.05 B=81.33; transcription A=0.0 B=81.33
+  A = 0 with the printed B: 4-18 (C/CH2_alkenic): Table S4 A=181.2 B=419.0; transcription A=0.0 B=419.0
+  missing from the transcription: 4-24 (C/CF2): Table S4 A=479.0 B=1430
+  in the transcription, NA in Table S4: 4-25 (C/CF_double_bond): transcription A=0.0 B=1430.0; the transcription's B is Table S4's B of 4-24 (C/CF2)
+  A = 0 with the printed B: 5-11 (CH4/CH_cyclic): Table S4 A=188.0 B=473.9; transcription A=0.0 B=473.9
+  A = 0 with another B: 5-18 (CH4/CH2_alkenic): Table S4 A=48.73 B=68.29; transcription A=0.0 B=60.29
+  A = 0 with the printed B: 6-11 (C2H6/CH_cyclic): Table S4 A=118.0 B=-212.8; transcription A=0.0 B=-212.8
+  A = 0 with the printed B: 6-18 (C2H6/CH2_alkenic): Table S4 A=26.77 B=-5.147; transcription A=0.0 B=-5.147
+  A = 0 with the printed B: 6-25 (C2H6/CF_double_bond): Table S4 A=95.55 B=-231.1; transcription A=0.0 B=-231.1
+  A = 0 with the printed B: 7-11 (CHaro/CH_cyclic): Table S4 A=129.0 B=36.72; transcription A=0.0 B=36.72
+  A = 0 with the printed B: 7-18 (CHaro/CH2_alkenic): Table S4 A=9.951 B=19.90; transcription A=0.0 B=19.9
+  A = 0 with the printed B: 7-20 (CHaro/CH_cycloalkenic): Table S4 A=3.775 B=1.716; transcription A=0.0 B=1.716
+  A = 0 with the printed B: 7-25 (CHaro/CF_double_bond): Table S4 A=-274.3 B=-411.7; transcription A=0.0 B=-411.7
+  A = 0 with the printed B: 8-11 (Caro/CH_cyclic): Table S4 A=-99.17 B=-193.5; transcription A=0.0 B=-193.5
+  A = 0 with the printed B: 8-18 (Caro/CH2_alkenic): Table S4 A=-48.38 B=27.79; transcription A=0.0 B=27.79
+  A = 0 with the printed B: 8-20 (Caro/CH_cycloalkenic): Table S4 A=242.9 B=-7.206; transcription A=0.0 B=-7.206
+  A = 0 with the printed B: 8-25 (Caro/CF_double_bond): Table S4 A=78.62 B=-108.0; transcription A=0.0 B=-108.0
+  A = 0 with the printed B: 8-28 (Caro/CO): Table S4 A=125.77 B=-231.1; transcription A=0.0 B=-231.1
+  A = 0 with the printed B: 8-29 (Caro/He): Table S4 A=753.6 B=590.5; transcription A=0.0 B=590.5
+  A = 0 with the printed B: 8-31 (Caro/SO2): Table S4 A=-196.6 B=-397.4; transcription A=0.0 B=-397.4
+  A = 0 with another B: 8-32 (Caro/O2): Table S4 A=177.1 B=2559.4; transcription A=0.0 B=2259.4
+  A = 0 with the printed B: 8-39 (Caro/CH_alkynic): Table S4 A=176.0 B=-459.5; transcription A=0.0 B=-459.5
+  A = 0 with the printed B: 8-40 (Caro/C_alkynic): Table S4 A=518.5 B=518.5; transcription A=0.0 B=518.5
+  A = 0 with the printed B: 9-11 (Cfused_aromatic/CH_cyclic): Table S4 A=-99.17 B=-193.5; transcription A=0.0 B=-193.5
+  A = 0 with the printed B: 9-18 (Cfused_aromatic/CH2_alkenic): Table S4 A=669.8 B=589.5; transcription A=0.0 B=589.5
+  A = 0 with the printed B: 10-11 (CH2_cyclic/CH_cyclic): Table S4 A=139.0 B=35.69; transcription A=0.0 B=35.69
+  A = 0 with the printed B: 10-18 (CH2_cyclic/CH2_alkenic): Table S4 A=-15.44 B=24.36; transcription A=0.0 B=24.36
+  A = 0 with the printed B: 10-20 (CH2_cyclic/CH_cycloalkenic): Table S4 A=31.91 B=69.32; transcription A=0.0 B=69.32
+  A = 0 with another B: 11-12 (CH_cyclic/CO2): Table S4 A=216.2 B=-132.8; transcription A=0.0 B=389.8; the transcription's B is Table S4's B of 11-13 (CH_cyclic/N2)
+  missing from the transcription: 11-13 (CH_cyclic/N2): Table S4 A=331.5 B=389.8
+  A = 0 with the printed B: 11-14 (CH_cyclic/H2S): Table S4 A=71.37 B=-127.7; transcription A=0.0 B=-127.7
+  A = 0 with the printed B: 11-15 (CH_cyclic/SH): Table S4 A=463.2 B=-337.7; transcription A=0.0 B=-337.7
+  A = 0 with the printed B: 11-16 (CH_cyclic/H2O): Table S4 A=244.0 B=-60.39; transcription A=0.0 B=-60.39
+  A = 0 with the printed B: 11-17 (CH_cyclic/C2H4): Table S4 A=297.2 B=-647.2; transcription A=0.0 B=-647.2
+  A = 0 with the printed B: 11-18 (CH_cyclic/CH2_alkenic): Table S4 A=260.1 B=134.9; transcription A=0.0 B=134.9
+  A = 0 with the printed B: 11-20 (CH_cyclic/CH_cycloalkenic): Table S4 A=151.3 B=2.745; transcription A=0.0 B=2.745
+  A = 0 with the printed B: 11-21 (CH_cyclic/H2): Table S4 A=-51.82 B=34.31; transcription A=0.0 B=34.31
+  A = 0 with the printed B: 11-32 (CH_cyclic/O2): Table S4 A=102.3 B=988.0; transcription A=0.0 B=988.0
+  A = 0 with the printed B: 11-39 (CH_cyclic/CH_alkynic): Table S4 A=863.7 B=863.7; transcription A=0.0 B=863.7
+  A = 0 with the printed B: 12-18 (CO2/CH2_alkenic): Table S4 A=60.74 B=183.9; transcription A=0.0 B=183.9
+  A = 0 with the printed B: 12-20 (CO2/CH_cycloalkenic): Table S4 A=87.85 B=66.91; transcription A=0.0 B=66.91
+  A = 0 with the printed B: 12-25 (CO2/CF_double_bond): Table S4 A=36.25 B=63.49; transcription A=0.0 B=63.49
+  A = 0 with the printed B: 12-36 (CO2/NO2): Table S4 A=124.9 B=241.6; transcription A=0.0 B=241.6
+  A = 0 with the printed B: 13-18 (N2/CH2_alkenic): Table S4 A=59.71 B=227.2; transcription A=0.0 B=227.2
+  A = 0 with the printed B: 13-36 (N2/NO2): Table S4 A=263.5 B=260.0; transcription A=0.0 B=260.0
+  A = 0 with the printed B: 16-18 (H2O/CH2_alkenic): Table S4 A=2243 B=5199; transcription A=0.0 B=5199.0
+  A = 0 with the printed B: 17-18 (C2H4/CH2_alkenic): Table S4 A=14.76 B=11.32; transcription A=0.0 B=11.32
+  A = 0 with the printed B: 17-20 (C2H4/CH_cycloalkenic): Table S4 A=-98.83 B=1809; transcription A=0.0 B=1809.0
+  A = 0 with the printed B: 17-25 (C2H4/CF_double_bond): Table S4 A=-132.7 B=548.3; transcription A=0.0 B=548.3
+  A = 0 with the printed B: 18-19 (CH2_alkenic/C_alkenic): Table S4 A=24.71 B=121.8; transcription A=0.0 B=121.8
+  A = 0 with the printed B: 18-20 (CH2_alkenic/CH_cycloalkenic): Table S4 A=14.07 B=-12.35; transcription A=0.0 B=-12.35
+  A = 0 with the printed B: 18-21 (CH2_alkenic/H2): Table S4 A=175.7 B=373.0; transcription A=0.0 B=373.0
+  A = 0 with the printed B: 18-22 (CH2_alkenic/C2F6): Table S4 A=124.9 B=219.6; transcription A=0.0 B=219.6
+  A = 0 with the printed B: 18-23 (CH2_alkenic/CF3): Table S4 A=155.4 B=154.4; transcription A=0.0 B=154.4
+  A = 0 with the printed B: 18-24 (CH2_alkenic/CF2): Table S4 A=155.4 B=154.4; transcription A=0.0 B=154.4
+  A = 0 with the printed B: 18-25 (CH2_alkenic/CF_double_bond): Table S4 A=88.21 B=12.87; transcription A=0.0 B=12.87
+  A = 0 with the printed B: 18-26 (CH2_alkenic/C2H4F2): Table S4 A=76.86 B=-145.5; transcription A=0.0 B=-145.5
+  A = 0 with the printed B: 18-27 (CH2_alkenic/C2H2F4): Table S4 A=64.51 B=-41.86; transcription A=0.0 B=-41.86
+  A = 0 with the printed B: 18-29 (CH2_alkenic/He): Table S4 A=644.3 B=687.7; transcription A=0.0 B=687.7
+  A = 0 with the printed B: 18-30 (CH2_alkenic/Ar): Table S4 A=203.0 B=-11.78; transcription A=0.0 B=-11.78
+  A = 0 with the printed B: 18-31 (CH2_alkenic/SO2): Table S4 A=26.8 B=26.8; transcription A=0.0 B=26.8
+  A = 0 with the printed B: 18-38 (CH2_alkenic/C2H2): Table S4 A=165.4 B=39.80; transcription A=0.0 B=39.8
+  A = 0 with the printed B: 18-39 (CH2_alkenic/CH_alkynic): Table S4 A=134.5 B=568.9; transcription A=0.0 B=568.9
+  A = 0 with the printed B: 18-40 (CH2_alkenic/C_alkynic): Table S4 A=255.6 B=676.7; transcription A=0.0 B=676.7
+  A = 0 with the printed B: 19-20 (C_alkenic/CH_cycloalkenic): Table S4 A=23.68 B=87.50; transcription A=0.0 B=87.5
+  another B: 19-21 (C_alkenic/H2): Table S4 A=621.4 B=873.6; transcription A=621.4 B=-495.5; the transcription's B is Table S4's B of 20-23 (CH_cycloalkenic/CF3)
+  A = 0 with the printed B: 20-21 (CH_cycloalkenic/H2): Table S4 A=460.8 B=2167; transcription A=0.0 B=2167.0
+  A = 0 with the printed B: 20-23 (CH_cycloalkenic/CF3): Table S4 A=1232 B=-495.5; transcription A=0.0 B=-495.5
+  A = 0 with the printed B: 22-25 (C2F6/CF_double_bond): Table S4 A=55.90 B=-193.3; transcription A=0.0 B=-193.3
+  A = 0 with the printed B: 23-25 (CF3/CF_double_bond): Table S4 A=17.55 B=-92.99; transcription A=0.0 B=-92.99
+  A = 0 with the printed B: 30-36 (Ar/NO2): Table S4 A=278.6 B=274.5; transcription A=0.0 B=274.5
+  A = 0 with the printed B: 32-36 (O2/NO2): Table S4 A=271.1 B=362.4; transcription A=0.0 B=362.4
+
+3. Appendix A from the record's values
+
+kij(T), appendix constants (CoolProp ethane 305.322 K, 4.8722 MPa, 0.0990)
+| Pair | A, B (MPa) | 100 K | 150 K | 200 K | 250 K | 300 K | 400 K | 600 K | 900 K |
+|---|---|---|---|---|---|---|---|---|---|
+| CH4/C2H6 | 9.951 / 13.73 | 0.0072 | 0.0063 | 0.0059 | 0.0057 | 0.0057 | 0.0060 | 0.0075 | 0.0121 |
+| CH4/CO2 | 136.6 / 214.8 | 0.1213 | 0.1074 | 0.1040 | 0.1057 | 0.1104 | 0.1259 | 0.1747 | 0.3010 |
+| CH4/N2 | 30.88 / 37.06 | 0.0337 | 0.0315 | 0.0295 | 0.0276 | 0.0256 | 0.0205 | 0.0030 | -0.0729 |
+| C2H6/CO2 | 136.2 / 235.7 | 0.1734 | 0.1453 | 0.1331 | 0.1279 | 0.1267 | 0.1308 | 0.1543 | 0.2184 |
+| C2H6/N2 | 61.59 / 84.92 | 0.0610 | 0.0492 | 0.0405 | 0.0332 | 0.0262 | 0.0122 | -0.0244 | -0.1472 |
+| CO2/N2 | 113.9 / 212.4 | 0.0955 | 0.0371 | 0.0050 | -0.0158 | -0.0306 | -0.0505 | -0.0712 | -0.0675 |
+cells equal to appendix A at four decimals: 48 of 48; largest |kij - appendix| 4.94e-05
+
+kij(T), pilot record constants (ethane 305.32 K, 4.872 MPa, 0.099)
+| Pair | A, B (MPa) | 100 K | 150 K | 200 K | 250 K | 300 K | 400 K | 600 K | 900 K |
+|---|---|---|---|---|---|---|---|---|---|
+| CH4/C2H6 | 9.951 / 13.73 | 0.0072 | 0.0063 | 0.0059 | 0.0057 | 0.0057 | 0.0060 | 0.0075 | 0.0121 |
+| CH4/CO2 | 136.6 / 214.8 | 0.1213 | 0.1074 | 0.1040 | 0.1057 | 0.1104 | 0.1259 | 0.1747 | 0.3010 |
+| CH4/N2 | 30.88 / 37.06 | 0.0337 | 0.0315 | 0.0295 | 0.0276 | 0.0256 | 0.0205 | 0.0030 | -0.0729 |
+| C2H6/CO2 | 136.2 / 235.7 | 0.1734 | 0.1453 | 0.1331 | 0.1279 | 0.1267 | 0.1308 | 0.1543 | 0.2184 |
+| C2H6/N2 | 61.59 / 84.92 | 0.0610 | 0.0492 | 0.0406 (0.04056) | 0.0332 | 0.0263 (0.02625) | 0.0122 | -0.0244 | -0.1472 |
+| CO2/N2 | 113.9 / 212.4 | 0.0955 | 0.0371 | 0.0050 | -0.0158 | -0.0306 | -0.0505 | -0.0712 | -0.0675 |
+cells equal to appendix A at four decimals: 46 of 48; largest |kij - appendix| 6.01e-05

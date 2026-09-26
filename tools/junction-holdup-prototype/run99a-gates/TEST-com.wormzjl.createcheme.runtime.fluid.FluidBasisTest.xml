@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FluidBasisTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-26T00:47:19.426Z" hostname="WORMZ-PC" time="0.057">
+  <properties/>
+  <testcase name="capturedAccountingAndSerializationNeverReadTheReloadedGlobalAxis()" classname="com.wormzjl.createcheme.runtime.fluid.FluidBasisTest" time="0.026"/>
+  <testcase name="topologyWithoutAnyIslandStillRejectsAChangedIdentityAxis()" classname="com.wormzjl.createcheme.runtime.fluid.FluidBasisTest" time="0.03"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

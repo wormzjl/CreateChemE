@@ -1,0 +1,9 @@
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.CrystalMorphologyPolicyTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:37:58.642Z" hostname="WORMZ-PC" time="0.127">
+water into the liquid-solid vessel: Substep refinement exhausted: Thermo domain: CarbonDioxide at 166.25 K is below its valid range 216.592..1200 K (package createcheme:pilot_cryogenic) at node 1; the state cannot be evaluated
+above the ceiling: 354.426626 K, 2211956.2 Pa, crystals CrystalInventory[stocks=[]]
+liquid-solid withdrawal: 0.059425 mol out, its x_CO2 0.028069 (liquid 0.028226, vessel with its crystal 0.030000); crystal 0.039016947 -> 0.049716556 mol; 166.000 K 6137637 Pa
+wet vessel: 299.024535 K, 1866397.2 Pa, free water 39.866671 mol, crystals CrystalInventory[stocks=[]]
+particles beside the crystal: 181.808292 K, 1022086.5 Pa, crystal 4.820401101 of 7.522070360 mol CO2 (without particles 1.481377745 mol)
+two crystals at 170 K: Unsupported phases: NOT_IMPLEMENTED (CRYSTAL_PHASES) at 170.0 K, 1000000.0 Pa (package createcheme:pilot_cryogenic) at node 1: a crystal beside a phase set the engine does not implement (CRYSTAL_PHASES: two crystals form (createcheme:crystal_carbon_dioxide_i: (mu - mu_s)/RT = 1.2942057604377626, createcheme:crystal_carbon_dioxide_test_twin: (mu - mu_s)/RT = 1.2722904146554415); that phase set beside a crystal is not implemented)
+two crystal records, 192.7248 K (CO2-I onset 192.7548 K): crystals CrystalInventory[stocks=[Stock[crystal=createcheme:crystal_carbon_dioxide_i, component=3, moles=0.001699290567872119]]]
+

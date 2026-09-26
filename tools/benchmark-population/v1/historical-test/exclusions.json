@@ -1,0 +1,807 @@
+{
+ "revision": "benchmark-population-exclusions-v1",
+ "population": "historical-test",
+ "rule": {
+  "REQUEST_ONLY_TYPED": "V3ColumnCalculator.requestOnlyAdmission types INFEASIBLE_SPECIFICATION at ratio 0.3",
+  "STATE_GATE_NEVER_SOLVED": "archived classical control typed INFEASIBLE_SPECIFICATION (pre-fix state gates) and no archived arm reached strict or advisory"
+ },
+ "counts": {
+  "population": 395,
+  "excluded": 68,
+  "excludedByReason": {
+   "REQUEST_ONLY_TYPED": 20,
+   "STATE_GATE_NEVER_SOLVED": 48
+  },
+  "cleaned": 327,
+  "openSet": 141,
+  "openSetNeverConverged": 134,
+  "openSetAdvisoryOnly": 7,
+  "strictCeilingOnCleaned": 186,
+  "classicalControlTypedInfeasible": 73,
+  "archivedArms": 12,
+  "everSolvedAnyArm": 193,
+  "everStrictAnyArm": 186,
+  "stateGateUnderStrictOnlyReading": 49,
+  "stateGateStrictOnlyTotalIncludingRequestOnly": 51,
+  "advisoryRescuedFromStateGate": [
+   "gd-s07-w1-p4-d2-r00"
+  ],
+  "advisoryRescueEvidence": {
+   "gd-s07-w1-p4-d2-r00": [
+    "gen3:gen2",
+    "gen3:gen3-factorized",
+    "gen3:gen3-mlp",
+    "generalized:generalNeural",
+    "salvage:certified-acquisition"
+   ]
+  }
+ },
+ "classicalControl": {
+  "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+  "sha256": "a54ffc39a394dbe85a1dd73ab47dc89d0a53fe79e455d2b4992a0d51d44244f4",
+  "note": "generalized design matrix acquisition (test fold), classical control",
+  "blockDisagreements": []
+ },
+ "archivedArms": [
+  "gen3:current-reference",
+  "gen3:full-recovery:gen3-factorized",
+  "gen3:full-recovery:nearest-k1",
+  "gen3:gen2",
+  "gen3:gen3-factorized",
+  "gen3:gen3-mlp",
+  "gen3:nearest-k1",
+  "gen3:nearest-k3",
+  "generalized:current",
+  "generalized:generalNeural",
+  "matrix:original-current-initializer",
+  "salvage:certified-acquisition"
+ ],
+ "armSources": [
+  {
+   "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "sha256": "a54ffc39a394dbe85a1dd73ab47dc89d0a53fe79e455d2b4992a0d51d44244f4",
+   "arms": 1,
+   "note": "generalized design matrix acquisition, classical control"
+  },
+  {
+   "path": "tools/neural/generalized-case-map.jsonl.gz",
+   "sha256": "814800f126804c51a15d6ec6df41bfcb95b1a485cddbbf5f371a2dc739f7baf0",
+   "arms": 2,
+   "note": "generalized campaign map: classical and general neural"
+  },
+  {
+   "path": "tools/neural/gen3-case-map.jsonl.gz",
+   "sha256": "fea9ed24a4d8b5c6ff2eb03191b9204d77391915788fd4b9dcef3aabc968290d",
+   "arms": 8,
+   "note": "gen3 recovery campaign observations"
+  },
+  {
+   "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/salvage-nplus1-v1/certified-campaign.zip!audit.jsonl",
+   "sha256": "e6fd48ee94d2b837c04692fd832cae338ae2c34c97cc55aa00d6d6675df167f5",
+   "arms": 1,
+   "note": "salvage N+1 certified campaign acquisition audit"
+  }
+ ],
+ "exclusions": [
+  {
+   "id": "gd-s07-w0-p1-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.4120 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 6; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.4120316820895658,
+   "liquidSupplyLimitingTray": 6,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s07-w0-p2-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.6743 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 3; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.6743318121422691,
+   "liquidSupplyLimitingTray": 3,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": true,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s07-w0-p3-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s07-w0-p3-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s07-w0-p4-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.6694 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 1; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.6693645734299979,
+   "liquidSupplyLimitingTray": 1,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": true,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s07-w0-p4-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s07-w1-p3-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3567 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 3; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.3566565726329888,
+   "liquidSupplyLimitingTray": 3,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s07-w1-p4-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s14-w0-p1-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3602 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 6; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.3602020048922971,
+   "liquidSupplyLimitingTray": 6,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s14-w0-p3-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s14-w0-p3-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s21-w0-p0-d1-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 2.689 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 10; no liquid balance closes at or above 1.000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 2.6886925834103117,
+   "liquidSupplyLimitingTray": 10,
+   "necessaryTier": true,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s21-w0-p3-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s21-w0-p3-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s21-w0-p3-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s21-w0-p4-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s21-w1-p2-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3827 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 3; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.3827315819158201,
+   "liquidSupplyLimitingTray": 3,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s21-w1-p3-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s21-w1-p3-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s28-w0-p1-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s28-w0-p2-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s28-w1-p2-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s28-w1-p4-d1-r01",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s35-w0-p0-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3093 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 31; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.30926872638697434,
+   "liquidSupplyLimitingTray": 31,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s35-w0-p1-d1-r01",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s35-w0-p1-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s35-w0-p1-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.7275 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 9; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.7274741840089552,
+   "liquidSupplyLimitingTray": 9,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s35-w0-p2-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s35-w0-p4-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s35-w0-p4-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s35-w1-p1-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.4382 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 21; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.4382317525832862,
+   "liquidSupplyLimitingTray": 21,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s42-w0-p0-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 2.003 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 26; no liquid balance closes at or above 1.000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 2.0031179755771182,
+   "liquidSupplyLimitingTray": 26,
+   "necessaryTier": true,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s42-w0-p1-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3797 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 16; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.3797248688814206,
+   "liquidSupplyLimitingTray": 16,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s42-w0-p2-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s42-w0-p2-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s42-w0-p2-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3361 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 19; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.33614343769848426,
+   "liquidSupplyLimitingTray": 19,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s42-w0-p4-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s42-w0-p4-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s42-w0-p4-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s42-w0-p4-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s42-w1-p4-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s49-w0-p0-d3-r01",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.4300 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 39; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.42997795209259937,
+   "liquidSupplyLimitingTray": 39,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s49-w0-p1-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s49-w0-p2-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s49-w0-p2-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s49-w0-p2-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s49-w0-p3-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s49-w0-p3-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 1.092 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 26; no liquid balance closes at or above 1.000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 1.0917258496550986,
+   "liquidSupplyLimitingTray": 26,
+   "necessaryTier": true,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s49-w0-p4-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s49-w1-p1-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3512 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 32; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.3511508221091289,
+   "liquidSupplyLimitingTray": 32,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s49-w1-p3-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s56-w0-p2-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s56-w0-p2-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s56-w0-p3-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s56-w0-p3-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s56-w0-p4-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s56-w1-p2-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s56-w1-p2-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.6734 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 43; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.6734399378292685,
+   "liquidSupplyLimitingTray": 43,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s63-w0-p0-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3202 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 14; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.32022421618164437,
+   "liquidSupplyLimitingTray": 14,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s63-w0-p2-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s63-w0-p3-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s63-w0-p3-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s63-w0-p3-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 1.159 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 26; no liquid balance closes at or above 1.000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 1.159467516551442,
+   "liquidSupplyLimitingTray": 26,
+   "necessaryTier": true,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s63-w0-p4-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s63-w0-p4-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s63-w0-p4-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "gd-s63-w1-p1-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3057 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 22; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/historical-test/admission.jsonl",
+   "liquidSupplyRatio": 0.3057408539922047,
+   "liquidSupplyLimitingTray": 22,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "gd-s63-w1-p2-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/build/neural-gen3/data/cases.jsonl",
+   "archivedArmsChecked": 12,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  }
+ ]
+}

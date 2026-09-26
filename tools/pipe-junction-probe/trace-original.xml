@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionTraceProbe" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-24T15:41:57.825Z" hostname="WORMZ-PC" time="0.11">
+  <properties/>
+  <testcase name="fourFiveAndSixEquipmentConnectionsMixAndBalanceWithoutDuplicatingDisplayedThroughput()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionTraceProbe" time="0.11">
+    <failure message="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Newton iteration limit at residual 5.816801548255438E-6; active-set pass=0" type="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence">com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Newton iteration limit at residual 5.816801548255438E-6; active-set pass=0
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:288)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:124)
+	at app//com.wormzjl.createcheme.runtime.fluid.JunctionTraceProbe.fourFiveAndSixEquipmentConnectionsMixAndBalanceWithoutDuplicatingDisplayedThroughput(JunctionTraceProbe.java:40)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[GRAPH [1:102325.0:0.5647597409899664, 2:102325.0:0.984941493542715, 3:101325.0:0.9753166616412734, 4:101325.0:0.9753166616412734, 100:102325.0:0.5647597409899664]
+PASS 0 offsets=[0, 0, 0, 0, 0] edgeOffset=3 donors=[true, true, false, false]
+ITER 0 norm=0.22178063166716827 x=[1.0, 0.0, 0.022983836390375323, 4.440892098500626E-16, 4.440892098500626E-16, -0.11089031583358458, -0.11089031583358458] f=[-0.22178063166716827, 0.0, 0.0, -3.1897636760401294E-19, -2.8893238535577663E-19, 0.0, 0.0]
+STEP 0 alpha=0.5 direction=[-0.0, 0.995354372388238, 8.382839581558973E-9, -1.1670866075785589E-5, -1.2884434754695486E-5, 0.11090259348388848, 0.11090259348388848]
+ITER 1 norm=3.616238587304789 x=[1.0, 0.497677186194119, 0.022983840581795114, -5.835433037448705E-6, -6.442217376903654E-6, -0.05543901909164034, -0.05543901909164034] f=[-0.11089031583369503, 3.616238587304789, 0.0, 5.998396004408727E-9, 7.057961021832456E-9, -0.17661466018434419, -0.17661466018434419]
+STEP 1 alpha=0.5 direction=[-0.0, 0.6735657590043294, 1.9406605560595018E-8, -1.8667356272587047E-5, -1.8979887278732717E-5, 0.05546398153856773, 0.05546398153856773]
+ITER 2 norm=8.145377056233695 x=[1.0, 0.8344600656962837, 0.022983850285097893, -1.516911117374223E-5, -1.5932161016270012E-5, -0.027707028322356476, -0.027707028322356476] f=[-0.055445157916902965, 8.145377056233695, 0.0, 3.3526404931953805E-8, 3.5911823791695984E-8, -0.42360646697283794, -0.42360646697283794]
+STEP 2 alpha=0.25 direction=[-0.0, -2.2973561881846787, -3.4947574268674145E-4, 0.11174179764367838, 0.11173956333170625, -0.08401810152926856, -0.08401810152926856]
+ITER 10 norm=1.2150190476121843 x=[1.0, 0.1959802681690499, 0.020864882468191397, 0.08138450518745521, 0.08092161672915651, -0.08115306095830585, -0.08115306095830585] f=[2.7755575615628914E-17, 1.2150190476121843, 0.0, -0.0010176082010826119, 2.6820184443933966E-4, -0.10719331525006734, -0.10719331525006734]
+STEP 10 alpha=1.0 direction=[-0.0, -0.10906542138513937, -3.288909594315835E-4, -0.05864994243181558, 0.07461982909421126, -0.007984943331197857, -0.007984943331197857]
+ITER 20 norm=5.816801548255438E-6 x=[1.0, -0.04528352620584244, 0.018665396450301568, 0.09603046229246895, 0.12598940413768156, -0.11100993321517844, -0.11100993321517844] f=[-2.0636270470220097E-13, 1.2963020862309208E-6, 0.0, -4.589649493223079E-6, -4.412357224901418E-6, 5.816801548255438E-6, 5.816801548255438E-6]
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

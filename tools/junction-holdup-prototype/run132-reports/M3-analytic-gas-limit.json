@@ -1,0 +1,5 @@
+{
+  "pressureDifferenceRelativeError": 3.2633880369115076E-6,
+  "integratedMassRelativeError": 9.37357357148727E-4,
+  "reference": "adiabatic ideal-gas small-signal Poiseuille relaxation; 1000 Pa, 350 K, 1 Pa initial difference"
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:57.958Z" hostname="WORMZ-PC" time="0.116">
+  <properties/>
+  <testcase name="conservedAndEquilibratedCandidateStillCannotExceedPhaseAllocationBudgets()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.009"/>
+  <testcase name="omittedPhaseDrivingForceRequiresFullSupportReactivation()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.009"/>
+  <testcase name="phaseClassificationCannotBeChangedByTruncation()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.01"/>
+  <testcase name="retainedFiniteKDeterminesTheSplitInsidePhaseOnlyMaterialBounds()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.012"/>
+  <testcase name="dimensionedEnthalpyBudgetRejectsAnOtherwiseValidAllocation()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.01"/>
+  <testcase name="retainedComponentsStillRequireTheUnchangedEquilibriumTolerance()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.01"/>
+  <testcase name="invalidRetainedKIsARecoverableNumericalFailureNotAnInfiniteSentinel()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.009"/>
+  <testcase name="enthalpyBudgetBoundaryIsInclusiveAndNextRepresentableExcessFallsBack()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.009"/>
+  <testcase name="materialClosureCannotSpendTheTraceApproximationBudget()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.01"/>
+  <testcase name="acceptedReducedSplitReportsBothPhaseAllocationErrorsAndOriginalReferenceEnthalpy()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.01"/>
+  <testcase name="unavailableReferenceNeverGetsRescuedByAnApproximateFlash()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.009"/>
+  <testcase name="phaseOnlyRachfordRiceTermsConserveEveryComponentWithoutInfiniteLogK()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3TruncatedFlashNumericsTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

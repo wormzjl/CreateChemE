@@ -1,0 +1,348 @@
+{
+ "source": "CoolProp dev/fluids/*.json INFO.STANDARD_STATE at commit 9b35f538c64df96031553cfbf57a284ce475e8aa (feat: standard enthalpy of formation from ATcT (HFORMATION), PR #3309, 2026-08-22); MIT licence; not present at 8.0.0 (ae81610e)",
+ "revision": "9b35f538c64df96031553cfbf57a284ce475e8aa",
+ "fluids": {
+  "Ammonia": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "7664-41-7*0",
+     "source": "ATcT",
+     "uncertainty": 29,
+     "units": "J/mol",
+     "value": -45554,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "3823f13358e888ff636887a23d4627c5865c4900698e384073f031c71372f13b",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "Argon": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "7440-37-1*0",
+     "source": "ATcT",
+     "uncertainty": 0,
+     "units": "J/mol",
+     "value": 0,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "cf00cf9636af1e501d68e5943fafb5b5f40a9749f36ae1d9c9aefaf22ecaaef8",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "CarbonDioxide": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "124-38-9*0",
+     "source": "ATcT",
+     "uncertainty": 15,
+     "units": "J/mol",
+     "value": -393477,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "9d3ebf8fcce8052f06e0d0fabca849309d2a4a638e9dcccc1ac9efd1e32af75e",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "CarbonMonoxide": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "630-08-0*0",
+     "source": "ATcT",
+     "uncertainty": 25,
+     "units": "J/mol",
+     "value": -110519,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "babe7375aae6d74e5debbc1a16e3d3eb8d769b2060096727ad9109e032732800",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "Ethane": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "74-84-0*0",
+     "source": "ATcT",
+     "uncertainty": 120,
+     "units": "J/mol",
+     "value": -84020,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "66cdfecba65c439934310091893c9217c6a005af6f4263d02a7d98b3bcc63317",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "Ethylene": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "74-85-1*0",
+     "source": "ATcT",
+     "uncertainty": 110,
+     "units": "J/mol",
+     "value": 52390,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "d7e65d975d25297f0cb942dcf77baeb59b1faf9c9b6c3a6b8cf8e7cc2d9e6537",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "Hydrogen": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "1333-74-0*0",
+     "source": "ATcT",
+     "uncertainty": 0,
+     "units": "J/mol",
+     "value": 0,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "ccf3dbb91c520da0af7888e3e808dfb47f15e6de088bf290f9ed6c25b011fb2a",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "HydrogenSulfide": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "7783-06-4*0",
+     "source": "ATcT",
+     "uncertainty": 180,
+     "units": "J/mol",
+     "value": -20300,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "b214d863f3a44007458b14902d76c132757326c5c6d44ccb2bcdd8d5f4802812",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "IsoButane": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "75-28-5*0",
+     "source": "ATcT",
+     "uncertainty": 270,
+     "units": "J/mol",
+     "value": -134480,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "d65d8458e56c0d28e24bcede3f73f778fe27a88e79e6ee785247269bfd61adda",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "Isopentane": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "78-78-4*0",
+     "source": "ATcT",
+     "uncertainty": 390,
+     "units": "J/mol",
+     "value": -152960,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "015a3f2a27d17058a3afd6e71dbdbd99c01c87dbf24e6290a4a3f63b0c62c980",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "Methane": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "74-82-8*0",
+     "source": "ATcT",
+     "uncertainty": 43,
+     "units": "J/mol",
+     "value": -74513,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "14787b789d77e7ddca6cd20330f73b7a911da2add72192e1a778197ba601ce0b",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "Nitrogen": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "7727-37-9*0",
+     "source": "ATcT",
+     "uncertainty": 0,
+     "units": "J/mol",
+     "value": 0,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "9a4590845c5490bc9195a48d113758e7ad45ab4f273ef89b6722896642e7fcd5",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "Oxygen": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "7782-44-7*0",
+     "source": "ATcT",
+     "uncertainty": 0,
+     "units": "J/mol",
+     "value": 0,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "b886d13637da2dac81285f1e8035fca5f891430bf4c7c216c6d1764d03c49ab0",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "Propylene": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "115-07-1*0",
+     "source": "ATcT",
+     "uncertainty": 180,
+     "units": "J/mol",
+     "value": 20060,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "5f2f0c54c04fed8652edff439daa9346042047b0cb8737331eab2cae09f33ce2",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "Water": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "7732-18-5*0",
+     "source": "ATcT",
+     "uncertainty": 22,
+     "units": "J/mol",
+     "value": -241808,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "540f8e84f721e526e2f9acff775cd9dbddcf2ef35284440ea501b7dd37ac53ac",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "n-Butane": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "106-97-8*0",
+     "source": "ATcT",
+     "uncertainty": 180,
+     "units": "J/mol",
+     "value": -125550,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "02238fed857294dc9711b3b3e5a0c9e0270e17390b1cc0ab44d857cba19a66c8",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "n-Pentane": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "109-66-0*0",
+     "source": "ATcT",
+     "uncertainty": 290,
+     "units": "J/mol",
+     "value": -146050,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "046a5f43deac148fe4f45f20d46cdaf9203ca4ea964b0ec3d9d1b499021356d3",
+   "eos_block_identical_to_8_0_0": true
+  },
+  "n-Propane": {
+   "standard_state": {
+    "T": 298.15,
+    "T_units": "K",
+    "hmolar_formation": {
+     "id": "74-98-6*0",
+     "source": "ATcT",
+     "uncertainty": 150,
+     "units": "J/mol",
+     "value": -105000,
+     "version": "1.220"
+    },
+    "p": 100000,
+    "p_units": "Pa",
+    "phase": "ideal_gas"
+   },
+   "source_file_sha256": "9037cac3b33a021116e97d747ca921aaad5f61a6cf87c85a1c2f308398986a92",
+   "eos_block_identical_to_8_0_0": true
+  }
+ }
+}

@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" tests="9" skipped="0" failures="2" errors="0" timestamp="2026-09-25T05:21:21.082Z" hostname="WORMZ-PC" time="0.386">
+  <properties/>
+  <testcase name="twoDifferentFeedsMixAtAZeroHoldupJunction()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.005">
+    <failure message="java.lang.IllegalArgumentException: Negative/nonfinite inventory" type="java.lang.IllegalArgumentException">java.lang.IllegalArgumentException: Negative/nonfinite inventory
+	at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.&lt;init&gt;(PassiveNetwork.java:61)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:60)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:58)
+	at com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest.twoDifferentFeedsMixAtAZeroHoldupJunction(NetworkRegimeTest.java:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="cancellationCannotLeavePartialTransfersAndExcessVelocityIsConservativelyLimited()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.045"/>
+  <testcase name="pumpShutoffUsesAddedPressureAndTankRecycleIsAllowed()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.026"/>
+  <testcase name="hydrocarbonLiquidCanDisappearIntoTheSharedGasPhase()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.044"/>
+  <testcase name="reversingOneFeedSwitchesJunctionUpwindingAndSerialValvesRemainSolvable()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.003">
+    <failure message="java.lang.IllegalArgumentException: Negative/nonfinite inventory" type="java.lang.IllegalArgumentException">java.lang.IllegalArgumentException: Negative/nonfinite inventory
+	at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.&lt;init&gt;(PassiveNetwork.java:61)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:60)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:58)
+	at com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest.reversingOneFeedSwitchesJunctionUpwindingAndSerialValvesRemainSolvable(NetworkRegimeTest.java:42)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="serialSectionsPreserveIndependentLaminarAndFittingLosses()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.002"/>
+  <testcase name="bypassCanPreventAValveFromMaintainingItsUpstreamSetpoint()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.1"/>
+  <testcase name="aRejectedTrialRestartsFromTheSameConservedStateAtTheSmallerStep()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.008"/>
+  <testcase name="hotNitrogenCanEvaporateTheLastFreeWaterWithoutDiscardingIt()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.086"/>
+  <system-out><![CDATA[RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.1 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.009617003390030842] estimate=[0.009617003390030842]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[-0.014411779075798771] estimate=[0.009617003390030842]
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0014437866066677834, 0.0] estimate=[0.0014437866066677834, 4.440892098500626E-16]
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.1 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.5 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.34017569043519996, 0.34017569043519996]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.34017569043519996, 0.34017569043519996]
+RATEMISS dt=0.5 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=29959.423068699834 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.23314874189359225, 0.23314874189359225]
+RATEWARM use=fresh sameState=false maxDeltaP=29959.423068699834 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.23314874189359225, 0.23314874189359225]
+RATEMISS dt=0.1 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=29959.423068699834 previous=[0.0, 0.23314874189359241] estimate=[0.34017569043519996, 0.34017569043519996]
+RATEWARM use=fresh sameState=false maxDeltaP=29959.423068699834 previous=[0.0, 0.23314874189359241] estimate=[0.34017569043519996, 0.34017569043519996]
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.34017569043519996, 0.34017569043519996]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.34017569043519996, 0.34017569043519996]
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=4884.986338951479 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.33356140119991395, 0.33356140119991395]
+RATEWARM use=fresh sameState=false maxDeltaP=4884.986338951479 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.33356140119991395, 0.33356140119991395]
+RATEMISS dt=0.010000000000000002 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=4884.986338951479 previous=[0.33356140119991395, 0.33356140119991395] estimate=[0.34017569043519996, 0.34017569043519996]
+RATEWARM use=fresh sameState=false maxDeltaP=4884.986338951479 previous=[0.33356140119991395, 0.33356140119991395] estimate=[0.34017569043519996, 0.34017569043519996]
+RATEMISS dt=0.005000000000000001 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.34017569043519996, 0.34017569043519996]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.34017569043519996, 0.34017569043519996]
+RATEMISS dt=0.005000000000000001 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=494.5530256605125 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.3395084122380393, 0.3395084122380393]
+RATEWARM use=fresh sameState=false maxDeltaP=494.5530256605125 previous=[0.34017569043519996, 0.34017569043519996] estimate=[0.3395084122380393, 0.3395084122380393]
+RATEMISS dt=0.020000000000000004 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=493.1944703173067 previous=[0.3395084122380393, 0.3395084122380393] estimate=[0.3388424429543581, 0.3388424429543581]
+RATEWARM use=fresh sameState=false maxDeltaP=493.1944703173067 previous=[0.3395084122380393, 0.3395084122380393] estimate=[0.3388424429543581, 0.3388424429543581]
+RATEMISS dt=0.010000000000000002 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.3388424429543581, 0.3388424429543581] estimate=[0.3388424429543581, 0.3388424429543581]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.3388424429543581, 0.3388424429543581] estimate=[0.3388424429543581, 0.3388424429543581]
+RATEMISS dt=0.010000000000000002 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=982.3290676209144 previous=[0.3388424429543581, 0.3388424429543581] estimate=[0.33751442023642214, 0.33751442023642214]
+RATEWARM use=fresh sameState=false maxDeltaP=982.3290676209144 previous=[0.3388424429543581, 0.3388424429543581] estimate=[0.33751442023642214, 0.33751442023642214]
+RATEMISS dt=0.04000000000000001 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=976.9394111647271 previous=[0.33751442023642214, 0.33751442023642214] estimate=[0.33619160242907803, 0.33619160242907803]
+RATEWARM use=fresh sameState=false maxDeltaP=976.9394111647271 previous=[0.33751442023642214, 0.33751442023642214] estimate=[0.33619160242907803, 0.33619160242907803]
+RATEMISS dt=0.020000000000000004 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.33619160242907803, 0.33619160242907803] estimate=[0.33619160242907803, 0.33619160242907803]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.33619160242907803, 0.33619160242907803] estimate=[0.33619160242907803, 0.33619160242907803]
+RATEMISS dt=0.020000000000000004 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1937.8348372971232 previous=[0.33619160242907803, 0.33619160242907803] estimate=[0.33356149512672273, 0.33356149512672273]
+RATEWARM use=fresh sameState=false maxDeltaP=1937.8348372971232 previous=[0.33619160242907803, 0.33619160242907803] estimate=[0.33356149512672273, 0.33356149512672273]
+RATEMISS dt=0.004000000000000001 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1937.8348372971232 previous=[0.33356149512672273, 0.33356149512672273] estimate=[0.33619160242907803, 0.33619160242907803]
+RATEWARM use=fresh sameState=false maxDeltaP=1937.8348372971232 previous=[0.33356149512672273, 0.33356149512672273] estimate=[0.33619160242907803, 0.33619160242907803]
+RATEMISS dt=0.0020000000000000005 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.33619160242907803, 0.33619160242907803] estimate=[0.33619160242907803, 0.33619160242907803]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.33619160242907803, 0.33619160242907803] estimate=[0.33619160242907803, 0.33619160242907803]
+RATEMISS dt=0.0020000000000000005 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=194.7434890033328 previous=[0.33619160242907803, 0.33619160242907803] estimate=[0.3359276618308655, 0.3359276618308655]
+RATEWARM use=fresh sameState=false maxDeltaP=194.7434890033328 previous=[0.33619160242907803, 0.33619160242907803] estimate=[0.3359276618308655, 0.3359276618308655]
+RATEMISS dt=0.008000000000000002 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=194.52932522376068 previous=[0.3359276618308655, 0.3359276618308655] estimate=[0.3356639284389958, 0.3356639284389958]
+RATEWARM use=fresh sameState=false maxDeltaP=194.52932522376068 previous=[0.3359276618308655, 0.3359276618308655] estimate=[0.3356639284389958, 0.3356639284389958]
+RATEMISS dt=0.004000000000000001 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.3356639284389958, 0.3356639284389958] estimate=[0.3356639284389958, 0.3356639284389958]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.3356639284389958, 0.3356639284389958] estimate=[0.3356639284389958, 0.3356639284389958]
+RATEMISS dt=0.004000000000000001 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=388.4171495187329 previous=[0.3356639284389958, 0.3356639284389958] estimate=[0.3351370825978114, 0.3351370825978114]
+RATEWARM use=fresh sameState=false maxDeltaP=388.4171495187329 previous=[0.3356639284389958, 0.3356639284389958] estimate=[0.3351370825978114, 0.3351370825978114]
+RATEMISS dt=0.016000000000000004 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=387.5632835161523 previous=[0.3351370825978114, 0.3351370825978114] estimate=[0.33461106368929977, 0.33461106368929977]
+RATEWARM use=fresh sameState=false maxDeltaP=387.5632835161523 previous=[0.3351370825978114, 0.3351370825978114] estimate=[0.33461106368929977, 0.33461106368929977]
+RATEMISS dt=0.008000000000000002 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.33461106368929977, 0.33461106368929977] estimate=[0.33461106368929977, 0.33461106368929977]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.33461106368929977, 0.33461106368929977] estimate=[0.33461106368929977, 0.33461106368929977]
+RATEMISS dt=0.008000000000000002 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=772.5729345012805 previous=[0.33461106368929977, 0.33461106368929977] estimate=[0.333561501122953, 0.333561501122953]
+RATEWARM use=fresh sameState=false maxDeltaP=772.5729345012805 previous=[0.33461106368929977, 0.33461106368929977] estimate=[0.333561501122953, 0.333561501122953]
+RATEMISS dt=0.00547037690706782 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=772.5729345012805 previous=[0.333561501122953, 0.333561501122953] estimate=[0.33461106368929977, 0.33461106368929977]
+RATEWARM use=fresh sameState=false maxDeltaP=772.5729345012805 previous=[0.333561501122953, 0.333561501122953] estimate=[0.33461106368929977, 0.33461106368929977]
+RATEMISS dt=0.00273518845353391 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.33461106368929977, 0.33461106368929977] estimate=[0.33461106368929977, 0.33461106368929977]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.33461106368929977, 0.33461106368929977] estimate=[0.33461106368929977, 0.33461106368929977]
+RATEMISS dt=0.00273518845353391 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=264.5240361094766 previous=[0.33461106368929977, 0.33461106368929977] estimate=[0.3342518488752994, 0.3342518488752994]
+RATEWARM use=fresh sameState=false maxDeltaP=264.5240361094766 previous=[0.33461106368929977, 0.33461106368929977] estimate=[0.3342518488752994, 0.3342518488752994]
+RATEMISS dt=0.01094075381413564 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=264.12626452889526 previous=[0.3342518488752994, 0.3342518488752994] estimate=[0.3338930196888584, 0.3338930196888584]
+RATEWARM use=fresh sameState=false maxDeltaP=264.12626452889526 previous=[0.3342518488752994, 0.3342518488752994] estimate=[0.3338930196888584, 0.3338930196888584]
+RATEMISS dt=0.00547037690706782 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.3338930196888584, 0.3338930196888584] estimate=[0.3338930196888584, 0.3338930196888584]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.3338930196888584, 0.3338930196888584] estimate=[0.3338930196888584, 0.3338930196888584]
+RATEMISS dt=0.00547037690706782 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=450.02537643912365 previous=[0.3338930196888584, 0.3338930196888584] estimate=[0.3332813002655006, 0.3332813002655006]
+RATEWARM use=fresh sameState=false maxDeltaP=450.02537643912365 previous=[0.3338930196888584, 0.3338930196888584] estimate=[0.3332813002655006, 0.3332813002655006]
+RATEMISS dt=0.01107133006897682 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=263.05237119831145 previous=[0.0, 0.3332813002655006] estimate=[0.33292351299157247, 0.33292351299157247]
+RATEWARM use=fresh sameState=false maxDeltaP=263.05237119831145 previous=[0.0, 0.3332813002655006] estimate=[0.33292351299157247, 0.33292351299157247]
+RATEMISS dt=0.00553566503448841 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.33292351299157247] estimate=[0.33292351299157247, 0.33292351299157247]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.33292351299157247] estimate=[0.33292351299157247, 0.33292351299157247]
+RATEMISS dt=0.00553566503448841 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=265.78919267177116 previous=[0.0, 0.33292351299157247] estimate=[0.33256184657689347, 0.33256184657689347]
+RATEWARM use=fresh sameState=false maxDeltaP=265.78919267177116 previous=[0.0, 0.33292351299157247] estimate=[0.33256184657689347, 0.33256184657689347]
+RATEMISS dt=0.02214266013795364 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=265.38474725573906 previous=[0.0, 0.33256184657689347] estimate=[0.3322005730530798, 0.3322005730530798]
+RATEWARM use=fresh sameState=false maxDeltaP=265.38474725573906 previous=[0.0, 0.33256184657689347] estimate=[0.3322005730530798, 0.3322005730530798]
+RATEMISS dt=0.01107133006897682 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3322005730530798] estimate=[0.3322005730530798, 0.3322005730530798]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3322005730530798] estimate=[0.3322005730530798, 0.3322005730530798]
+RATEMISS dt=0.01107133006897682 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=529.5587635353149 previous=[0.0, 0.3322005730530798] estimate=[0.3314792028679187, 0.3314792028679187]
+RATEWARM use=fresh sameState=false maxDeltaP=529.5587635353149 previous=[0.0, 0.3322005730530798] estimate=[0.3314792028679187, 0.3314792028679187]
+RATEMISS dt=0.04428532027590728 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=527.9483418535965 previous=[0.0, 0.3314792028679187] estimate=[0.33075939913075175, 0.33075939913075175]
+RATEWARM use=fresh sameState=false maxDeltaP=527.9483418535965 previous=[0.0, 0.3314792028679187] estimate=[0.33075939913075175, 0.33075939913075175]
+RATEMISS dt=0.02214266013795364 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.33075939913075175] estimate=[0.33075939913075175, 0.33075939913075175]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.33075939913075175] estimate=[0.33075939913075175, 0.33075939913075175]
+RATEMISS dt=0.02214266013795364 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1051.086139263265 previous=[0.0, 0.33075939913075175] estimate=[0.3293244765805528, 0.3293244765805528]
+RATEWARM use=fresh sameState=false maxDeltaP=1051.086139263265 previous=[0.0, 0.33075939913075175] estimate=[0.3293244765805528, 0.3293244765805528]
+RATEMISS dt=0.08857064055181456 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1044.7029180703976 previous=[0.0, 0.3293244765805528] estimate=[0.32789577910734424, 0.32789577910734424]
+RATEWARM use=fresh sameState=false maxDeltaP=1044.7029180703976 previous=[0.0, 0.3293244765805528] estimate=[0.32789577910734424, 0.32789577910734424]
+RATEMISS dt=0.04428532027590728 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.32789577910734424] estimate=[0.32789577910734424, 0.32789577910734424]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.32789577910734424] estimate=[0.32789577910734424, 0.32789577910734424]
+RATEMISS dt=0.04428532027590728 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=2070.420014335745 previous=[0.0, 0.32789577910734424] estimate=[0.32505694499695204, 0.32505694499695204]
+RATEWARM use=fresh sameState=false maxDeltaP=2070.420014335745 previous=[0.0, 0.32789577910734424] estimate=[0.32505694499695204, 0.32505694499695204]
+RATEMISS dt=0.17714128110362912 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=2045.3483200879418 previous=[0.0, 0.32505694499695204] estimate=[0.32224268875434803, 0.32224268875434803]
+RATEWARM use=fresh sameState=false maxDeltaP=2045.3483200879418 previous=[0.0, 0.32505694499695204] estimate=[0.32224268875434803, 0.32224268875434803]
+RATEMISS dt=0.08857064055181456 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.32224268875434803] estimate=[0.32224268875434803, 0.32224268875434803]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.32224268875434803] estimate=[0.32224268875434803, 0.32224268875434803]
+RATEMISS dt=0.08857064055181456 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=4016.762062043883 previous=[0.0, 0.32224268875434803] estimate=[0.31668700994550625, 0.31668700994550625]
+RATEWARM use=fresh sameState=false maxDeltaP=4016.762062043883 previous=[0.0, 0.32224268875434803] estimate=[0.31668700994550625, 0.31668700994550625]
+RATEMISS dt=0.35428256220725823 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=3920.062560903083 previous=[0.0, 0.31668700994550625] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEWARM use=fresh sameState=false maxDeltaP=3920.062560903083 previous=[0.0, 0.31668700994550625] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEMISS dt=0.17714128110362912 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3112271147435668] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3112271147435668] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEMISS dt=0.17714128110362912 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=7090.320215605141 previous=[0.0, 0.3112271147435668] estimate=[0.2557069619059624, 0.2557069619059624]
+RATEWARM use=fresh sameState=false maxDeltaP=7090.320215605141 previous=[0.0, 0.3112271147435668] estimate=[0.2557069619059624, 0.2557069619059624]
+RATEMISS dt=0.08801002740170244 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=7090.320215605141 previous=[0.0, 0.25570696190596254] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEWARM use=fresh sameState=false maxDeltaP=7090.320215605141 previous=[0.0, 0.25570696190596254] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEMISS dt=0.04400501370085122 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3112271147435668] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3112271147435668] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEMISS dt=0.04400501370085122 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1912.3556538584817 previous=[0.0, 0.3112271147435668] estimate=[0.308549575139074, 0.308549575139074]
+RATEWARM use=fresh sameState=false maxDeltaP=1912.3556538584817 previous=[0.0, 0.3112271147435668] estimate=[0.308549575139074, 0.308549575139074]
+RATEMISS dt=0.041521728838456146 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1912.3556538584817 previous=[0.0, 0.308549575139074] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEWARM use=fresh sameState=false maxDeltaP=1912.3556538584817 previous=[0.0, 0.308549575139074] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEMISS dt=0.020760864419228073 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3112271147435668] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3112271147435668] estimate=[0.3112271147435668, 0.3112271147435668]
+RATEMISS dt=0.020760864419228073 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=905.1000822372444 previous=[0.0, 0.3112271147435668] estimate=[0.3099610142894337, 0.3099610142894337]
+RATEWARM use=fresh sameState=false maxDeltaP=905.1000822372444 previous=[0.0, 0.3112271147435668] estimate=[0.3099610142894337, 0.3099610142894337]
+RATEMISS dt=0.08304345767691229 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=899.9448443206202 previous=[0.0, 0.3099610142894337] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEWARM use=fresh sameState=false maxDeltaP=899.9448443206202 previous=[0.0, 0.3099610142894337] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEMISS dt=0.041521728838456146 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3087000644468665] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3087000644468665] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEMISS dt=0.041521728838456146 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1762.3512753242103 previous=[0.0, 0.3087000644468665] estimate=[0.29655233431284556, 0.29655233431284556]
+RATEWARM use=fresh sameState=false maxDeltaP=1762.3512753242103 previous=[0.0, 0.3087000644468665] estimate=[0.29655233431284556, 0.29655233431284556]
+RATEMISS dt=0.03449091938770006 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1762.3512753242103 previous=[0.0, 0.2965523343128459] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEWARM use=fresh sameState=false maxDeltaP=1762.3512753242103 previous=[0.0, 0.2965523343128459] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEMISS dt=0.01724545969385003 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3087000644468665] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3087000644468665] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEMISS dt=0.01724545969385003 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=743.6089013447054 previous=[0.0, 0.3087000644468665] estimate=[0.3075847475927316, 0.3075847475927316]
+RATEWARM use=fresh sameState=false maxDeltaP=743.6089013447054 previous=[0.0, 0.3087000644468665] estimate=[0.3075847475927316, 0.3075847475927316]
+RATEMISS dt=0.01832782539752779 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=743.6089013447054 previous=[0.0, 0.3075847475927318] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEWARM use=fresh sameState=false maxDeltaP=743.6089013447054 previous=[0.0, 0.3075847475927318] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEMISS dt=0.009163912698763895 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3087000644468665] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3087000644468665] estimate=[0.3087000644468665, 0.3087000644468665]
+RATEMISS dt=0.009163912698763895 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=395.6057605618262 previous=[0.0, 0.3087000644468665] estimate=[0.3081451104919385, 0.3081451104919385]
+RATEWARM use=fresh sameState=false maxDeltaP=395.6057605618262 previous=[0.0, 0.3087000644468665] estimate=[0.3081451104919385, 0.3081451104919385]
+RATEMISS dt=0.030200439930375148 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=394.4209499322169 previous=[0.0, 0.3081451104919385] estimate=[0.30708846634979503, 0.30708846634979503]
+RATEWARM use=fresh sameState=false maxDeltaP=394.4209499322169 previous=[0.0, 0.3081451104919385] estimate=[0.30708846634979503, 0.30708846634979503]
+RATEMISS dt=0.015100219965187574 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3070884663497952] estimate=[0.30708846634979503, 0.30708846634979503]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.3070884663497952] estimate=[0.30708846634979503, 0.30708846634979503]
+RATEMISS dt=0.015100219965187574 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=640.6785023602133 previous=[0.0, 0.3070884663497952] estimate=[0.30017689637428946, 0.30017689637428946]
+RATEWARM use=fresh sameState=false maxDeltaP=640.6785023602133 previous=[0.0, 0.3070884663497952] estimate=[0.30017689637428946, 0.30017689637428946]
+RATEMISS dt=0.060400879860750295 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=625.4171648465563 previous=[0.0, 0.3001768963742898] estimate=[0.29331378986002354, 0.29331378986002354]
+RATEWARM use=fresh sameState=false maxDeltaP=625.4171648465563 previous=[0.0, 0.3001768963742898] estimate=[0.29331378986002354, 0.29331378986002354]
+RATEMISS dt=0.030200439930375148 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.2933137898600233] estimate=[0.29331378986002354, 0.29331378986002354]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.2933137898600233] estimate=[0.29331378986002354, 0.29331378986002354]
+RATEMISS dt=0.030200439930375148 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1205.6806650549406 previous=[0.0, 0.2933137898600233] estimate=[0.27972863542470217, 0.27972863542470217]
+RATEWARM use=fresh sameState=false maxDeltaP=1205.6806650549406 previous=[0.0, 0.2933137898600233] estimate=[0.27972863542470217, 0.27972863542470217]
+RATEMISS dt=0.12080175972150059 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1146.3851774261275 previous=[0.0, 0.2797286354247018] estimate=[0.2663256833176004, 0.2663256833176004]
+RATEWARM use=fresh sameState=false maxDeltaP=1146.3851774261275 previous=[0.0, 0.2797286354247018] estimate=[0.2663256833176004, 0.2663256833176004]
+RATEMISS dt=0.060400879860750295 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.26632568331760076] estimate=[0.2663256833176004, 0.2663256833176004]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.26632568331760076] estimate=[0.2663256833176004, 0.2663256833176004]
+RATEMISS dt=0.060400879860750295 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=2119.4827775651356 previous=[0.0, 0.26632568331760076] estimate=[0.24003394854394466, 0.24003394854394466]
+RATEWARM use=fresh sameState=false maxDeltaP=2119.4827775651356 previous=[0.0, 0.26632568331760076] estimate=[0.24003394854394466, 0.24003394854394466]
+RATEMISS dt=0.24160351944300118 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=1894.8259650790133 previous=[0.0, 0.24003394854394436] estimate=[0.21438604225351776, 0.21438604225351776]
+RATEWARM use=fresh sameState=false maxDeltaP=1894.8259650790133 previous=[0.0, 0.24003394854394436] estimate=[0.21438604225351776, 0.21438604225351776]
+RATEMISS dt=0.12080175972150059 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.21438604225351762] estimate=[0.21438604225351776, 0.21438604225351776]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.21438604225351762] estimate=[0.21438604225351776, 0.21438604225351776]
+RATEMISS dt=0.12080175972150059 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=3146.1886131452047 previous=[0.0, 0.21438604225351762] estimate=[0.16480377020631343, 0.16480377020631343]
+RATEWARM use=fresh sameState=false maxDeltaP=3146.1886131452047 previous=[0.0, 0.21438604225351762] estimate=[0.16480377020631343, 0.16480377020631343]
+RATEMISS dt=0.08552148394890391 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=2327.852660835051 previous=[0.0, 0.1648037702063131] estimate=[0.11730012210793683, 0.11730012210793683]
+RATEWARM use=fresh sameState=false maxDeltaP=2327.852660835051 previous=[0.0, 0.1648037702063131] estimate=[0.11730012210793683, 0.11730012210793683]
+RATEMISS dt=0.042760741974451955 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.11730012210793726] estimate=[0.11730012210793683, 0.11730012210793683]
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.0, 0.11730012210793726] estimate=[0.11730012210793683, 0.11730012210793683]
+RATEMISS dt=0.042760741974451955 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEWARM use=fresh sameState=false maxDeltaP=635.8780855190707 previous=[0.0, 0.11730012210793726] estimate=[0.10097202026505725, 0.10097202026505725]
+RATEWARM use=fresh sameState=false maxDeltaP=635.8780855190707 previous=[0.0, 0.11730012210793726] estimate=[0.10097202026505725, 0.10097202026505725]
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.5 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=1.0 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

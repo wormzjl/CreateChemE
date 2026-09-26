@@ -1,0 +1,116 @@
+==== com.wormzjl.createcheme.science.material.JaegerSpanGibbsFunctionTest: 4 tests, 0 failures, 0 errors, 0.002 s ====
+  test integrationConstantsReproduceTheirConditions() (0.001 s)
+  test analyticDerivativesMatchCentralDifferences() (0.0 s)
+  test refusesOutsideItsRange() (0.001 s)
+  test reproducesTableFiveCheckValues() (0.0 s)
+Jaeger-Span analytic derivatives: worst relative difference to central differences 6.53e-08
+Table 5 216.592 K    517950 Pa g     printed -1.447007522e+03 computed -1.447007521518e+03 (4.82e-01 of the last digit)
+Table 5 216.592 K    517950 Pa v     printed 2.848595255e-05 computed 2.848595254683e-05 (3.17e-01 of the last digit)
+Table 5 216.592 K    517950 Pa s     printed -1.803247012e+01 computed -1.803247012357e+01 (3.57e-01 of the last digit)
+Table 5 216.592 K    517950 Pa cp    printed 5.913420271e+01 computed 5.913420271324e+01 (3.24e-01 of the last digit)
+Table 5 216.592 K    517950 Pa alpha printed 8.127788321e-04 computed 8.127788321061e-04 (6.09e-02 of the last digit)
+Table 5 216.592 K    517950 Pa kappa printed 2.813585169e-10 computed 2.813585169014e-10 (1.37e-02 of the last digit)
+Table 5 100.000 K 100000000 Pa g     printed -2.961795962e+03 computed -2.961795962212e+03 (2.12e-01 of the last digit)
+Table 5 100.000 K 100000000 Pa v     printed 2.614596591e-05 computed 2.614596590611e-05 (3.89e-01 of the last digit)
+Table 5 100.000 K 100000000 Pa s     printed -5.623154438e+01 computed -5.623154437761e+01 (2.39e-01 of the last digit)
+Table 5 100.000 K 100000000 Pa cp    printed 3.911045710e+01 computed 3.911045710292e+01 (2.92e-01 of the last digit)
+Table 5 100.000 K 100000000 Pa alpha printed 3.843376525e-04 computed 3.843376524847e-04 (1.53e-01 of the last digit)
+Table 5 100.000 K 100000000 Pa kappa printed 1.149061787e-10 computed 1.149061786540e-10 (4.60e-01 of the last digit)
+
+==== com.wormzjl.createcheme.science.material.CrystalReferenceTest: 5 tests, 0 failures, 0 errors, 0.014 s ====
+  test anchoredGibbsFunctionIsConsistent() (0.006 s)
+  test carbonDioxideRecordIsTheJaegerSpanFunction() (0.001 s)
+  test recordRulesAreRefused() (0.002 s)
+  test gibbsFunctionRecordRulesAreRefused() (0.005 s)
+  test closedFormsAndTransitionJumps() (0.0 s)
+
+==== com.wormzjl.createcheme.science.material.PilotCryogenicCatalogTest: 8 tests, 0 failures, 0 errors, 0.216 s ====
+  test theTestNetworkOverrideSelectsThePilot() (0.014 s)
+  test volumeTranslationRules() (0.041 s)
+  test idealGasSourceRules() (0.013 s)
+  test packageSpineRulesAreEnforced() (0.04 s)
+  test pilotPackageIsBundled() (0.003 s)
+  test spineAndCrystalRecordsNeedCoverageAndAKnownComponent() (0.021 s)
+  test spineFingerprintIsDeterministicAndSeesOnlyNumbers() (0.062 s)
+  test bundledPackageFingerprintsAreUnchanged() (0.021 s)
+P3 pilot pins: scientific revision pilot-cryogenic-p3-r1:37a33a6190bd9fba7433c494c63ae4bfab24995b6902cf58c59381033c3a7c64, physics 7378e1991b885b5a129a7e74eae0ee5d0ebd5f1d6d9be298182bc163519230c0, spine 581c9098c10bef8de71cd8fb029221ffae849c65ebc3d01a2e62ba715645df08, fluid thermo b0197b034342c2a9ddce19883b7d69a81f41100c3a99a0c891e17272cab8e4f8
+
+==== com.wormzjl.createcheme.science.thermo.phase.CrystalPhaseEvaluatorTest: 5 tests, 0 failures, 0 errors, 0.042 s ====
+  test oracleAnchoringRecoversThePublishedIntegrationConstants() (0.009 s)
+  test oracleSublimationFollowsTheSpanWagnerCorrelationAsInFigureNine() (0.011 s)
+  test refusesForeignAnchorsAndStatesOutsideItsRange() (0.009 s)
+  test anchorsToThePilotLiquidAndFillsAConsistentSolidState() (0.001 s)
+  test oracleMeltingFollowsTheSpanWagnerCorrelationAsInFigureEleven() (0.012 s)
+Oracle anchoring (8875 J/mol): g0 -2.638511866 vs -2.6385478 (3.59e-05), g1 4.508874168 vs 4.5088732 (9.68e-07); oracle mu_V - mu_L at (T_t, p_t) -0.0453 J/mol
+Oracle sublimation 80..216.592 K: dp min -226.6 Pa at 194 K, max 236.5 Pa at 212 K, worst |dp|/uncertainty 1.499, worst vs Trusler eq 48 0.847 %
+Oracle sublimation enthalpy at 194.67 K: 25213.8 J/mol (0.055 % from 25200)
+CO2-I at 85 K refused by the spine: createcheme:spine_carbon_dioxide: temperature 85.0 K outside the ideal-gas segments 90.0..6000.0 K
+CO2-I on createcheme:pilot_cryogenic: mu_L -437397.037211 J/mol, h_L -412054.036942 J/mol, dH_fus 9019 J/mol, g0 -347.202690936, g1 -6.724549996
+Oracle melting 216.6..270 K: dp/p from -0.467 % to 0.853 %, worst |dp/p|/uncertainty 0.933
+
+==== com.wormzjl.createcheme.science.thermo.phase.SolidCarbonDioxideQualificationTest: 5 tests, 0 failures, 0 errors, 0.023 s ====
+  test fusionEnthalpyChoiceIsTheMeasuredBetterOne() (0.008 s)
+  test crystalPropertiesAgainstTrusler() (0.001 s)
+  test meltingOnThePilotFamilyUpToItsPressureCeiling() (0.001 s)
+  test sublimationEnthalpyOnThePilotFamily() (0.001 s)
+  test sublimationPressureOnThePilotFamily() (0.012 s)
+dH_fus 9019: sublimation 2.941 %, enthalpy -0.060 %; dH_fus 8875: sublimation 6.663 %, enthalpy -0.634 %
+T K | v JS m3/mol | v Trusler 50 | % | alpha JS 1/K | alpha Trusler 50 | % | kappa JS 1/Pa | cp JS J/(mol K)
+  80.000 | 2.627439e-05 | 2.621511e-05 |   0.226 | 3.85361e-04 | 3.97749e-04 |   -3.11 | 1.4033e-10 |  35.9354
+ 100.000 | 2.649269e-05 | 2.643908e-05 |   0.203 | 4.42275e-04 | 4.50840e-04 |   -1.90 | 1.5184e-10 |  39.8123
+ 120.000 | 2.674377e-05 | 2.669108e-05 |   0.197 | 5.01457e-04 | 4.97884e-04 |    0.72 | 1.6682e-10 |  43.0507
+ 140.000 | 2.702990e-05 | 2.697222e-05 |   0.214 | 5.63122e-04 | 5.52230e-04 |    1.97 | 1.8508e-10 |  46.1783
+ 160.000 | 2.735334e-05 | 2.729084e-05 |   0.229 | 6.26739e-04 | 6.26423e-04 |    0.05 | 2.0645e-10 |  49.3807
+ 180.000 | 2.771619e-05 | 2.766240e-05 |   0.194 | 6.91793e-04 | 7.31999e-04 |   -5.49 | 2.3070e-10 |  52.7116
+ 194.670 | 2.800832e-05 | 2.798142e-05 |   0.096 | 7.40143e-04 | 8.35349e-04 |  -11.40 | 2.5014e-10 |  55.2394
+ 200.000 | 2.811997e-05 | 2.810952e-05 |   0.037 | 7.57793e-04 | 8.79126e-04 |  -13.80 | 2.5751e-10 |  56.1744
+ 210.000 | 2.833727e-05 | 2.837045e-05 |  -0.117 | 7.90948e-04 | 9.70940e-04 |  -18.54 | 2.7174e-10 |  57.9500
+ 216.592 | 2.848595e-05 | 2.855890e-05 |  -0.255 | 8.12779e-04 | 1.03869e-03 |  -21.75 | 2.8136e-10 |  59.1342
+Against Trusler 2011: volume 0.255 % (declared 0.3 %), expansion 3.11 % to 160 K (declared 3.5 %), 21.75 % to T_t (declared 25 %)
+c_p at 146.48 K: 47.2035 J/(mol K) against 47.11 (0.199 %)
+c_p at 189.78 K: 54.3892 J/(mol K) against 54.55 (-0.295 %)
+T K | p pilot Pa | p SW Pa | slope ratio % | T_SW(p) - T K
+ 216.600 |  5.57354e+05 |  5.55363e+05 |   5.323 |   0.0004
+ 216.800 |  1.54493e+06 |  1.49162e+06 |   5.475 |   0.0114
+ 217.000 |  2.53724e+06 |  2.42970e+06 |   5.625 |   0.0229
+ 217.200 |  3.53426e+06 |  3.36959e+06 |   5.775 |   0.0350
+ 217.400 |  4.53596e+06 |  4.31130e+06 |   5.922 |   0.0477
+ 217.600 |  5.54230e+06 |  5.25482e+06 |   6.069 |   0.0609
+ 217.800 |  6.55325e+06 |  6.20016e+06 |   6.214 |   0.0746
+ 218.000 |  7.56879e+06 |  7.14732e+06 |   6.358 |   0.0889
+ 218.200 |  8.58889e+06 |  8.09628e+06 |   6.500 |   0.1037
+ 218.400 |  9.61352e+06 |  9.04707e+06 |   6.641 |   0.1190
+melting temperature at 10 MPa: pilot 218.4752 K, Span-Wagner 218.6001 K, difference -0.1249 K
+Pilot melting to 10 MPa: worst 0.1249 K (declared 0.13 K), slope 6.641 % (declared 7 %)
+Pilot sublimation enthalpy at 140.00 K: 26352.8 J/mol (4.575 % from 25.2 kJ/mol)
+Pilot sublimation enthalpy at 170.00 K: 25799.1 J/mol (2.377 % from 25.2 kJ/mol)
+Pilot sublimation enthalpy at 194.67 K: 25194.7 J/mol (-0.021 % from 25.2 kJ/mol)
+Pilot sublimation enthalpy at 195.00 K: 25185.0 J/mol (-0.060 % from 25.2 kJ/mol)
+T K | p pilot Pa | vs SW 3.12 % | vs Fray-Schmitt % | vs Trusler 48 % | vs JS+SW oracle % | T_SW(p) - T K
+130.0000 |  3.35395e+01 |    8.653 |    3.927 |      NaN |    2.375 |  0.4291
+135.0000 |  8.30807e+01 |    6.442 |    3.682 |      NaN |    2.164 |  0.3507
+140.0000 |  1.92414e+02 |    4.824 |    3.441 |      NaN |    1.968 |  0.2867
+145.0000 |  4.19561e+02 |    3.659 |    3.196 |      NaN |    1.783 |  0.2362
+150.0000 |  8.66561e+02 |    2.838 |    2.941 |    2.470 |    1.609 |  0.1980
+155.0000 |  1.70431e+03 |    2.270 |    2.675 |    2.171 |    1.443 |  0.1705
+160.0000 |  3.20676e+03 |    1.881 |    2.397 |    1.915 |    1.284 |  0.1516
+165.0000 |  5.79617e+03 |    1.612 |    2.111 |    1.686 |    1.129 |  0.1390
+170.0000 |  1.01011e+04 |    1.413 |    1.825 |    1.467 |    0.978 |  0.1299
+175.0000 |  1.70290e+04 |    1.245 |    1.550 |    1.249 |    0.828 |  0.1217
+180.0000 |  2.78548e+04 |    1.081 |    1.303 |    1.028 |    0.680 |  0.1120
+185.0000 |  4.43299e+04 |    0.899 |    1.107 |    0.802 |    0.532 |  0.0987
+190.0000 |  6.88149e+04 |    0.691 |    0.989 |    0.575 |    0.385 |  0.0801
+194.6855 |  1.01803e+05 |    0.472 |    0.981 |    0.368 |    0.248 |  0.0573
+195.0000 |  1.04446e+05 |    0.456 |   -0.161 |    0.355 |    0.239 |  0.0556
+200.0000 |  1.55349e+05 |    0.205 |   -0.199 |    0.153 |    0.094 |  0.0262
+205.0000 |  2.26930e+05 |   -0.041 |   -0.420 |   -0.017 |   -0.048 | -0.0055
+210.0000 |  3.26285e+05 |   -0.246 |   -0.697 |   -0.149 |   -0.187 | -0.0344
+212.0000 |  3.75816e+05 |   -0.305 |   -0.792 |   -0.195 |   -0.242 | -0.0434
+214.0000 |  4.31993e+05 |   -0.345 |   -0.863 |   -0.245 |   -0.297 | -0.0499
+216.0000 |  4.95649e+05 |   -0.364 |   -0.900 |   -0.322 |   -0.351 | -0.0533
+216.5920 |  5.16061e+05 |   -0.365 |   -0.903 |   -0.365 |   -0.367 | -0.0537
+Pilot sublimation: worst 2.941 % from 150 K to T_t (P0 5 %, declared 3 %), 3.927 % vs Fray-Schmitt below 150 K (declared 4 %), 2.375 % vs the oracle-anchored crystal (declared 2.5 %), 0.429 K (declared 0.45 K)
+
+==== com.wormzjl.createcheme.science.thermo.phase.SolidPhaseEvaluatorTest: 2 tests, 0 failures, 0 errors, 0.003 s ====
+  test theAnchorIsReproducedAndTheStateIsConsistent() (0.001 s)
+  test aSolidPhaseConservesThroughTheSharedBasis() (0.002 s)

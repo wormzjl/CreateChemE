@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-09-24T05:33:38.660Z" hostname="WORMZ-PC" time="0.161">
+  <properties/>
+  <testcase name="aFullBranchHistoryFitsTheBoundedClientWireAndSurvivesTheActualJsonSchema()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.117"/>
+  <testcase name="nonfiniteOutOfDomainAndMalformedCompositionControlsCannotReachAnApply()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.004"/>
+  <testcase name="theClientRemembersTheLastDeliveredStateOfRecentDevices()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.001"/>
+  <testcase name="aRefusedControlIsRepliedWithItsOwnReason()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.004"/>
+  <testcase name="receivedComponentAxisDoesNotDependOnTheClientCatalog()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.002"/>
+  <testcase name="aLivePayloadMustMatchItsStaticAxisAndABoundedReply()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.001"/>
+  <testcase name="editWirePreservesItsExactMenuPositionIdentityAndRevisionAndRejectsOversizedText()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.017"/>
+  <testcase name="theStaticAndLivePayloadsSplitAndRejoinIntoTheSameMenuState()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.002"/>
+  <testcase name="maximumAdmittedAxisAndPresetCountsFitThePacketBudget()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.012"/>
+  <testcase name="theProtocolIsFluidFourWithDistinctStaticAndLivePayloads()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPacketCodecTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

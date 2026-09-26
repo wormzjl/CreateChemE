@@ -1,0 +1,7 @@
+# WP7b scratch: trace prints for the UV search of FluidTpEquilibrium (the WP7b file before commit).
+# awk -f debug-uv-trace.awk src/main/java/.../FluidTpEquilibrium.java > build/wp7b/debug-src/FluidTpEquilibrium.java
+NR==1024 {print; print "        if (Boolean.getBoolean(\"wp7b.debug\")) System.out.println(\"UV start single=\" + single + \" ideal=\" + ideal + \" t=\" + t + \" p=\" + p + \" first=\" + (first == null ? null : first.classification()) + \" window P \" + w.minimumP + \"..\" + w.maximumP);"; next}
+NR==1157 {print "            if (Boolean.getBoolean(\"wp7b.debug\")) System.out.println(\"  newton t=\" + t + \" p=\" + p + \" f0=\" + f0 + \" f1=\" + f1 + \" d=(\" + d0 + \",\" + d1 + \") cls=\" + current.classification() + \" n=\" + w.outerEvaluations);"; print; next}
+NR==1438 {print; print "            if (Boolean.getBoolean(\"wp7b.debug\")) System.out.println(\"      inner t=\" + t + \" y=\" + y + \" P=\" + Math.exp(y) + \" residual=\" + residual + \" step=\" + step + \" coex=\" + coexistence + \" phases=\" + phases);"; next}
+NR==1329 {print; print "            if (Boolean.getBoolean(\"wp7b.debug\")) System.out.println(\"  nested t=\" + t + \" residual=\" + residual + \" scale=\" + scale + \" slope=\" + slope + \" step=\" + step + \" step/t=\" + step / t + \" coex=\" + coexistence + \" P=\" + result.phases().get(0).pressure() + \" bracket=\" + s.lower + \"..\" + s.upper + \" n=\" + w.outerEvaluations);"; next}
+{print}

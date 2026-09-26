@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" tests="4" skipped="0" failures="1" errors="0" timestamp="2026-09-26T05:07:07.929Z" hostname="WORMZ-PC" time="0.268">
+  <properties/>
+  <testcase name="aLineChargedToItsOwnHydrostaticBalanceIntegratesAtZeroFlow()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.01"/>
+  <testcase name="aDeadHeadedElevatedLineBehavesLikeItsFlatEquivalent()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.059"/>
+  <testcase name="aVerticalPipeStackCompilesToOneEdgeWithAnElevationDifference()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.001"/>
+  <testcase name="elevatedLinesIntegrateFortyIntervalsLikeTheirFlatControl()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.187">
+    <failure message="org.opentest4j.AssertionFailedError: A pumped tank must settle one water column below its own shutoff pressure ==&gt; expected: &lt;860918.3068374132&gt; but was: &lt;861062.9819044558&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: A pumped tank must settle one water column below its own shutoff pressure ==&gt; expected: &lt;860918.3068374132&gt; but was: &lt;861062.9819044558&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+	at app//com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest.elevatedLinesIntegrateFortyIntervalsLikeTheirFlatControl(ElevatedBlockLineIslandTest.java:226)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[
+(balanced) generator at 400000 Pa, tank charged at 360918.3068374132 Pa: OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.3068374132 mass=4.082632911146436
+
+=== dead-headed at 101325 Pa, adverse column 39070.02218088346 Pa ===
+(rising plain)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(flat  plain)   OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(rising filter) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(flat  filter)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(falling plain) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=140395.02229129805 mass=261.8246711792764
+rising line:
+  node[0] id=1 GENERATOR y=-59.0 P=101325.0 rho=996.0083764813535 liquid=1.0 vapour=0.0
+  node[1] id=5 RESERVOIR y=-55.0 P=101325.0 rho=1.145353086183201 liquid=0.0 vapour=1.0
+  pipe id=1032387407353448371 0->1 Passive filter=false blocked=0
+
+=== generator at 400000 Pa, water column over 4 m = 39081.6931625868 Pa ===
+(flat control)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=400000.0016998491 mass=743.1612564860314
+(rising  generator->3 pipes up->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.3068373795 mass=715.3400366628814 offset vs flat=-39081.694862469565 Pa
+(falling generator->3 pipes down->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=439081.69316259696 mass=766.0002773512413 offset vs flat=39081.69146274787 Pa
+(rising  generator->pipe->filter->pipe->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.37872164365 mass=715.3399274031794 offset vs flat=-39081.62297820544 Pa
+(rising  generator->pump->2 pipes->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=861062.9819044558 mass=880.3467474425474 offset vs flat=461062.9802046067 Pa
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,27 @@
+# Sampson C.C., Metaxas P.J., Barwood M.T.J., Sinclair-Adamson R., Falloon P.E., Stanwix P.L., Johns M.L., May E.F. (2023).
+# Experimental solid-liquid equilibria and solid formation kinetics for carbon dioxide in methane for LNG processing.
+# AIChE J. 69(4), e18001. doi:10.1002/aic.18001. Open access: "Creative Commons Attribution License" (p. 1 of the PDF).
+# Local copy: sampson-2023-aiche-aic18001.pdf
+# (sha256 514139926c4abbb7b8afde409d492aac50d999f47eb1a7353053d4f78abb0c2a).
+# Table 2, "Measured solid-liquid equilibrium data for the carbon dioxide + methane binary system", p. 5, read from a
+# 200 dpi render; compositions and their uncertainties from Table 1 (p. 4, text layer).
+# Method: synthetic, stepped melting observed by microscope; x_CO2 is the loaded (overall) mixture composition, i.e. the
+# liquid composition at the melting (solubility) temperature. Solvent: pure CH4 (99.9995 mol %). Compressed liquid at 7 to
+# 10 MPa, no vapour: true SLE. Kinetics (Table 3) not transcribed.
+# Units as printed: x in ppm (mol), p in MPa, T in K. u_T_K = combined standard (k = 1) uncertainty as printed (+-);
+# u_x_ppm from Table 1 (500 +- 5.0, 100 +- 1.0, 65.8 +- 0.9, 52.2 +- 0.6 ppm). Standard uncertainty in pressure 0.08 MPa.
+# The 65.8 ppm value is the average of two melting experiments, the 52.2 ppm value the average of three.
+# steps = temperature step and minimum hold per step; range_K = temperature range of the steps, both as printed.
+# 6 points, 106.3 to 122.8 K, 6.98 to 10.10 MPa, 52.2 to 500 ppm.
+# Their PR (ThermoFAST) kij for CO2 + CH4 tuned to these points: 0.1580 (RMS 1.07 K); previous default 0.1105.
+# Sanity check: T_meas rises with x_CO2 (106.3 K at 52 ppm to 122.8 K at 500 ppm) and is nearly pressure-independent
+# (500 ppm: 122.8 K at 10.00 MPa, 121.4 K at 6.98 MPa).
+# Digits as printed, one sanity check, not re-verified (owner: not looking for 100 % correct data).
+# Role: G5 trace liquidus at LNG temperatures. Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+x_CO2_ppm	u_x_ppm	p_MPa	T_K	u_T_K	steps	range_K
+500	5.0	10.00	122.8	1.8	1 K; >=2 h	114.2-123.3
+500	5.0	6.98	121.4	1.8	1 K; >=2 h	117-124
+100	1.0	10.09	111.3	1.9	1 K; >=1 h	100-117
+100	1.0	7.03	111.0	1.9	1 K; >=1 h	98.5-112.5
+65.8	0.9	10.10	108.4	2.4	1 K; >=1 h	100-116
+52.2	0.6	10.09	106.3	1.7	0.5 or 1 K; >=1 h	100-111

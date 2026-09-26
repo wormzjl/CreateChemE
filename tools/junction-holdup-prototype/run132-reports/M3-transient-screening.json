@@ -1,0 +1,64 @@
+[
+  {
+    "case": "liquid-full compression",
+    "referenceSteps": 1600,
+    "referenceRefinementMassError": 1.1047692544250726E-4,
+    "massError": 2.9220867938958703E-4,
+    "pressureError": 9.71240637914761E-7,
+    "temperatureErrorKelvin": 7.854623618186451E-9,
+    "phaseVolumeFractionError": 0.0,
+    "acceptedSteps": 1,
+    "rejectedSteps": 0,
+    "status": "PASS"
+  },
+  {
+    "case": "small gas headspace",
+    "referenceSteps": 1600,
+    "referenceRefinementMassError": 1.6688077058603148E-7,
+    "massError": 0.0031626292587716336,
+    "pressureError": 1.0490611010327555E-5,
+    "temperatureErrorKelvin": 8.804738627077313E-8,
+    "phaseVolumeFractionError": 1.9344024224229525E-8,
+    "acceptedSteps": 1,
+    "rejectedSteps": 0,
+    "status": "PASS"
+  },
+  {
+    "case": "wet crude equalization",
+    "referenceSteps": 400,
+    "referenceRefinementMassError": 1.3060884594188834E-4,
+    "massError": 0.04922490737989295,
+    "pressureError": 2.9001172034415212E-5,
+    "temperatureErrorKelvin": 3.97367945311089E-4,
+    "phaseVolumeFractionError": 1.8585714774976836E-6,
+    "acceptedSteps": 1,
+    "rejectedSteps": 0,
+    "status": "FAIL",
+    "failure": "java.lang.IllegalStateException: TIME/refinement threshold exceeded cause\u003dnull"
+  },
+  {
+    "case": "wet crude reversed direction",
+    "referenceSteps": 400,
+    "referenceRefinementMassError": 1.30608454123786E-4,
+    "massError": 0.04922490734949539,
+    "pressureError": 2.9001172013320975E-5,
+    "temperatureErrorKelvin": 3.9736794485634164E-4,
+    "phaseVolumeFractionError": 1.858571476165416E-6,
+    "acceptedSteps": 1,
+    "rejectedSteps": 0,
+    "status": "FAIL",
+    "failure": "java.lang.IllegalStateException: TIME/refinement threshold exceeded cause\u003dnull"
+  },
+  {
+    "case": "pump against pressure",
+    "referenceSteps": 400,
+    "referenceRefinementMassError": 0.0,
+    "massError": 0.0,
+    "pressureError": 2.896409778685438E-10,
+    "temperatureErrorKelvin": 1.0125188509846339E-7,
+    "phaseVolumeFractionError": 0.0,
+    "acceptedSteps": 1,
+    "rejectedSteps": 0,
+    "status": "PASS"
+  }
+]

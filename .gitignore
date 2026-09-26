@@ -36,13 +36,10 @@ src/generated/resources/.cache/
 logs/
 
 # Local design and research notes
-documentation/
 benchmarks/
 scripts/
 design/
-research/
 docs/
-/tools/
 
 # Local petroleum research (keep reports, source extracts and screening results off Git)
 /CUT_ELEMENTAL_PROFILES.md

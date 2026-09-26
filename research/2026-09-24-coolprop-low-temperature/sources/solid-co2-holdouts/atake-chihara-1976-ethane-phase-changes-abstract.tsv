@@ -1,0 +1,13 @@
+# Atake T., Chihara H. (1976). Calorimetric study of the phase changes in solid ethane. Chemistry Letters 5(7), 683-688.
+# DOI 10.1246/cl.1976.683 (full text paywalled at Oxford Academic; not read). Values from the publisher's abstract as
+# deposited with Crossref (https://api.crossref.org/works/10.1246/cl.1976.683, read 2026-09-25); digits verbatim.
+# No uncertainties are stated in the abstract. Heat capacity of solid and liquid ethane measured between 50 and 100 K.
+# Role: research-only methane/ethane liquidus case of P5 (ethane solid II to I transition), not gated. Transcribed 2026-09-25.
+quantity	value	unit
+solid II to I transition temperature	89.813	K
+enthalpy of transition	2282	J/mol
+triple point temperature	90.341	K
+enthalpy of fusion	583	J/mol
+entropy of fusion	6.46	J/(K mol)
+volume change at the transition	1.05	cm3/mol
+volume change on fusion	4.1	cm3/mol

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" tests="8" skipped="0" failures="1" errors="0" timestamp="2026-09-25T06:36:35.933Z" hostname="WORMZ-PC" time="0.361">
+  <properties/>
+  <testcase name="drySolidInventoryCanBeStoredSavedAndRemainStationary()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.07"/>
+  <testcase name="filterAndParticlesRoundTripAndCapacityChangesDoNotLoseStock()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.009"/>
+  <testcase name="disconnectedFilterRetainsItsCakeInAZeroFlowIsland()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.003"/>
+  <testcase name="generatorUsesSlurryVolumeFractionWithoutChangingTheFluidAxis()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.001"/>
+  <testcase name="aClosedConnectionTellsTheDeviceStatusWhichReasonStoppedIt()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.036"/>
+  <testcase name="unrelatedSolidDefinitionsDoNotChangeTheFluidBasis()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.07"/>
+  <testcase name="solidOnlyParcelsConserveEnergyAndRefuseUndefinedSplits()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.002"/>
+  <testcase name="physicalPumpFilterAndNitrogenReceiverStartTogether()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.13">
+    <failure message="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 3.434860446175708E-5; active-set pass=0" type="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence">com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 3.434860446175708E-5; active-set pass=0
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(PassiveIntervalSolver.java:191)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrateToTransition(PassiveIntervalSolver.java:98)
+	at app//com.wormzjl.createcheme.science.fluid.network.SolidEventIntegrator.solve(SolidEventIntegrator.java:287)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(PassiveIntervalSolver.java:55)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(PassiveIntervalSolver.java:44)
+	at app//com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest.physicalPumpFilterAndNitrogenReceiverStartTogether(SolidRuntimeTest.java:94)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[HOLDUP_SIZE junction=2 mJ=9.778289370211619 capFlow=195.56578740423237 rhoSeed=996.0083764813536 velocityLimit=100.0 connections=2
+HOLDUP_SIZE junction=4 mJ=9.778289370211619 capFlow=195.56578740423237 rhoSeed=996.0083764813536 velocityLimit=100.0 connections=2
+HOLDUP_SIZE junction=-4 mJ=9.778289370211619 capFlow=195.56578740423237 rhoSeed=996.0083764813536 velocityLimit=100.0 connections=2
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

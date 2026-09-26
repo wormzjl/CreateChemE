@@ -1,0 +1,38 @@
+        /** Viewers: the online tick the measurement window starts at, the open menus, and the edits they sent. */
+        final boolean viewers="viewers".equals(profile);
+        long measureStartTick=-1;boolean presentationPassed=true;
+        record ViewerMenu(ViewerTarget target,net.minecraft.server.level.ServerPlayer player,com.wormzjl.createcheme.world.inventory.FluidDeviceMenu menu,double original,boolean through) {}
+        record ScriptedEdit(int menu,int network,String role,long receivedTick,long revision) {}
+        final List<ViewerMenu> viewerMenus=new ArrayList<>();final List<ScriptedEdit> scriptedEdits=new ArrayList<>();
+        /** Ten seconds into the warm-up (every block entity bound by then) the menus open; in the window each edits five times, through the real handler. */
+        void viewerTick() {
+            if(!viewers)return;long now=world.onlineTick();
+            if(viewerMenus.isEmpty()&&now-startTick>=200) {
+                var level=server.overworld();
+                for(var target:fixture.viewers) {
+                    var player=net.neoforged.neoforge.common.util.FakePlayerFactory.get(level,new com.mojang.authlib.GameProfile(new UUID(2026092301L,target.network()),"FluidViewer"+target.network()));
+                    player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);player.setPos(target.position().getX()+.5,target.position().getY()+1,target.position().getZ()+.5);
+                    var menu=new com.wormzjl.createcheme.world.inventory.FluidDeviceMenu(1000+target.network(),player.getInventory(),target.position(),target.device(),false);player.containerMenu=menu;
+                    var record=world.registrations().get(target.device());
+                    viewerMenus.add(new ViewerMenu(target,player,menu,target.kind()==Kind.PIPE?record.device().geometry().roughness():record.spec().pressure(),target.network()%4==2));
+                }
+            }
+            if(measureStartTick<0||viewerMenus.isEmpty())return;
+            for(int i=0;i<viewerMenus.size();i++) {
+                long offset=now-measureStartTick-7-23L*i;if(offset<0||offset%400!=0||offset/400>=5)continue;
+                var m=viewerMenus.get(i);var record=world.registrations().get(m.target().device());var c=com.wormzjl.createcheme.network.FluidNetwork.Controls.from(record);
+                long revision=record.revision();boolean even=offset/400%2==0;var gson=new com.google.gson.Gson();String json;
+                switch(m.target().role()) {
+                    case "ACCEPTED"->{
+                        double roughness=c.roughness(),pressure=c.pressure();
+                        if(m.target().kind()==Kind.PIPE)roughness=even?.00005:m.original();
+                        else pressure=even?m.original()-(m.through()?5:1000):m.original();
+                        json=gson.toJson(new com.wormzjl.createcheme.network.FluidNetwork.Controls(c.temperature(),pressure,c.diameter(),roughness,c.volumeFlow(),c.maximumAddedPressure(),c.composition()));
+                    }
+                    case "INVALID"->{var object=com.google.gson.JsonParser.parseString(gson.toJson(c)).getAsJsonObject();object.addProperty("pressure",3e6);json=object.toString();}
+                    default->{json=gson.toJson(c);revision+=7;}
+                }
+                scriptedEdits.add(new ScriptedEdit(i,m.target().network(),m.target().role(),now,revision));
+                com.wormzjl.createcheme.network.FluidNetwork.edit(new com.wormzjl.createcheme.network.FluidNetwork.EditPayload(m.menu().containerId,m.target().position(),m.target().device(),revision,json),m.player());
+            }
+        }

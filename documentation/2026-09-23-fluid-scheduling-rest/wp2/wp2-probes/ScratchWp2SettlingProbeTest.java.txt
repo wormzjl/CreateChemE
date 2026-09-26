@@ -1,0 +1,112 @@
+package com.wormzjl.createcheme.runtime.fluid;
+
+import com.wormzjl.createcheme.fluid.support.FluidTestSupport;
+import com.wormzjl.createcheme.runtime.BoundedCpuSolveService;
+import com.wormzjl.createcheme.runtime.ProcessSolveServices;
+import com.wormzjl.createcheme.science.fluid.network.*;
+import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind;
+import com.wormzjl.createcheme.science.material.MaterialCatalog;
+import java.nio.file.*;
+import java.util.*;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Throwaway WP2 probe, not committed: follows benchmark ladders (stress100 THROUGH, rest100 CLOSED) far past the
+ * benchmark window through the real coordinator with certificates evaluated but unable to issue (eps_s = 0), and
+ * records the entry evidence of every interval: state drift, component and energy change-of-change, flow (quiet
+ * pipes exempt), relative flow change alone, and the interval drift d.
+ */
+class ScratchWp2SettlingProbeTest {
+    private static final BoundedCpuSolveService.CancellationToken NEVER=new BoundedCpuSolveService.CancellationToken() {
+        public long deadlineNanos(){return Long.MAX_VALUE;}public boolean isDeadlineExceeded(){return false;}
+        public boolean isCancellationRequested(){return false;}public void throwIfCancellationRequested(){}
+    };
+    private final FluidThermodynamics model=FluidTestSupport.networkModel();
+
+    private static double[] composition() {
+        var catalog=MaterialCatalog.bundled();
+        var z=Arrays.copyOf(com.wormzjl.createcheme.science.material.MaterialRuntime.with(catalog,FluidPresetCatalog.NETWORK_PACKAGE,
+                ()->com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo.fromRegisteredPackage(FluidPresetCatalog.NETWORK_PACKAGE)
+                        .crudeFeed("createcheme:tia_juana_light_methane").moleFractions()),
+                com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount());
+        z[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()]=.1;z[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]=.2;
+        return z;
+    }
+    private PassiveNetwork ladder(int network,boolean through) {
+        var composition=composition();var random=new Random(2026091603L);
+        var devices=new ArrayList<PhysicalFluidTopology.Device>();var stocks=new LinkedHashMap<Long,PassiveNetwork.Reservoir>();long[] next={1};
+        class Builder {
+            boolean keep;
+            void add(int x,int z,Kind kind,double pressure) {
+                long id=next[0]++;if(!keep)return;
+                var device=new PhysicalFluidTopology.Device(id,new PhysicalFluidTopology.Position("minecraft:overworld",1024+x,80,1024+z),kind,PhysicalFluidTopology.Direction.EAST,
+                        new PipeResistance.Geometry(1,.05,.000045,0),new FlowControl.Passive());
+                devices.add(device);
+                if(kind==Kind.PIPE)return;
+                if(kind==Kind.RESERVOIR) {
+                    var amounts=composition.clone();var unit=model.flashTP(350,pressure,amounts,()->{});
+                    for(int c=0;c<amounts.length;c++)amounts[c]=amounts[c]/unit.volume();
+                    var state=model.flashTP(350,pressure,amounts,()->{});
+                    stocks.put(id,new PassiveNetwork.Reservoir(id,80,state,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,amounts,state.internalEnergy())));
+                }else stocks.put(id,new FluidDeviceSpec(1,350,pressure,composition).initialize(device,model,()->{}));
+            }
+        }
+        var b=new Builder();
+        for(int k=0;k<=network;k++) {
+            b.keep=k==network;
+            int count=10+(k*13%21),columns=count/2,baseX=15360+80*(k%10),baseZ=15360+16*(k/10);
+            if(through){b.add(baseX-8,baseZ,Kind.GENERATOR,150100);for(int x=-7;x<0;x++)b.add(baseX+x,baseZ,x==-4&&count%2==1?Kind.RESERVOIR:Kind.PIPE,150090);}
+            for(int c=0;c<columns;c++) {
+                double pressure=150100-100*(c+.5)/columns;
+                for(int row=0;row<2;row++){b.add(baseX+4*c,baseZ+4*row,Kind.RESERVOIR,pressure+4*(random.nextDouble()-.5));if(c+1<columns)for(int dx=1;dx<4;dx++)b.add(baseX+4*c+dx,baseZ+4*row,Kind.PIPE,pressure);}
+                for(int dz=1;dz<4;dz++)b.add(baseX+4*c,baseZ+dz,Kind.PIPE,pressure);
+            }
+            if(through){int end=baseX+4*(columns-1);for(int dx=1;dx<4;dx++)b.add(end+dx,baseZ+4,Kind.PIPE,150010);b.add(end+4,baseZ+4,Kind.VOID,150000);}
+        }
+        return PhysicalFluidTopology.compile(devices,stocks).islands().getFirst().graph();
+    }
+    private List<double[]> follow(PassiveNetwork graph,int intervals) {
+        var attempts=new LinkedHashMap<Long,IslandCoordinator.Attempt>();var commands=new HashMap<Long,ProcessSolveServices.FluidIslandCommand>();long[] requests={0},epoch={0};
+        var coordinator=new IslandCoordinator(new IslandCoordinator.Dispatcher() {
+            public int availableWorkers(){return 64-attempts.size();}
+            public long nextRequestId(){return ++requests[0];}
+            public boolean submit(IslandCoordinator.Attempt attempt,ProcessSolveServices.FluidIslandCommand command){attempts.put(attempt.slice().requestId(),attempt);commands.put(attempt.slice().requestId(),command);return true;}
+            public void cancel(long request){throw new AssertionError();}
+        },changed->{},()->0L,new IslandCoordinator.Settings(30_000_000_000L,20_000_000_000L,64,false,100,new CertificatePolicy(true,0,1e-6,17_280,2,0)),IslandCoordinator.CommitHook.NO_MATERIAL,()->epoch[0]);
+        coordinator.register(new IslandCoordinator.Snapshot(1,0,graph,new IslandClock.Snapshot(0,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY"),model);
+        var rows=new ArrayList<double[]>();
+        for(int tick=1;tick<=100*intervals;tick++) {
+            epoch[0]++;coordinator.tick();
+            while(!attempts.isEmpty()){for(long r:List.copyOf(attempts.keySet())){var a=attempts.remove(r);var c=commands.remove(r);coordinator.completed(a,Optional.of((ProcessSolveServices.FluidIslandSolveResult)c.solve(NEVER)));}coordinator.pump();}
+            if(tick%100!=0)continue;
+            var e=coordinator.certificationEvidence(1);if(e==null||e.endTick()!=tick)continue;var s=e.stationarity();
+            if(coordinator.observe(1).certificate().isPresent())throw new AssertionError("certified at eps 0");
+            rows.add(new double[]{tick/20.0,s==null?-1:s.measure(),s==null?-1:s.state(),s==null?-1:s.component(),s==null?-1:s.energy(),s==null?-1:s.flow(),s==null?-1:s.largestRelativeFlowChange(),e.drift()});
+            var last=rows.getLast();for(int i=0;i<last.length;i++)if(Double.isInfinite(last[i]))last[i]=Double.MAX_VALUE;
+        }
+        return rows;
+    }
+    @Test void probe() throws Exception {
+        var out=new StringBuilder();
+        record Case(String name,int network,boolean through,int intervals) {}
+        var cases=List.of(new Case("stress100 ladder 0",0,true,4000),new Case("stress100 ladder 7",7,true,4000),new Case("stress100 ladder 46",46,true,4000),
+                new Case("rest100 ladder 9",9,false,1000),new Case("rest100 ladder 46",46,false,1000),new Case("rest100 ladder 58",58,false,1000),new Case("rest100 ladder 65",65,false,1000),new Case("rest100 ladder 80",80,false,1000));
+        var json=new LinkedHashMap<String,Object>();
+        for(var c:cases) {
+            long started=System.nanoTime();var rows=follow(ladder(c.network,c.through),c.intervals);
+            out.append(String.format(Locale.ROOT,"== %s: %d intervals in %.1f s%n",c.name,rows.size(),(System.nanoTime()-started)/1e9));
+            out.append("   t[s]     measure     state       component   energy      flow(quiet) relFlowChg  drift\n");
+            for(var r:rows){int i=(int)(r[0]/5);if(i<=8||i%(c.through?100:50)==0)out.append(String.format(Locale.ROOT,"  %6.0f %11.3e %11.3e %11.3e %11.3e %11.3e %11.3e %11.3e%n",r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7]));}
+            for(double eps:new double[]{1e-6,1e-7,1e-8,1e-9}) {
+                double first=-1;int passing=0,counted=0;
+                for(var r:rows)if(r[1]>=0){counted++;if(r[1]<=eps){passing++;if(first<0)first=r[0];}}
+                out.append(String.format(Locale.ROOT,"   eps %.0e: first stationary pair at %s s, %d of %d pairs stationary%n",eps,first<0?"never":String.format(Locale.ROOT,"%.0f",first),passing,counted));
+            }
+            json.put(c.name,rows);System.out.print(out);
+        }
+        Files.createDirectories(Path.of("build/reports/fluid"));
+        Files.writeString(Path.of("build/reports/fluid/wp2-settling-probe.txt"),out.toString());
+        Files.writeString(Path.of("build/reports/fluid/wp2-settling-probe.json"),new com.google.gson.GsonBuilder().create().toJson(json));
+    }
+}

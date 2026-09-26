@@ -1,0 +1,12 @@
+{
+  "relocated_files_verified": 66,
+  "python_files_syntax_checked": 24,
+  "index_links_checked": 19,
+  "source_pdf_hashes_verified": 5,
+  "dwsim_source_hash_verified": true,
+  "independent_fixture_matches": true,
+  "cache_policy": "Relocated Python bytecode may regenerate; source/data hashes remain strict",
+  "viscosity_selection": "dalia",
+  "tracked_research_files": 0,
+  "scope": "Research consolidation only; no regrouping, training or end-to-end qualification executed"
+}

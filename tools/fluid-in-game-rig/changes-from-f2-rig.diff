@@ -1,0 +1,167 @@
+diff --git a/documentation/fluid-followups/f2-rig/rig-lib.js b/tools/fluid-in-game-rig/rig-lib.js
+index 3d830d4..52b3e5a 100644
+--- a/documentation/fluid-followups/f2-rig/rig-lib.js
++++ b/tools/fluid-in-game-rig/rig-lib.js
+@@ -1,6 +1,9 @@
+ // Shared helpers for the WP5 in-game benchmark runs (server and client).
+ const fs = require('fs'), path = require('path'), cp = require('child_process');
+-const JDK = 'C:/Program Files/Java/jdk-21.0.11/bin';
++// tools/ copy: the JDK (jcmd, jfr, java) and the folder that receives the run directories come from the environment.
++const JDK = process.env.RIG_JDK || 'C:/Program Files/Java/jdk-21.0.11/bin';
++/** RIG_LOGS: the folder that receives one directory per run (a batch folder's <package>-logs/rig/, for instance). */
++function logsRoot() { if (!process.env.RIG_LOGS) throw new Error('set RIG_LOGS to the folder that receives the run directories'); return path.resolve(process.env.RIG_LOGS); }
+ const sleep = ms => new Promise(r => setTimeout(r, ms));
+ function ps(script) { return cp.execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {encoding: 'utf8', maxBuffer: 64 << 20}); }
+ /** Machine gate before every measured run: no Endfield.exe and at least 20 GB free physical memory. */
+@@ -82,4 +85,4 @@ function killGameJvms(worktree) {
+   return killed;
+ }
+ function stamp() { return new Date().toISOString(); }
+-module.exports = {sleep, ps, machine, javaProcesses, findGameJvm, killGameJvms, threadDump, heapInfo, fullGc, jfrStart, jfrStop, startSampler, copyDir, rmDir, waitForLine, spawnGradle, stamp, JDK};
++module.exports = {logsRoot, sleep, ps, machine, javaProcesses, findGameJvm, killGameJvms, threadDump, heapInfo, fullGc, jfrStart, jfrStop, startSampler, copyDir, rmDir, waitForLine, spawnGradle, stamp, JDK};
+diff --git a/documentation/fluid-followups/f2-rig/run-server.js b/tools/fluid-in-game-rig/run-server.js
+index 4d7c9ee..341c041 100644
+--- a/documentation/fluid-followups/f2-rig/run-server.js
++++ b/tools/fluid-in-game-rig/run-server.js
+@@ -1,4 +1,4 @@
+-// F2 copy of the F1/WP5 driver (logs under f2-logs/rig/; rest400; a marginal single-block phase after the window). One WP5 dedicated-server run: fresh copy of the template world, runServer (no rendering in the JVM), scenario
++// tools/ copy of the F2 driver (logs under $RIG_LOGS/<runId>/; rest400; a marginal single-block phase after the window in the rest scenarios unless F2_MARGINAL=0). One WP5 dedicated-server run: fresh copy of the template world, runServer (no rendering in the JVM), scenario
+ // function over RCON, warm-up, measured window (JFR with Minecraft's profile minus heap inspection, external sampler, jcmd thread CPU), /stop.
+ // Usage: node run-server.js <worktree> <runId> <scenario> [warmupSeconds=60] [windowSeconds=60]
+ const fs = require('fs'), path = require('path');
+@@ -7,7 +7,7 @@ const {Rcon} = require('./rcon');
+ const [worktree, runId, scenario, warmupArg, windowArg] = process.argv.slice(2);
+ if (!worktree || !runId || !scenario) { console.error('usage: node run-server.js <worktree> <runId> <scenario> [warmup] [window]'); process.exit(2); }
+ const warmup = Number(warmupArg || 60), window = Number(windowArg || 60);
+-const rig = __dirname, logs = path.resolve(rig, '..', 'f2-logs', 'rig', runId);
++const rig = __dirname, logs = path.join(L.logsRoot(), runId);
+ const run = path.join(worktree, 'run'), level = 'bench-' + runId, template = path.join(rig, 'template', 'bench-template');
+ const EXPECTED = {empty: 0, rest100: 500, through100: 700, fill100: 800, mixed100: 700, rest1000: 5000, rest400: 2000, pure100: 600, probe: 237, probe2: 528, probe3: 144, probe4: 264};
+ const info = {runId, scenario, kind: 'server', worktree, warmupSeconds: warmup, windowSeconds: window, events: []};
+diff --git a/documentation/fluid-followups/f2-rig/run-client.js b/tools/fluid-in-game-rig/run-client.js
+index bc79f91..a78d247 100644
+--- a/documentation/fluid-followups/f2-rig/run-client.js
++++ b/tools/fluid-in-game-rig/run-client.js
+@@ -11,7 +11,7 @@ const L = require('./rig-lib');
+ const [worktree, runId, scenario, warmupArg, windowArg] = process.argv.slice(2);
+ if (!worktree || !runId || !scenario) { console.error('usage: node run-client.js <worktree> <runId> <scenario> [warmup] [window]'); process.exit(2); }
+ const warmup = Number(warmupArg || 60), window = Number(windowArg || 60);
+-const rig = __dirname, logs = path.resolve(rig, '..', 'wp5-logs', runId);
++const rig = __dirname, logs = path.join(L.logsRoot(), runId);
+ const run = path.join(worktree, 'run'), level = 'bench-' + runId, template = path.join(rig, 'template', 'bench-template');
+ const EXPECTED = {empty: 0, rest100: 500, through100: 700, fill100: 800, mixed100: 700, rest1000: 5000, pure100: 600};
+ const info = {runId, scenario, kind: 'client', worktree, warmupSeconds: warmup, windowSeconds: window, events: []};
+diff --git a/documentation/fluid-followups/f2-rig/campaign.js b/tools/fluid-in-game-rig/campaign.js
+index 733f254..4cb264b 100644
+--- a/documentation/fluid-followups/f2-rig/campaign.js
++++ b/tools/fluid-in-game-rig/campaign.js
+@@ -1,12 +1,13 @@
+ // WP5 in-game campaign driver: runs the listed runs one after another (one Gradle invocation at a time), each
+ // through run-server.js or run-client.js, waiting for the machine gate; a run whose JVM crashed keeps its hs_err
+-// file under wp5-logs/jvm-crash/ and is rerun once under the id <runId>-rerun.
++// file under $RIG_LOGS/jvm-crash/ and is rerun once under the id <runId>-rerun. Builds: wp5 = $RIG_WORKTREE (the
++// candidate), base = $RIG_BASE_WORKTREE (a baseline worktree carrying mod-side/baseline-eb28fc5 or reattach.patch).
+ // Usage: node campaign.js <plan>   plans: server, soak, client, or a comma list of run specs kind:build:scenario[:warmup:window]
+ const fs = require('fs'), path = require('path'), cp = require('child_process');
+ const L = require('./rig-lib');
+-const WT = {base: 'D:/Minecraft/Modding/1.21/CreateChemE/.claude/worktrees/fluid-baseline-eb28fc5', wp5: 'D:/Minecraft/Modding/1.21/CreateChemE/.claude/worktrees/agent-ae139e4fc1b184b36'};
++const WT = {base: process.env.RIG_BASE_WORKTREE, wp5: process.env.RIG_WORKTREE};
+ const SCENARIOS = ['empty', 'rest100', 'through100', 'fill100', 'mixed100', 'rest1000'];
+-const rig = __dirname, logs = path.resolve(rig, '..', 'wp5-logs'), log = path.join(logs, 'campaign.log');
++const rig = __dirname, logs = L.logsRoot(), log = path.join(logs, 'campaign.log');
+ const say = s => { const line = `${new Date().toISOString()} ${s}`; console.log(line); fs.appendFileSync(log, line + '\n'); };
+ function plan(name) {
+   const alt = (kind) => SCENARIOS.flatMap((s, i) => (i % 2 ? ['wp5', 'base'] : ['base', 'wp5']).map(b => ({kind, build: b, scenario: s, warmup: 60, window: 60})));
+@@ -23,6 +24,7 @@ function crashFiles(wt) { const out = []; for (const d of [wt, path.join(wt, 'ru
+     let id = runId(r);
+     for (let attempt = 1; attempt <= 2; attempt++) {
+       for (;;) { const m = L.machine(); if (m.endfield === 0 && m.freeMiB >= 20480) { say(`gate ok ${JSON.stringify(m)} for ${id}`); break; } say(`gate failed ${JSON.stringify(m)}; waiting 60 s`); await L.sleep(60000); }
++      if (!WT[r.build]) throw new Error(`set ${r.build === 'base' ? 'RIG_BASE_WORKTREE' : 'RIG_WORKTREE'} for build ${r.build}`);
+       const before = new Set(crashFiles(WT[r.build]));
+       say(`start ${id} (${r.kind} ${r.build} ${r.scenario} warmup ${r.warmup} s window ${r.window} s)`);
+       const script = path.join(rig, r.kind === 'server' ? 'run-server.js' : 'run-client.js');
+diff --git a/documentation/fluid-followups/f2-rig/analyze.js b/tools/fluid-in-game-rig/analyze.js
+index e765c52..c354ea2 100644
+--- a/documentation/fluid-followups/f2-rig/analyze.js
++++ b/tools/fluid-in-game-rig/analyze.js
+@@ -1,11 +1,11 @@
+-// Parses one or more WP5 run directories into summary JSON (wp5-logs/<run>/summary.json) and prints it.
++// Parses one or more WP5 run directories into summary JSON (<runDir>/summary.json) and prints it.
+ // Sources per run: run.json (window bounds, placement), the Minecraft /jfr recording of the window, the external
+ // sampler CSV, the jcmd thread dumps at the window's start and end, fluid_diag_ticks.csv (per-tick whole-tick and
+ // engine time), the fluid_diag log lines (island kinds, statuses, scheduling counters), jcmd GC.heap_info after
+ // one full collection (live heap), and for client runs the bridge's debug fields (FPS).
+ // Usage: node analyze.js <runDir> [<runDir> ...]
+ const fs = require('fs'), path = require('path'), cp = require('child_process');
+-const JFR = 'C:/Program Files/Java/jdk-21.0.11/bin/jfr.exe';
++const JFR = path.join(process.env.RIG_JDK || 'C:/Program Files/Java/jdk-21.0.11/bin', 'jfr.exe');
+ const CORES = 16;
+ function quant(values, q) { if (!values.length) return null; const s = [...values].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.max(0, Math.ceil(q * s.length) - 1))]; }
+ function mean(v) { return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; }
+diff --git a/documentation/fluid-followups/f2-rig/compact.js b/tools/fluid-in-game-rig/compact.js
+index 087ffd1..7905813 100644
+--- a/documentation/fluid-followups/f2-rig/compact.js
++++ b/tools/fluid-in-game-rig/compact.js
+@@ -1,6 +1,6 @@
+ // Compact before/after tables for the WP5 review (one row per scenario): node compact.js server|client|soak|repeats
+ const fs = require('fs'), path = require('path');
+-const logs = path.resolve(__dirname, '..', 'wp5-logs');
++const logs = require('./rig-lib').logsRoot();
+ const get = id => { const f = path.join(logs, id, 'summary.json'); return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null; };
+ const pick = (o, p) => p.split('.').reduce((a, k) => a == null ? a : a[k], o);
+ const n = (v, d) => v == null || Number.isNaN(v) ? 'n/a' : Number(v).toFixed(d);
+diff --git a/documentation/fluid-followups/f2-rig/tables.js b/tools/fluid-in-game-rig/tables.js
+index b857db4..d81e3af 100644
+--- a/documentation/fluid-followups/f2-rig/tables.js
++++ b/tools/fluid-in-game-rig/tables.js
+@@ -1,7 +1,7 @@
+-// Builds the WP5 markdown tables from wp5-logs/<run>/summary.json (run analyze.js first; campaign.js does).
+-// Usage: node tables.js > ../wp5-tables-generated.md
++// Builds the WP5 markdown tables from $RIG_LOGS/<run>/summary.json (run analyze.js first; campaign.js does).
++// Usage: node tables.js > <batch folder>/wp5-tables-generated.md
+ const fs = require('fs'), path = require('path');
+-const logs = path.resolve(__dirname, '..', 'wp5-logs');
++const logs = require('./rig-lib').logsRoot();
+ const SCEN = ['empty', 'rest100', 'through100', 'fill100', 'mixed100', 'rest1000', 'pure100'];
+ const get = id => { const f = path.join(logs, id, 'summary.json'); if (fs.existsSync(f)) return JSON.parse(fs.readFileSync(f, 'utf8')); const g = path.join(logs, id + '-rerun', 'summary.json'); return fs.existsSync(g) ? JSON.parse(fs.readFileSync(g, 'utf8')) : null; };
+ const pick = (o, p) => p.split('.').reduce((a, k) => a == null ? a : a[k], o);
+diff --git a/documentation/fluid-followups/f2-rig/build-tables.js b/tools/fluid-in-game-rig/build-tables.js
+index 00a1bbb..08b4b2a 100644
+--- a/documentation/fluid-followups/f2-rig/build-tables.js
++++ b/tools/fluid-in-game-rig/build-tables.js
+@@ -1,7 +1,7 @@
+-// Assembles documentation/fluid-scheduler/wp5-tables.md from the run summaries, the generated pair tables and the
+-// paced tables. Usage: node build-tables.js
++// Assembles <$RIG_LOGS>/../wp5-tables.md (WP5's layout: the batch folder above the logs) from the run summaries, the
++// generated pair tables and the paced tables. Usage: node build-tables.js
+ const fs = require('fs'), path = require('path'), cp = require('child_process');
+-const rig = __dirname, root = path.resolve(rig, '..'), logs = path.join(root, 'wp5-logs');
++const rig = __dirname, logs = require('./rig-lib').logsRoot(), root = path.resolve(logs, '..');
+ const run = (script, arg) => cp.execFileSync(process.execPath, [path.join(rig, script), ...(arg ? [arg] : [])], {encoding: 'utf8'});
+ const get = id => { const f = path.join(logs, id, 'summary.json'); return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : null; };
+ const pairs = run('tables.js');
+diff --git a/documentation/fluid-followups/f2-rig/paced.js b/tools/fluid-in-game-rig/paced.js
+index 3802e88..abd597b 100644
+--- a/documentation/fluid-followups/f2-rig/paced.js
++++ b/tools/fluid-in-game-rig/paced.js
+@@ -1,7 +1,7 @@
+ // WP5 paced tables: transient100 base/on pairs (three each, 60 s + 60 s) with run-to-run ranges, and the module
+-// profile off/on. Reads wp5-logs/paced/reports/<runId>/report.json. Usage: node paced.js > ../wp5-logs/paced/paced-tables.md
++// profile off/on. Reads $RIG_LOGS/paced/reports/<runId>/report.json. Usage: node paced.js > $RIG_LOGS/paced/paced-tables.md
+ const fs = require('fs'), path = require('path');
+-const dir = path.resolve(__dirname, '..', 'wp5-logs', 'paced', 'reports');
++const dir = path.join(require('./rig-lib').logsRoot(), 'paced', 'reports');
+ const load = id => { for (const x of [id, id + '-rerun']) { const f = path.join(dir, x, 'report.json'); if (fs.existsSync(f)) return JSON.parse(fs.readFileSync(f, 'utf8')); } return null; };
+ const f = (v, d = 3) => v === null || v === undefined || Number.isNaN(v) ? 'n/a' : Number(v).toFixed(d);
+ const METRICS = [
+diff --git a/documentation/fluid-followups/f2-rig/tools/f3.ps1 b/tools/fluid-in-game-rig/tools/f3.ps1
+index 037d8c2..8456ca1 100644
+--- a/documentation/fluid-followups/f2-rig/tools/f3.ps1
++++ b/tools/fluid-in-game-rig/tools/f3.ps1
+@@ -17,4 +17,5 @@ if (-not $p) { throw "no Minecraft window" }
+ [WinF3]::SetForegroundWindow($p.MainWindowHandle) | Out-Null
+ Start-Sleep -Milliseconds 500
+ if ([WinF3]::GetForegroundWindow() -ne $p.MainWindowHandle) { Write-Output "WARN: not foreground" }
+-& "C:\Program Files\Java\jdk-21.0.11\bin\java.exe" -cp $PSScriptRoot KeyTap
++$java = if ($env:RIG_JDK) { Join-Path $env:RIG_JDK 'java.exe' } else { 'C:\Program Files\Java\jdk-21.0.11\bin\java.exe' }
++& $java -cp $PSScriptRoot KeyTap

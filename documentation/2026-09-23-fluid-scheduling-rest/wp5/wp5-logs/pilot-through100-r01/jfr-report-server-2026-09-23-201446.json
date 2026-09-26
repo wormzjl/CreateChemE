@@ -1,0 +1,403 @@
+{
+  "startedEpoch": 1790165686393,
+  "endedEpoch": 1790165746721,
+  "durationMs": 60328,
+  "heap": {
+    "allocationRateBytesPerSecond": 1.3281962666666666E7,
+    "gcCount": 4,
+    "gcOverHeadPercent": 0.0039782524,
+    "gcTotalDurationMs": 240
+  },
+  "cpuPercent": {
+    "jvm": {
+      "min": 9.414702071808279E-4,
+      "average": 0.005190453421643102,
+      "max": 0.06600134819746017
+    },
+    "userJvm": {
+      "min": 0.0,
+      "average": 0.013891123274030784,
+      "max": 0.1903712898492813
+    },
+    "system": {
+      "min": 0.00574856624007225,
+      "average": 0.08276794527314212,
+      "max": 0.4351945221424103
+    }
+  },
+  "network": {
+    "sent": {
+      "totalBytes": 0,
+      "count": 0,
+      "bytesPerSecond": 0.0,
+      "countPerSecond": 0.0,
+      "topContributors": []
+    },
+    "received": {
+      "totalBytes": 0,
+      "count": 0,
+      "bytesPerSecond": 0.0,
+      "countPerSecond": 0.0,
+      "topContributors": []
+    }
+  },
+  "fileIO": {
+    "write": {
+      "totalBytes": 51328,
+      "count": 30,
+      "bytesPerSecond": 855.4666666666667,
+      "countPerSecond": 0.5,
+      "topContributors": [
+        {
+          "path": "D:\\Minecraft\\Modding\\1.21\\CreateChemE\\.claude\\worktrees\\agent-ae139e4fc1b184b36\\run\\fluid_diag_ticks.csv",
+          "totalBytes": 39603
+        },
+        {
+          "path": "logs\\latest.log",
+          "totalBytes": 4010
+        },
+        {
+          "path": "logs\\debug.log",
+          "totalBytes": 4010
+        }
+      ]
+    },
+    "read": {
+      "totalBytes": 6055,
+      "count": 22,
+      "bytesPerSecond": 100.91666666666667,
+      "countPerSecond": 0.36666666666666664,
+      "topContributors": [
+        {
+          "path": "D:\\Minecraft\\Modding\\1.21\\CreateChemE\\.claude\\worktrees\\agent-ae139e4fc1b184b36\\build\\moddev\\artifacts\\neoforge-21.1.219.jar",
+          "totalBytes": 3732
+        },
+        {
+          "path": "C:\\Users\\wormz\\.gradle\\caches\\modules-2\\files-2.1\\it.unimi.dsi\\fastutil\\8.5.12\\c24946d46824bd528054bface3231d2ecb7e95e8\\fastutil-8.5.12.jar",
+          "totalBytes": 2323
+        }
+      ]
+    },
+    "chunksRead": {
+      "totalBytes": 0,
+      "count": 0,
+      "bytesPerSecond": 0.0,
+      "countPerSecond": 0.0,
+      "topContributors": []
+    },
+    "chunksWritten": {
+      "totalBytes": 0,
+      "count": 0,
+      "bytesPerSecond": 0.0,
+      "countPerSecond": 0.0,
+      "topContributors": []
+    }
+  },
+  "serverTick": {
+    "minMs": 0.085954,
+    "averageMs": 0.14429012280701753,
+    "maxMs": 0.590846,
+    "p99": 0.41221944,
+    "p90": 0.1828332,
+    "p75": 0.151332,
+    "p50": 0.129905
+  },
+  "threadAllocation": [
+    {
+      "thread": "Attach Listener",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "C1 CompilerThread0",
+      "bytesPerSecond": 8.153846153846153
+    },
+    {
+      "thread": "C2 CompilerThread0",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "C2 CompilerThread1",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "C2 CompilerThread2",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "C2 CompilerThread3",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "C2 CompilerThread4",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "C2 CompilerThread5",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Common-Cleaner",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "DestroyJavaVM",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "FileSystemWatchService",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Finalizer",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool-3-worker-3",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool-3-worker-4",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-1",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-10",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-11",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-13",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-14",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-15",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-2",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-3",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-4",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-5",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-6",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-7",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-8",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "ForkJoinPool.commonPool-worker-9",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "JFR Periodic Tasks",
+      "bytesPerSecond": 173.3846153846154
+    },
+    {
+      "thread": "JFR Recorder Thread",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "JNA Cleaner",
+      "bytesPerSecond": 37.53846153846154
+    },
+    {
+      "thread": "LanServerPinger #1",
+      "bytesPerSecond": 253.07692307692307
+    },
+    {
+      "thread": "Monitor Deflation Thread",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Netty Server IO #0",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Notification Thread",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "RCON Client /127.0.0.1 #2",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "RCON Listener #1",
+      "bytesPerSecond": 2080.0
+    },
+    {
+      "thread": "Reference Handler",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Server thread",
+      "bytesPerSecond": 911724.4615384615
+    },
+    {
+      "thread": "Service Thread",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Signal Dispatcher",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Timer hack thread",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-1",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-10",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-11",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-12",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-14",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-15",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-2",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-3",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-4",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-5",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-6",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-7",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-8",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Worker-Main-9",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "Yggdrasil Key Fetcher",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "config-file-watcher-0-0",
+      "bytesPerSecond": 160.0
+    },
+    {
+      "thread": "createcheme-cpu-solve-0",
+      "bytesPerSecond": 989600.6153846154
+    },
+    {
+      "thread": "createcheme-cpu-solve-1",
+      "bytesPerSecond": 1017396.4615384615
+    },
+    {
+      "thread": "createcheme-cpu-solve-10",
+      "bytesPerSecond": 923361.2307692308
+    },
+    {
+      "thread": "createcheme-cpu-solve-11",
+      "bytesPerSecond": 1035633.2307692308
+    },
+    {
+      "thread": "createcheme-cpu-solve-2",
+      "bytesPerSecond": 1009182.3076923077
+    },
+    {
+      "thread": "createcheme-cpu-solve-3",
+      "bytesPerSecond": 989183.2307692308
+    },
+    {
+      "thread": "createcheme-cpu-solve-4",
+      "bytesPerSecond": 990903.0769230769
+    },
+    {
+      "thread": "createcheme-cpu-solve-5",
+      "bytesPerSecond": 942722.1538461539
+    },
+    {
+      "thread": "createcheme-cpu-solve-6",
+      "bytesPerSecond": 944547.2307692308
+    },
+    {
+      "thread": "createcheme-cpu-solve-7",
+      "bytesPerSecond": 961762.3076923077
+    },
+    {
+      "thread": "createcheme-cpu-solve-8",
+      "bytesPerSecond": 983679.0769230769
+    },
+    {
+      "thread": "createcheme-cpu-solve-9",
+      "bytesPerSecond": 980109.2307692308
+    },
+    {
+      "thread": "kubejs-background-thread",
+      "bytesPerSecond": 13.076923076923077
+    },
+    {
+      "thread": "modloading-sync-worker",
+      "bytesPerSecond": 0.0
+    },
+    {
+      "thread": "modloading-worker-0",
+      "bytesPerSecond": -4071112.769230769
+    }
+  ],
+  "chunkGen": {
+    "durationNanosTotal": 0.0,
+    "status": []
+  }
+}

@@ -1,0 +1,423 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/runtime/ProcessSolveServices.java b/src/main/java/com/wormzjl/createcheme/runtime/ProcessSolveServices.java
+index 493cd2f..b52cff5 100644
+--- a/src/main/java/com/wormzjl/createcheme/runtime/ProcessSolveServices.java
++++ b/src/main/java/com/wormzjl/createcheme/runtime/ProcessSolveServices.java
+@@ -407,17 +407,30 @@ public final class ProcessSolveServices {
+                     var candidate=retained.solve(model,snapshot,durationSeconds,settings,checkpoint);hard.run();
+                     return new FluidIslandSolveResult(Optional.of(candidate),"FULL",elapsed[0],FallbackAllowance.NONE,Optional.of(ApproximationAnchor.fromFull(model,candidate)));
+                 }catch(FluidSoftDeadline deadline) {
+-                    hard.run();var guard=fallback.anchor().orElseThrow().guard(model,snapshot);
+-                    var approximateSettings=new PassiveIntervalSolver.Settings(Math.min(1,durationSeconds),20,.0025,256);
+-                    var candidate=retained.solveApproximate(model,snapshot,durationSeconds,approximateSettings,hard,guard);hard.run();
+-                    return new FluidIslandSolveResult(Optional.of(candidate),"APPROXIMATE: soft budget",elapsed[0],fallback.allowance().accept(ticks,fallback.cadenceTicks()),fallback.anchor());
++                    hard.run();
++                    // A refused fallback is still the soft budget's decision: the full solve had not finished when it
++                    // ran out. Its detail says so, so the hold policy treats it as a budget hold (IslandCoordinator.hold).
++                    try {
++                        var guard=fallback.anchor().orElseThrow().guard(model,snapshot);
++                        var approximateSettings=new PassiveIntervalSolver.Settings(Math.min(1,durationSeconds),20,.0025,256);
++                        var candidate=retained.solveApproximate(model,snapshot,durationSeconds,approximateSettings,hard,guard);hard.run();
++                        return new FluidIslandSolveResult(Optional.of(candidate),"APPROXIMATE: soft budget",elapsed[0],fallback.allowance().accept(ticks,fallback.cadenceTicks()),fallback.anchor());
++                    }catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException|ApproximationRejected refused) {
++                        cancellationToken.throwIfCancellationRequested();
++                        return new FluidIslandSolveResult(Optional.empty(),SOFT_BUDGET_REFUSED+refused.getMessage(),elapsed[0],fallback.allowance(),fallback.anchor());
++                    }
+                 }
+-            }catch(FluidWallDeadline deadline){return new FluidIslandSolveResult(Optional.empty(),"HELD: wall deadline",elapsed[0],fallback.allowance(),fallback.anchor());}
++            }catch(FluidWallDeadline deadline){return new FluidIslandSolveResult(Optional.empty(),WALL_DEADLINE,elapsed[0],fallback.allowance(),fallback.anchor());}
+             catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException|ApproximationRejected failed) {
+                 cancellationToken.throwIfCancellationRequested();return new FluidIslandSolveResult(Optional.empty(),"HELD: "+failed.getMessage(),elapsed[0],fallback.allowance(),fallback.anchor());
+             }
+         }
+     }
++    /** The detail of an island interval the hard wall budget cut. */
++    public static final String WALL_DEADLINE="HELD: wall deadline";
++    /** The detail prefix of an island interval whose full solve ran out of the soft budget and whose approximate
++     * fallback then refused the interval. */
++    public static final String SOFT_BUDGET_REFUSED="HELD: soft budget; approximate fallback refused: ";
+     private static final class FluidWallDeadline extends RuntimeException {}
+     private static final class FluidSoftDeadline extends RuntimeException {}
+     public record FluidIslandSolveResult(Optional<PassiveIntervalSolver.Result> candidate,String detail,long workerNanos,long workerCpuNanos,
+@@ -455,7 +468,8 @@ public final class ProcessSolveServices {
+             Optional<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal> proposal=Optional.empty();String detail;
+             try {
+                 proposal=Optional.of(new com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner(model).prepare(snapshot,startTick,durationTicks,inputs,withdrawals,checkpoint,retained));checkpoint.run();detail="FULL: buffered transfers";
+-            }catch(FluidWallDeadline|com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException held){proposal=Optional.empty();detail="HELD: buffered interval "+held.getMessage();}
++            }catch(FluidWallDeadline cut){proposal=Optional.empty();detail=WALL_DEADLINE+" (buffered interval)";}
++            catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException held){proposal=Optional.empty();detail="HELD: buffered interval "+held.getMessage();}
+             token.throwIfCancellationRequested();long elapsed=System.nanoTime()-started;
+             long cpu=WorkerAllocation.CpuTime.elapsed(cpuStart,WorkerAllocation.CpuTime.sample());
+             var candidate=proposal.map(com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal::candidate);
+diff --git a/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidRuntimeDiagnostics.java b/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidRuntimeDiagnostics.java
+index 81303b5..6304f87 100644
+--- a/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidRuntimeDiagnostics.java
++++ b/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidRuntimeDiagnostics.java
+@@ -71,6 +71,11 @@ public final class FluidRuntimeDiagnostics {
+     public static final LongAdder certificatesDiscarded=new LongAdder();
+     public static final LongAdder payloadsEncoded=new LongAdder();
+     public static final LongAdder payloadsReused=new LongAdder();
++    /** The hold policy (IslandCoordinator.hold): held attempts the wall or soft budget cut, held attempts whose solve
++     * failed, and retries at the one-tick slice deferred past the next cadence. */
++    public static final LongAdder budgetHolds=new LongAdder();
++    public static final LongAdder numericalHolds=new LongAdder();
++    public static final LongAdder retriesDeferred=new LongAdder();
+ 
+     private static final Map<String,LongAdder> COUNTERS=counters();
+     private static Map<String,LongAdder> counters() {
+@@ -88,6 +93,7 @@ public final class FluidRuntimeDiagnostics {
+         map.put("queuedInputs",queuedInputs);map.put("inputReplies",inputReplies);
+         map.put("certificatesRestored",certificatesRestored);map.put("certificatesDiscarded",certificatesDiscarded);
+         map.put("payloadsEncoded",payloadsEncoded);map.put("payloadsReused",payloadsReused);
++        map.put("budgetHolds",budgetHolds);map.put("numericalHolds",numericalHolds);map.put("retriesDeferred",retriesDeferred);
+         return Collections.unmodifiableMap(map);
+     }
+ 
+diff --git a/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandClock.java b/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandClock.java
+index 39bc95f..026043d 100644
+--- a/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandClock.java
++++ b/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandClock.java
+@@ -100,6 +100,11 @@ public final class IslandClock {
+         if(toTick<committedTick||toTick>online()||toTick>causalFenceTick)throw new IllegalArgumentException("Rest target "+toTick+" outside committed "+committedTick+", online "+online()+", fence "+causalFenceTick);
+         committedTick=toTick;retryAtTick=0;
+     }
++    /** Moves a held owner's retry to {@code delayTicks} online ticks from now, never earlier than it already is. */
++    public void deferRetry(long delayTicks) {
++        owned();if(delayTicks<0||outstanding!=null)throw new IllegalStateException("Only a held owner with no outstanding slice defers its retry");
++        retryAtTick=Math.max(retryAtTick,Math.addExact(online(),delayTicks));
++    }
+     /** A configuration/event change may justify retrying a held owner before its ordinary backoff expires. */
+     public void inputsChanged(){owned();retryAtTick=0;}
+     /** CPU gating is supplied by measurements; elapsed wall time alone is not evidence of CPU saturation. */
+diff --git a/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandCoordinator.java b/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandCoordinator.java
+index b521968..2d55914 100644
+--- a/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandCoordinator.java
++++ b/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandCoordinator.java
+@@ -151,6 +151,11 @@ public final class IslandCoordinator {
+         // Ephemeral cost hint, not material state or a renewed fallback allowance. A restart
+         // may rediscover the hint; saved inventory, cadence, debt and fences stay authoritative.
+         private int maximumSliceTicks=Integer.MAX_VALUE;
++        // Holds in a row at the one-tick slice, for the retry wait; see {@link #hold}. Ephemeral like the slice hint.
++        private int holdStreak;
++        // Set by a hold whose soft budget ran out and whose approximate fallback refused the slice: the retry runs the
++        // full solve on the whole budget instead; cleared by the next accepted interval. See {@link #hold}.
++        private boolean fullOnly;
+         // Ephemeral solver caches for this island's jobs; replaced, never mutated, on a revision
+         // bump, so a job still running under the old revision keeps its own handle.
+         private RetainedSolver retained=new RetainedSolver();
+@@ -364,7 +369,7 @@ public final class IslandCoordinator {
+     public void resumeQualifiedProperties() {
+         owned();if(stopped||suspension==null)return;suspension=null;
+         for(var island:islands.values()) {
+-            island.holdTick=Long.MAX_VALUE;island.suspended=false;island.status="WAITING: full solve after property reload";island.clock.inputsChanged();
++            island.holdTick=Long.MAX_VALUE;island.suspended=false;island.status="WAITING: full solve after property reload";inputsChanged(island);
+             if(island.certificate!=null){island.certificate=null;island.certifiedSince=-1;island.signature=null;island.retained=new RetainedSolver();FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificateWakes);}
+             island.lastInterval=null;island.streak=0;
+             island.touch();reconsider(island);
+@@ -455,7 +460,7 @@ public final class IslandCoordinator {
+                 var island=require(next.getAsLong());long request=dispatcher.nextRequestId();
+                 var slice=island.clock.nextSlice(request,island.fence(),island.maximumSliceTicks).orElseThrow();
+                 var attempt=new Attempt(island.id,island.revision,slice);
+-                var policy=island.anchor.isPresent()&&!com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(island.model,island.graph)?FluidFallbackPolicy.active(island.anchor.orElseThrow(),island.allowance,island.clock.snapshot().cadenceTicks(),settings.softBudgetNanos):FluidFallbackPolicy.disabled();
++                var policy=island.anchor.isPresent()&&!island.fullOnly&&!com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(island.model,island.graph)?FluidFallbackPolicy.active(island.anchor.orElseThrow(),island.allowance,island.clock.snapshot().cadenceTicks(),settings.softBudgetNanos):FluidFallbackPolicy.disabled();
+                 var command=new ProcessSolveServices.FluidIslandCommand(island.model,island.graph,slice.seconds(),PassiveIntervalSolver.Settings.defaults(),settings.hardBudgetNanos,policy,island.retained);
+                 if(!dispatcher.submit(attempt,command)) {island.status="WAITING: shared worker capacity";island.touch();break;}
+                 island.clock.admitted(slice);island.status="SOLVING";island.touch();FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.solvesDispatched);
+@@ -510,11 +515,13 @@ public final class IslandCoordinator {
+             if(!accept)island.status=refusal!=null?"HELD: "+refusal:outcome==null?"HELD: round deadline or worker failure":outcome.detail().startsWith("HELD")?outcome.detail():"HELD: "+outcome.detail();
+             island.clock.completed(attempt.slice,accept);
+             if(suspension!=null)island.status=suspension;
+-            if(suspension==null&&!accept&&(outcome==null||outcome.detail().startsWith("HELD: wall deadline"))) {
+-                island.maximumSliceTicks=Math.max(1,(int)((attempt.slice.endTick()-attempt.slice.startTick())/2));
+-            } else if(accept&&outcome.candidate().orElseThrow().acceptance()==PassiveStepSolver.Acceptance.FULL&&island.maximumSliceTicks!=Integer.MAX_VALUE) {
+-                int cadence=island.clock.snapshot().cadenceTicks();
+-                island.maximumSliceTicks=island.maximumSliceTicks>=cadence/2?Integer.MAX_VALUE:island.maximumSliceTicks*2;
++            if(suspension==null&&!accept&&refusal==null&&attempt.revision==island.revision)hold(island,attempt.slice,outcome);
++            else if(accept) {
++                island.holdStreak=0;island.fullOnly=false;
++                if(outcome.candidate().orElseThrow().acceptance()==PassiveStepSolver.Acceptance.FULL&&island.maximumSliceTicks!=Integer.MAX_VALUE) {
++                    int cadence=island.clock.snapshot().cadenceTicks();
++                    island.maximumSliceTicks=island.maximumSliceTicks>=cadence/2?Integer.MAX_VALUE:island.maximumSliceTicks*2;
++                }
+             }
+             island.metrics=new Metrics(island.metrics==null?1:Math.addExact(island.metrics.sequence(),1),attempt.slice.startTick(),attempt.slice.endTick(),entry.dispatchedAtTick,island.clock.snapshot().onlineTick(),outcome==null?-1:outcome.workerNanos(),outcome==null?-1:outcome.workerCpuNanos(),Math.max(0,nanoClock.getAsLong()-entry.admittedNanos),accept);
+             if(settings.adaptive&&outcome!=null) {
+@@ -531,6 +538,53 @@ public final class IslandCoordinator {
+         FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandsPublished,changed.size());
+         publisher.published(List.copyOf(changed));
+     }
++    /** The longest a held island waits between retries at the shortest slice, in cadences: 2^6 = 64. */
++    static final int MAXIMUM_RETRY_DOUBLINGS=6;
++    /**
++     * The hold policy: what a held attempt (no committed candidate, no refused transaction) changes before the retry.
++     *
++     * <p>Every hold hands the retry a fresh {@link RetainedSolver}. The one the attempt used carries the step
++     * solver's last flows, modes and factorizations from wherever inside the slice that attempt stopped - the cut
++     * of a wall budget or the last pass of a failed solve - and a retry that warm-starts from them starts the slice
++     * again from its first state with the flows of a later one: measured on the vented three-tank chain, a rate
++     * solve that starts from 0.45 and -0.22 kg/s on tanks still at rest converges linearly through the friction kink
++     * at zero and fails the same way at every retry. It is also what made a retry's trajectory depend on how far the
++     * cancelled job had got. With a fresh solver a retry is the same computation as the first attempt on the same
++     * committed state and slice, so a numerical failure is reproducible exactly and a retry of the same slice is
++     * pointless.
++     *
++     * <p>So every hold also changes the problem: a slice longer than one tick is halved (a shorter whole interval,
++     * never a partial commit; the first full acceptance doubles it back), whether the budget cut it or the solve
++     * failed, and a hold at one tick waits {@code cadence * 2^k} ticks for its retry, k the number of such holds in a
++     * row, at most {@link #MAXIMUM_RETRY_DOUBLINGS}. A budget hold at one tick is retried too, because a warmer or
++     * less loaded worker can pass it; it just stops being retried every cadence. Anything that changes the island's
++     * inputs (a fence, a released fence, a resolved delivery, a property resume) clears the wait and the count; a
++     * topology change makes a new island. Online ticks only: no wall clock decides a delay.
++     *
++     * <p>A hold whose soft budget ran out and whose approximate fallback then refused the slice spent a quarter of
++     * the budget on a fallback that cannot pass it: the retry runs the full solve alone on the whole budget, until
++     * the next accepted interval.
++     */
++    private void hold(Island island,IslandClock.Slice slice,ProcessSolveServices.FluidIslandSolveResult outcome) {
++        FluidRuntimeDiagnostics.count(budgetHold(outcome)?FluidRuntimeDiagnostics.budgetHolds:FluidRuntimeDiagnostics.numericalHolds);
++        int ticks=(int)(slice.endTick()-slice.startTick());
++        if(ticks>1)island.maximumSliceTicks=Math.max(1,ticks/2);
++        else {
++            int cadence=island.clock.snapshot().cadenceTicks();
++            island.clock.deferRetry((long)cadence<<Math.min(island.holdStreak,MAXIMUM_RETRY_DOUBLINGS));
++            island.holdStreak=Math.min(island.holdStreak+1,MAXIMUM_RETRY_DOUBLINGS);
++            FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.retriesDeferred);
++        }
++        if(outcome!=null&&outcome.detail().startsWith(ProcessSolveServices.SOFT_BUDGET_REFUSED))island.fullOnly=true;
++        if(island.certificate==null)island.retained=new RetainedSolver();
++    }
++    /** A hold the worker's budget decided rather than the solve: no result by the round deadline, the wall budget,
++     * or a soft budget whose approximate fallback refused. A repeat can pass with more CPU; the rest cannot. */
++    static boolean budgetHold(ProcessSolveServices.FluidIslandSolveResult outcome) {
++        return outcome==null||outcome.detail().startsWith(ProcessSolveServices.WALL_DEADLINE)||outcome.detail().startsWith(ProcessSolveServices.SOFT_BUDGET_REFUSED);
++    }
++    /** Something the island solves against changed: a held island is retried at once, from its first retry again. */
++    private static void inputsChanged(Island island){island.clock.inputsChanged();island.holdStreak=0;}
+     private static boolean sameConnections(List<PassiveNetwork.Pipe> before,List<PassiveNetwork.Pipe> after){
+         if(before.size()!=after.size())return false;
+         for(int i=0;i<before.size();i++){var a=before.get(i);var b=after.get(i);
+@@ -557,7 +611,7 @@ public final class IslandCoordinator {
+                 throw new IllegalStateException("Event would modify an admitted or committed interval");
+             if(island.fences.containsKey(event))throw new IllegalStateException("Duplicate event fence");
+         }
+-        for(long id:affected){var island=require(id);island.fences.put(event,tick);fenceOwners.computeIfAbsent(event,ignored->new HashSet<>()).add(id);island.clock.inputsChanged();island.touch();reconsider(island);}
++        for(long id:affected){var island=require(id);island.fences.put(event,tick);fenceOwners.computeIfAbsent(event,ignored->new HashSet<>()).add(id);inputsChanged(island);island.touch();reconsider(island);}
+     }
+     /** A certified owner answers by materialisation: it advances to the fence and is then aligned like any other. */
+     public boolean aligned(UUID event,Collection<Long> affected) {
+@@ -566,14 +620,14 @@ public final class IslandCoordinator {
+     }
+     public void releaseFence(UUID event,Collection<Long> affected) {
+         owned();if(!aligned(event,affected))throw new IllegalStateException("Event owners have not aligned");
+-        for(long id:affected){var i=require(id);removeFence(i,event);i.clock.inputsChanged();i.touch();reconsider(i);}
++        for(long id:affected){var i=require(id);removeFence(i,event);inputsChanged(i);i.touch();reconsider(i);}
+     }
+     /** Production has become known (including zero production). A lagging receiver need not
+      * reach the promised time to resolve this dependency. The host separately retains a known
+      * input-time boundary when needed, so it cannot inject into an already admitted interval. */
+     public void resolveDeliveryFence(UUID event,Collection<Long> receivers) {
+         owned();for(long id:receivers)if(!require(id).fences.containsKey(event))throw new IllegalStateException("Missing delivery horizon");
+-        for(long id:receivers){var island=require(id);removeFence(island,event);island.clock.inputsChanged();island.touch();reconsider(island);}
++        for(long id:receivers){var island=require(id);removeFence(island,event);inputsChanged(island);island.touch();reconsider(island);}
+     }
+     public record Replacement(long id,PassiveNetwork graph) {
+         public Replacement {if(id<=0)throw new IllegalArgumentException("Invalid replacement identity");Objects.requireNonNull(graph);}
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/diagnostics/SolverDiagnostics.java b/src/main/java/com/wormzjl/createcheme/science/fluid/diagnostics/SolverDiagnostics.java
+index 1520865..9ac4ab6 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/diagnostics/SolverDiagnostics.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/diagnostics/SolverDiagnostics.java
+@@ -181,6 +181,10 @@ public final class SolverDiagnostics {
+     public static final int MAXIMUM_ATTEMPTS=200_000;
+     private static final List<Attempt> ATTEMPTS=Collections.synchronizedList(new ArrayList<>());
+ 
++    /** F1-TRACE (investigation only, never committed). */
++    public static volatile java.util.function.Consumer<String> TRACE=null;
++    public static boolean tracing(){return TRACE!=null;}
++    public static void trace(String line){var sink=TRACE;if(sink!=null)sink.accept(line);}
+     public static long begin(){return ENABLED?System.nanoTime():0;}
+     public static void end(LongAdder target,long started){if(ENABLED)target.add(System.nanoTime()-started);}
+     public static void count(LongAdder target){if(ENABLED)target.increment();}
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java
+index 20d17a4..7984daf 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java
+@@ -114,6 +114,7 @@ public final class PassiveIntervalSolver {
+         int transitionRejects=0;double beforeTransition=0;SolidEventIntegrator.Transition declared=null;
+         for(int attempt=0;attempt<settings.maximumAttempts&&elapsed<duration&&declared==null;attempt++) {
+             checkpoint.run();double step=Math.min(h,duration-elapsed);
++            if(SolverDiagnostics.tracing())SolverDiagnostics.trace("  A attempt="+attempt+" t="+elapsed+" step="+step);
+             try {
+                 var regimes=new RegimeTrace(guard,accepted);
+                 PassiveStepSolver.Result coarse=null;
+@@ -128,6 +129,7 @@ public final class PassiveIntervalSolver {
+                             sourceError>=Math.max(stateError,pipeError)?"boundary":pipeError>=stateError?"pipe":"state",error);
+                     if(error>settings.relativeTolerance)throw new AccuracyRejection("Embedded "+(sourceError>=Math.max(stateError,pipeError)?"boundary":pipeError>=stateError?"pipe":"state")+" error "+error,error);
+                     accepted=replace(accepted,full);last=full;elapsed+=step;acceptedCount++;consecutiveRejects=0;
++                    if(SolverDiagnostics.tracing()){var tl=new StringBuilder("  A OK t="+elapsed+" step="+step+" err="+error+" modes="+full.modes()+" flows="+Arrays.toString(full.massFlows()));for(var s:full.states())tl.append(String.format(" [T=%.4f P=%.2f l=%.4g w=%.4g v=%.4g]",s.temperature(),s.pressure(),s.liquidVolume(),s.waterVolume(),s.vaporVolume()));SolverDiagnostics.trace(tl.toString());}
+                     work+=full.pumpWorkJoule();boundaries.addAll(full.boundaries());var flows=full.massFlows();
+                     pipeTransfers.add(full.pipeTransfers(),1);
+                     for(int i=0;i<transferred.length;i++){transferred[i]+=step*flows[i];grossTransferred[i]+=step*Math.abs(flows[i]);}
+@@ -145,6 +147,7 @@ public final class PassiveIntervalSolver {
+                 SolverDiagnostics.attempt(attempt,step,error<=settings.relativeTolerance,"refinement",error);
+                 if(error>settings.relativeTolerance)throw new AccuracyRejection("Step refinement error "+error,error);
+                 accepted=replace(accepted,second);last=second;elapsed+=step;acceptedCount+=2;consecutiveRejects=0;
++                if(SolverDiagnostics.tracing()){var tl=new StringBuilder("  A OK2 t="+elapsed+" step="+step+" err="+error+" modes="+second.modes()+" flows="+Arrays.toString(second.massFlows()));for(var s:second.states())tl.append(String.format(" [T=%.4f P=%.2f l=%.4g w=%.4g v=%.4g]",s.temperature(),s.pressure(),s.liquidVolume(),s.waterVolume(),s.vaporVolume()));SolverDiagnostics.trace(tl.toString());}
+                 work+=first.pumpWorkJoule()+second.pumpWorkJoule();boundaries.addAll(first.boundaries());boundaries.addAll(second.boundaries());
+                 pipeTransfers.add(first.pipeTransfers(),1);pipeTransfers.add(second.pipeTransfers(),1);
+                 var q1=first.massFlows();var q2=second.massFlows();for(int i=0;i<transferred.length;i++){transferred[i]+=step*.5*(q1[i]+q2[i]);grossTransferred[i]+=step*.5*(Math.abs(q1[i])+Math.abs(q2[i]));}
+@@ -163,6 +166,7 @@ public final class PassiveIntervalSolver {
+                 h=step*.5;
+             }catch(SparseNewton.Nonconvergence|IllegalArgumentException|AccuracyRejection rejected) {
+                 lastRejection=String.valueOf(rejected.getMessage());
++                if(SolverDiagnostics.tracing())SolverDiagnostics.trace("  A REJ t="+elapsed+" step="+step+" "+rejected.getClass().getSimpleName()+": "+rejected.getMessage());
+                 String reason=String.valueOf(rejected.getMessage()).replaceAll("[-+]?[0-9]+(?:\\.[0-9]+)?(?:[Ee][-+]?[0-9]+)?","#");
+                 if(rejectionReasons.size()<8||rejectionReasons.containsKey(reason))rejectionReasons.merge(reason,1,Integer::sum);else rejectionReasons.merge("Other",1,Integer::sum);
+                 rejectedCount++;consecutiveRejects++;h=step*(rejected instanceof AccuracyRejection accuracy?stepFactor(accuracy.error,settings.relativeTolerance,true):.5);
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index 174368b..e127006 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -27,6 +27,8 @@ public final class PassiveStepSolver {
+      * and no backtrack could produce a different residual anyway.
+      */
+     private static final double SOLID_CLAMP_FRACTION=1e-6;
++    /** PROTOTYPE (F1): below this fraction of its difference floor a fluid amount unknown no longer bounds the step; the trial keeps TRACE_RETENTION of it instead. */
++    private static final double TRACE_CLAMP_FRACTION=1e-6,TRACE_RETENTION=.01;
+     /**
+      * How far below its stated capacity the saturated filter inlet aims. The committed cake is
+      * reconstructed from the converged flow by a different summation than the loading row solves,
+@@ -232,8 +234,14 @@ public final class PassiveStepSolver {
+             // Keep two orders of margin to the unchanged 1e-8 full-equation gate; every final
+             // reconstruction and the independent interval accuracy/accounting checks still run.
+             double tolerance=acceptance==Acceptance.APPROXIMATE?1e-6:smallHeadspace?1e-10:1e-9;
++            if(SolverDiagnostics.tracing()) {
++                var line=new StringBuilder("    P pass="+pass+" dt="+dt+" tol="+tolerance+" modes="+modes+" closed="+Arrays.toString(boundaryClosed)+" phases="+Arrays.toString(phases)+" start="+Arrays.toString(equations.startFlows())+" size="+equations.size+" offsets="+Arrays.toString(equations.offsets)+" edgeOffset="+equations.edgeOffset);
++                for(int i=0;i<seeds.size();i++){var s=seeds.get(i);line.append(String.format(" [n%d T=%.4f P=%.2f l=%.4g w=%.4g v=%.4g]",i,s.temperature(),s.pressure(),s.liquidVolume(),s.waterVolume(),s.vaporVolume()));}
++                SolverDiagnostics.trace(line.toString());
++            }
+             try{numerical=SparseNewton.solve(equations,equations.initial(),new SparseNewton.Settings(20,tolerance,1e-6,24),checkpoint,workspace);}
+             catch(SparseNewton.Nonconvergence failure) {
++                if(SolverDiagnostics.tracing())SolverDiagnostics.trace("    P FAIL pass="+pass+": "+failure.getMessage());
+                 if(failure.lastVariables()==null)throw failure;
+                 double[] trialFlows=Arrays.copyOfRange(failure.lastVariables(),equations.edgeOffset,equations.edgeOffset+graph.pipes().size());
+                 // A point the Newton never reached is deliberately not read as evidence about this
+@@ -320,6 +328,7 @@ public final class PassiveStepSolver {
+             // species set, which is the same kind of evidence and takes the same action: the next
+             // pass starts from these flows and restates both the donors and the basis from them.
+             if(!changed&&hasJunction&&junctionsTurned(graph,stated,reachable,flows))changed=true;
++            if(SolverDiagnostics.tracing())SolverDiagnostics.trace("    P conv pass="+pass+" it="+numerical.iterations()+" flows="+Arrays.toString(flows)+" heads="+Arrays.toString(heads)+" changed="+changed+" nextModes="+modes+" closed="+Arrays.toString(boundaryClosed));
+             if(changed){seeds=states;previousPipes=pipeIdentities;previousNodeIds=nodeIds;previousFlows=flows.clone();previousHeads=heads.clone();previousModes=List.copyOf(modes);continue;}
+             for(int edge=0;edge<flows.length;edge++) {
+                 var pipe=graph.pipes().get(edge);var upstream=states.get(flows[edge]>=0?pipe.first():pipe.second());
+@@ -1422,6 +1431,7 @@ public final class PassiveStepSolver {
+                 amountVariables[column]=layout[node].totalAmountVariable(local);differenceFloors[column]=layout[node].differenceScale(local,0);
+                 solidVariables[column]=layout[node].solidVariable(local);
+                 if(solidVariables[column])clampFloors[column]=SOLID_CLAMP_FRACTION*differenceFloors[column];
++                else if(amountVariables[column])clampFloors[column]=TRACE_CLAMP_FRACTION*differenceFloors[column];
+             }
+             int components=oldAmounts[0].length;
+             targets=new double[count][components];incoming=new double[count][components];fractions=new double[components];
+@@ -1568,9 +1578,20 @@ public final class PassiveStepSolver {
+             // moment 1e-30 to 1e-70 below its own scale would otherwise bound alpha at 1e-12 to
+             // 1e-18, at which x+alpha*d is bitwise x for every unknown of order one and no
+             // backtrack can ever produce a different residual.
+-            for(int c=0;c<edgeOffset;c++)if(amountVariables[c]&&variables[c]>clampFloors[c]&&direction[c]<0)alpha=Math.min(alpha,.99*variables[c]/-direction[c]);
++            int limiting=-1;
++            for(int c=0;c<edgeOffset;c++)if(amountVariables[c]&&variables[c]>clampFloors[c]&&direction[c]<0&&.99*variables[c]/-direction[c]<alpha){alpha=.99*variables[c]/-direction[c];limiting=c;}
++            if(limiting>=0&&SolverDiagnostics.tracing()&&alpha<1e-3){
++                var line=new StringBuilder("        LIMIT col="+limiting+" x="+variables[limiting]+" d="+direction[limiting]+" alpha="+alpha+" dx=");
++                for(int c=0;c<size;c++)line.append(String.format(" %d:%.3g/%.3g",c,variables[c],direction[c]));
++                SolverDiagnostics.trace(line.toString());
++            }
+             return alpha;
+         }
++        @Override public void project(double[] variables,double[] candidate) {
++            for(int c=0;c<edgeOffset;c++)
++                if(amountVariables[c]&&!solidVariables[c]&&variables[c]<=clampFloors[c]&&candidate[c]<TRACE_RETENTION*variables[c])
++                    candidate[c]=TRACE_RETENTION*variables[c];
++        }
+         /** Solid unknowns this point leaves negative, i.e. where {@link PhaseLayout#decode}'s
+          * nonnegativity projection would be active. Must be zero at every accepted point. */
+         int negativeSolidUnknowns(double[] x) {
+@@ -1727,11 +1748,13 @@ public final class PassiveStepSolver {
+             double pressureScale=pressureScales[edge];
+             f[edgeOffset+edge]=(driving-loss)/pressureScale;
+             if(canClamp(modes.get(edge))&&!boundaryClosed[edge]) {
+-                int direction=flow>=0?0:1;
++                // PROTOTYPE (F1): the cap is read off the end the driving pressure pushes from, not the live flow's sign.
++                int direction=driving>=0?0:1;int capDonor=direction==0?a:b;var capTransport=tr[capDonor];
++                if(pipe.filter()!=null&&capDonor!=donor){var state=st[capDonor];filterCoefficient=pipe.filter().cleanResistance()*(carrierViscosity(state)/.001)*(1+99*x[filterOffsets[edge]]*x[filterOffsets[edge]])*(state.volume()-state.solidMoments().volume())/state.mass();}
+                 // A colored Jacobian perturbs only a few nodes. Unchanged immutable donor
+                 // properties have the same cap and loss; keep one entry per edge/direction.
+-                if(pipe.filter()!=null||capSources[edge][direction]!=transport) {
+-                    double limit=rho*pipe.minimumArea()*transport.velocityLimit;
++                if(pipe.filter()!=null||capSources[edge][direction]!=capTransport) {
++                    double limit=capTransport.density*pipe.minimumArea()*capTransport.velocityLimit;
+                     if(pipe.filter()!=null&&!rateOnly&&!prescribedFlow) {
+                         // A filter has a second inlet limit: the cake it can still hold. The
+                         // retained volume at the end of this step is the same expression the
+@@ -1740,11 +1763,11 @@ public final class PassiveStepSolver {
+                         // a step boundary instead of past one. A rate solve carries no step and no
+                         // retention, so it is exempt, and a base already at capacity is left to
+                         // the stage guard rather than throttled to a degenerate zero limit.
+-                        var state=st[donor];double retainedPerMass=state.solidMoments().volume()/state.mass();
++                        var state=st[capDonor];double retainedPerMass=state.solidMoments().volume()/state.mass();
+                         double room=pipe.filter().capacity()*(1-FILTER_CAPACITY_MARGIN)-pipe.filter().captured().volume();
+                         if(retainedPerMass>0&&room>0)limit=Math.min(limit,room/(dt*retainedPerMass));
+                     }
+-                    capMassFlows[edge][direction]=limit;capPressureDrops[edge][direction]=pipe.filter()==null?pipe.pressureDrop(limit,rho,transport.viscosity):filterCoefficient*limit;capSources[edge][direction]=transport;
++                    capMassFlows[edge][direction]=limit;capPressureDrops[edge][direction]=pipe.filter()==null?pipe.pressureDrop(limit,capTransport.density,capTransport.viscosity):filterCoefficient*limit;capSources[edge][direction]=capTransport;
+                 }
+                 double limit=capMassFlows[edge][direction],limitDrop=capPressureDrops[edge][direction];
+                 // A saturated pressure/flow law: the unused driving pressure is throttled.
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java b/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
+index f962cc3..88aa463 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
+@@ -18,6 +18,12 @@ public final class SparseNewton {
+         int[][] columnRows();
+         default double differenceScale(int column,double value){return Math.max(1,Math.abs(value));}
+         default double maximumStep(double[] variables,double[] direction){return 1;}
++        /**
++         * Maps a line-search trial {@code candidate} (the current point {@code variables} plus a
++         * step) onto the side of a bound that {@link #maximumStep} deliberately does not enforce,
++         * in place. The default leaves every trial as it is.
++         */
++        default void project(double[] variables,double[] candidate){}
+         /**
+          * Optional block-structured Jacobian: fills {@code entries}, the values of the pattern
+          * {@code columnRows()} declares in column-major order ({@code entryOffsets} indexes it per
+@@ -133,11 +139,13 @@ public final class SparseNewton {
+             lastNonzeros=workspace.matrix.nonzeroCount();
+             try{direction=workspace.factorization.solve(rhs,SparseLuSolver.Verification.UNTIL_VERIFIED);}
+             catch(SparseLuSolver.SolveFailure failure){if(!fresh){SolverDiagnostics.count(SolverDiagnostics.newtonRefreshesFailed);refresh=true;continue;}workspace.invalidate();throw new Nonconvergence("Singular Newton Jacobian: "+failure.getMessage(),x);}
++            if(SolverDiagnostics.tracing()&&iteration==0){var line=new StringBuilder("      F0");for(int r=0;r<n;r++)line.append(String.format(" %d:%.3g",r,f[r]));SolverDiagnostics.trace(line.toString());}
+             double alpha=Math.min(1,equations.maximumStep(x,direction));boolean accepted=false;
+             if(!Double.isFinite(alpha)||alpha<=0)throw new Nonconvergence("No feasible Newton direction",x);
+             for(int backtrack=0;backtrack<settings.backtracks();backtrack++,alpha*=.5) {
+                 checkpoint.run();if(backtrack>0)SolverDiagnostics.count(SolverDiagnostics.newtonBacktracks);
+                 double[] candidate=x.clone();for(int i=0;i<n;i++)candidate[i]+=alpha*direction[i];
++                equations.project(x,candidate);
+                 try {
+                     calls++;SolverDiagnostics.count(fresh?SolverDiagnostics.newtonStepEvaluationsFresh:SolverDiagnostics.newtonStepEvaluationsStale);
+                     double[] next=evaluate(equations,candidate,n);double nextNorm=norm(next);
+@@ -154,6 +162,11 @@ public final class SparseNewton {
+                         catch(SparseLuSolver.SolveFailure failure){continue;}
+                         descent=nextMerit<merit*(1-1e-4*alpha);reduction=nextMerit/merit;
+                     }
++                    if(SolverDiagnostics.tracing()&&(descent||backtrack==settings.backtracks()-1)) {
++                        int worst=0;for(int r=1;r<n;r++)if(Math.abs(f[r])>Math.abs(f[worst]))worst=r;
++                        int nextWorst=0;for(int r=1;r<n;r++)if(Math.abs(next[r])>Math.abs(next[nextWorst]))nextWorst=r;
++                        SolverDiagnostics.trace("      N it="+iteration+" fresh="+fresh+" norm="+norm+" worst="+worst+" alpha="+alpha+" bt="+backtrack+" next="+nextNorm+" nextWorst="+nextWorst+" descent="+descent);
++                    }
+                     if(descent) {
+                         // Residual evaluation and triangular solves are much cheaper than a new
+                         // colored Jacobian. Keep a contracting chord iteration a little longer;
+@@ -162,7 +175,7 @@ public final class SparseNewton {
+                         if(refresh)SolverDiagnostics.count(reduction>.8?SolverDiagnostics.newtonRefreshesStalled:SolverDiagnostics.newtonRefreshesAged);
+                         x=candidate;f=next;norm=nextNorm;accepted=true;break;
+                     }
+-                }catch(IllegalArgumentException outsideDomain){ /* A smaller Newton step may stay in the valid domain. */ }
++                }catch(IllegalArgumentException outsideDomain){ if(SolverDiagnostics.tracing()&&(backtrack==0||backtrack==settings.backtracks()-1))SolverDiagnostics.trace("  bt="+backtrack+"      N it="+iteration+" fresh="+fresh+" norm="+norm+" alpha="+alpha+" DOMAIN "+outsideDomain.getMessage()); }
+             }
+             if(!accepted) {
+                 // A direction that never contracts is the one case where the skipped backward-error

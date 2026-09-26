@@ -1,0 +1,21 @@
+# Siah, Campestrini, Stringari 2025: note (comparison only, nothing transcribed)
+
+- **Source.** W. H. Siah, M. Campestrini, P. Stringari, "Solid Phase I of Carbon Dioxide: A New Gibbs Energy Equation of State and Its Application for the Calculation of Solid-Fluid Equilibria", J. Chem. Eng. Data 70(7), 2890-2905 (2025), doi:10.1021/acs.jced.5c00260. Local file `siah-campestrini-stringari-2025-jced-je5c00260.pdf`. Read 2026-09-25 from the text layer; numbers as printed and not re-verified.
+- **The model.** A Gibbs-energy-explicit EoS g(T, p) for dry ice (solid CO2 phase I).
+  - Its form is carried over from the Stringari group's solid methane and solid benzene EoS: two heat-capacity branches joined at 16.3 K, analytically integrable.
+  - It is valid to 400 K and 1.2 GPa.
+  - It was fitted to molar volume, compressibility, Cp, and sublimation and melting pressures, coupled with Span-Wagner at the triple point.
+  - The paper calls it "Model A" and compares it with Jäger-Span 2012 (B), Trusler 2011 (C) and the classical fugacity approach (D).
+- **Pure-CO2 deviations.**
+  - Sublimation pressure above 150 K: AAD 0.38 %, bias -0.25 %, MAD 1.55 %.
+  - Sublimation pressure above 80 K: all three EoS near 2 %; Trusler (C) best overall.
+  - Melting pressure: all similar; C below 1 % AAD.
+  - The paper states the new model is slightly less accurate than B and C.
+- **Mixture deviations.** Solubility AAD%, coupled with the REFPROP 10 default GERG-type mixture model, no fitted parameters:
+  - CO2 in liquid CH4 (SLE, Table 5): A 16.83, B 16.80, C 16.79, D 29.03 (MAD about 51 %, driven by the Streich data).
+  - CO2 in liquid N2 (SLE, Table 6): A 35.15, B 37.55, C 34.23, D 76.32. The large bias is attributed to the GERG CO2-N2 mixing rule being used outside its 209-673 K fit range.
+  - CO2 in supercritical N2 (SVE, Table 7, Sonntag 1962/1963 data): A 9.45, B 9.68, C 9.06, D 8.43.
+- **Use here.** A cross-check of the P4 solid model only. For G4/G5 it shows three points:
+  - The choice among modern solid EoS (A, B, C) moves solubility by under 1 point of AAD.
+  - The fluid mixture model dominates.
+  - Frost-point composition errors near 9 % AAD in N2 are what a reference multiparameter fluid model achieves on Sonntag's data. That is roughly 0.5 to 1 K in frost temperature at the survey's d ln y/dT of 0.08 to 0.13 per K.

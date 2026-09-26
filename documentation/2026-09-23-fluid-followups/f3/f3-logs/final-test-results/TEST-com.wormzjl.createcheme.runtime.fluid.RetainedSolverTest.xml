@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.RetainedSolverTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-24T03:11:22.633Z" hostname="WORMZ-PC" time="0.041">
+  <properties/>
+  <testcase name="aRetainedSolverIsExclusiveAndIsHandedBackAfterEveryOutcome()" classname="com.wormzjl.createcheme.runtime.fluid.RetainedSolverTest" time="0.01"/>
+  <testcase name="sharingTheIslandSolverWithTheModulePlannerNeverCostsMoreWork()" classname="com.wormzjl.createcheme.runtime.fluid.RetainedSolverTest" time="0.021"/>
+  <testcase name="aRetainedSolverReusesItsStructureAcrossTheIntervalBoundary()" classname="com.wormzjl.createcheme.runtime.fluid.RetainedSolverTest" time="0.01"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

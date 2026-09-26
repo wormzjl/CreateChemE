@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-25T05:22:52.518Z" hostname="WORMZ-PC" time="1.345">
+  <properties/>
+  <testcase name="coldJunctionMatrix()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe" time="1.345"/>
+  <system-out><![CDATA[HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=102325.0 swap=false unequal=false PASS inlets=2 in=0.00726725028457636 kg T_J=349.9876226417488 P_J=102127.55677921696 substeps=13/5
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=102325.0 swap=false unequal=false PASS inlets=2 in=0.011760529495136077 kg T_J=349.9867950391051 P_J=101830.96788614466 substeps=10/7
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=102325.0 swap=false unequal=false PASS inlets=2 in=0.0135252315208128 kg T_J=349.98606001579265 P_J=101627.53266888202 substeps=10/7
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=102325.0 swap=false unequal=false PASS inlets=2 in=0.014179428949107207 kg T_J=349.9856435258965 P_J=101512.76833402227 substeps=10/8
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=150000.0 swap=false unequal=false PASS inlets=2 in=0.010673901340497755 kg T_J=349.98183307523624 P_J=149719.28747468922 substeps=13/6
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=150000.0 swap=false unequal=false PASS inlets=2 in=0.021996549021717483 kg T_J=349.9782470321737 P_J=148598.00806023745 substeps=18/11
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=150000.0 swap=false unequal=false PASS inlets=2 in=0.02230652492018184 kg T_J=349.8555248559562 P_J=102092.46252400795 substeps=14/9
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=150000.0 swap=false unequal=false PASS inlets=2 in=0.022306524920181838 kg T_J=349.85465922555863 P_J=101764.83839007182 substeps=12/7
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=102325.0 swap=false unequal=true PASS inlets=2 in=0.007241889375666583 kg T_J=328.2246652044153 P_J=102072.86022651017 substeps=12/6
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=102325.0 swap=false unequal=true PASS inlets=2 in=0.011479722202381304 kg T_J=331.59516950590944 P_J=101796.96476046725 substeps=9/7
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=102325.0 swap=false unequal=true PASS inlets=2 in=0.013382799746059645 kg T_J=332.8881429549153 P_J=101617.12309856481 substeps=9/7
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=102325.0 swap=false unequal=true PASS inlets=2 in=0.014009359251670855 kg T_J=334.8053193660822 P_J=101506.53903488118 substeps=8/8
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=150000.0 swap=false unequal=true PASS inlets=1 in=0.009439701026164935 kg T_J=299.995297910436 P_J=149043.98283686588 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=150000.0 swap=false unequal=true PASS inlets=2 in=0.02122411654860551 kg T_J=336.1298518856084 P_J=143803.08530718423 substeps=14/7
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=150000.0 swap=false unequal=true PASS inlets=2 in=0.021486369322401666 kg T_J=336.47320558378635 P_J=102040.10034317734 substeps=13/9
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=150000.0 swap=false unequal=true PASS inlets=2 in=0.021486369322401673 kg T_J=336.4722856359523 P_J=101734.4989726359 substeps=7/6
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=102325.0 swap=true unequal=false PASS inlets=2 in=0.007314417866549164 kg T_J=349.9876226426857 P_J=102127.55679328031 substeps=13/6
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=102325.0 swap=true unequal=false PASS inlets=2 in=0.011774357049117291 kg T_J=349.98679503918015 P_J=101830.96788698867 substeps=10/6
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=102325.0 swap=true unequal=false PASS inlets=2 in=0.013530854853393417 kg T_J=349.9860600154039 P_J=101627.5326621928 substeps=10/8
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=102325.0 swap=true unequal=false PASS inlets=2 in=0.014182850752076459 kg T_J=349.985643526127 P_J=101512.7683320821 substeps=11/10
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=150000.0 swap=true unequal=false PASS inlets=2 in=0.010729957792567246 kg T_J=349.9818330761835 P_J=149719.2874916032 substeps=15/7
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=150000.0 swap=true unequal=false PASS inlets=2 in=0.02204503247182533 kg T_J=349.9782470320934 P_J=148598.0080452562 substeps=12/8
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=150000.0 swap=true unequal=false PASS inlets=2 in=0.022306524920181838 kg T_J=349.85552485504525 P_J=102092.46252708817 substeps=9/6
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=150000.0 swap=true unequal=false PASS inlets=2 in=0.022306524920181838 kg T_J=349.85465929313966 P_J=101764.83818677708 substeps=6/5
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=102325.0 swap=true unequal=true PASS inlets=2 in=0.007457662894538179 kg T_J=353.49074301205326 P_J=102084.75860633215 substeps=13/6
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=102325.0 swap=true unequal=true PASS inlets=2 in=0.011669061010111496 kg T_J=357.786328848725 P_J=101816.24276732393 substeps=11/6
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=102325.0 swap=true unequal=true PASS inlets=2 in=0.013537717332756697 kg T_J=356.75822692695124 P_J=101625.52429933558 substeps=11/8
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=102325.0 swap=true unequal=true PASS inlets=2 in=0.014236091045952111 kg T_J=354.81672042174193 P_J=101511.73210247107 substeps=12/10
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=150000.0 swap=true unequal=true PASS inlets=1 in=0.01636404639996145 kg T_J=299.9959675781429 P_J=148355.19270735295 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=150000.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 5.209823423104705E-6; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=150000.0 swap=true unequal=true PASS inlets=2 in=0.023418220138522388 kg T_J=349.2100173241229 P_J=102133.0915529405 substeps=9/7
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=150000.0 swap=true unequal=true PASS inlets=2 in=0.023418220138522385 kg T_J=349.2090706274066 P_J=101788.12024609325 substeps=6/5
+HOLDUP_STATIC holdup=1.0E-4 passed=31/32
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

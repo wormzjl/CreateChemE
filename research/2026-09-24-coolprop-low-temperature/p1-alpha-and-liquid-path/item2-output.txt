@@ -1,0 +1,132 @@
+P1 item 2: Soave (PR78) vs Twu 1991 alpha in the same PR78, CoolProp 8.0.0 HEOS reference
+translation re-anchored per alpha at the CoolProp saturated liquid at Tr = 0.8 (D1); saturation properties at the model's own Psat; cpL = CoolProp cp0 + PR residual cp
+
+== Route 2 for hydrogen: generalized tc-PR Twu (N = 2) at CoolProp omega = -0.2190 ==
+  2018: L=-0.06934 M=0.93638 N=2  consistent on Tr 0.2-25: False (first violation dalpha<0 at Tr=0.989)
+  2022: L=-0.10921 M=0.91361 N=2  consistent on Tr 0.2-25: False (first violation dalpha<0 at Tr=0.924)
+
+== Route 3 fits (NOT literature values): L, M, N fitted to CoolProp Psat, hvap, cpL, equal relative weights ==
+  Nitrogen       L=0.1287503821 M=0.8922842433 N=1.984993509  rms rel. error 5.76 %  fit Tr 0.501-0.95 (14 T)  consistent Tr 0.2-20: True; small-N power-law exponent N(1-M+LM) = 0.4419
+  Methane        L=0.1535691338 M=0.9105015391 N=1.79403958  rms rel. error 5.80 %  fit Tr 0.476-0.95 (14 T)  consistent Tr 0.2-20: True; small-N power-law exponent N(1-M+LM) = 0.4114
+  Ethane         L=0.4229613978 M=0.8802244057 N=1.060952846  rms rel. error 5.17 %  fit Tr 0.300-0.95 (14 T)  consistent Tr 0.2-20: True; small-N power-law exponent N(1-M+LM) = 0.5221
+  CarbonDioxide  L=0.139937601 M=0.8503476349 N=2.543700712  rms rel. error 6.06 %  fit Tr 0.713-0.95 (14 T)  consistent Tr 0.2-20: True; small-N power-law exponent N(1-M+LM) = 0.6834
+  Hydrogen       L=0.8666680616 M=0.8666670611 N=3.376205455e-14  rms rel. error 27.39 %  fit Tr 0.421-0.95 (14 T)  consistent Tr 0.2-25: True; small-N power-law exponent N(1-M+LM) = 2.986e-14
+
+== Objective of the fit (rms of relative Psat, hvap, cpL errors on the fit grid, %): Soave / Twu used / fitted ==
+  Nitrogen          6.50    5.83    5.76
+  Methane           6.34    5.86    5.80
+  Ethane            7.82    5.32    5.17
+  CarbonDioxide     6.89    6.28    6.06
+  Hydrogen         29.61   27.39   27.39
+
+== Hydrogen sensitivity: consistent Twu with N fixed, and an unattributed Clapeyron.jl Twu_like.csv set ==
+  set                                L           M         N consistent rms fit    rho 300K/10     rho 623K/6     rho 650K/9   rho 663K/9.1    rho 700K/10
+  Soave                            nan         nan       nan       True   29.61           0.73          -0.03          -0.09          -0.10          -0.15
+  alpha=1 (fit limit)          0.00000  1.00000000   1.00000      False   27.39           1.13           0.08           0.06           0.04          -0.00
+  fit N=1 (not lit.)           0.00000  1.00000000   1.00000       True   27.39           1.13           0.08           0.06           0.04          -0.00
+  fit N=2 (not lit.)           0.00000  1.00000000   2.00000       True   27.39           1.13           0.08           0.06           0.04          -0.00
+  Twu_like.csv (no source)     0.02244  0.99999983   0.99967       True   28.18           0.50          -0.12          -0.22          -0.23          -0.28
+
+== Parameters used as 'Twu' below, route per fluid, consistency (alpha>0, alpha'<0, alpha''>0, alpha'''<0) ==
+  Nitrogen       route 1 (tc-PR table, Clapeyron.jl copy)   L=0.12427285 M=0.8898147 N=2.0128513  Twu consistent 0.2-20: True  | Soave m=0.4316 consistent: False (dalpha<0 at Tr 11.001), Soave minimum at Tr=11.0
+  Methane        route 1 (tc-PR table, Clapeyron.jl copy)   L=0.14738489 M=0.90747745 N=1.8241089  Twu consistent 0.2-20: True  | Soave m=0.3922 consistent: False (dalpha<0 at Tr 12.602), Soave minimum at Tr=12.6
+  Ethane         route 1 (tc-PR table, Clapeyron.jl copy)   L=0.30532752 M=0.86926612 N=1.3296617  Twu consistent 0.2-20: True  | Soave m=0.5247 consistent: False (dalpha<0 at Tr 8.446), Soave minimum at Tr=8.4
+  CarbonDioxide  route 1 (tc-PR table, Clapeyron.jl copy)   L=0.17835131 M=0.85902947 N=2.4107365  Twu consistent 0.2-20: True  | Soave m=0.7065 consistent: False (dalpha<0 at Tr 5.835), Soave minimum at Tr=5.8
+  Hydrogen       route 3 (own fit, not literature)          L=0.86666806 M=0.86666706 N=3.3762055e-14  Twu consistent 0.2-25: True  | Soave m=0.0239 consistent: True, Soave minimum at Tr=1829.5
+
+== Saturation states (probe list; H2 added): deviation % from CoolProp; S = Soave, T = Twu (route above), F = Twu fitted (not literature) ==
+fluid             T[K]    Tr  Psat S  Psat T  Psat F  rhoL S  rhoL T  rhoL F   cpL S   cpL T   cpL F  hvap S  hvap T  hvap F
+Nitrogen         63.15 0.500    4.48    1.12    3.52    0.80    0.74    0.76   -8.24    2.33    0.56   -1.85   -0.36   -1.05
+Nitrogen         70.00 0.555    2.46    0.51    2.16    1.24    1.17    1.19   -6.95    0.10   -1.41   -1.33   -0.36   -0.97
+Nitrogen         77.36 0.613    1.21   -0.01    1.11    1.52    1.45    1.46   -5.08   -0.88   -2.17   -0.81   -0.20   -0.74
+Nitrogen         90.00 0.713    0.34   -0.40    0.17    1.31    1.26    1.27   -0.63    0.33   -0.64   -0.15    0.18   -0.25
+Nitrogen        100.00 0.792    0.30   -0.28    0.04    0.18    0.16    0.17    4.47    4.05    3.29   -0.13    0.23   -0.14
+Nitrogen        110.00 0.872    0.49    0.07    0.23   -2.42   -2.38   -2.38   12.32   11.48   10.91   -1.25   -0.70   -1.00
+Nitrogen        120.00 0.951    0.54    0.35    0.40   -8.00   -7.93   -7.93   27.96   27.82   27.45   -6.46   -5.62   -5.86
+Methane          90.70 0.476    1.42    1.42    3.57    1.79    1.55    1.56   -1.25    2.61    0.87   -0.21   -0.29   -0.92
+Methane         100.00 0.525    1.04    0.86    2.37    2.08    1.86    1.86   -0.93    0.71   -0.78   -0.07   -0.31   -0.86
+Methane         111.67 0.586    0.74    0.25    1.22    2.26    2.06    2.06   -0.24   -0.56   -1.80    0.13   -0.17   -0.63
+Methane         130.00 0.682    0.57   -0.27    0.22    1.95    1.81    1.82    1.99   -0.10   -1.02    0.34    0.23   -0.12
+Methane         150.00 0.787    0.68   -0.20    0.01    0.34    0.31    0.32    6.62    4.06    3.42    0.04    0.41    0.14
+Methane         170.00 0.892    0.83    0.23    0.30   -3.78   -3.69   -3.69   16.40   14.81   14.42   -2.22   -1.19   -1.37
+Methane         185.00 0.971    0.53    0.34    0.35  -10.94  -10.83  -10.83   34.55   35.04   34.84  -11.01   -9.50   -9.62
+Ethane           90.40 0.296   28.69    1.39    1.78   -1.93   -1.87   -1.84  -10.62    9.45    3.12   -3.11    0.48   -0.03
+Ethane          120.00 0.393   10.19    1.91    0.79   -0.22   -0.18   -0.14   -7.73    2.99    0.27   -2.25   -0.25   -0.27
+Ethane          150.00 0.491    3.47    0.68   -0.11    1.08    1.10    1.14   -6.51   -0.90   -1.68   -1.40   -0.30   -0.11
+Ethane          184.55 0.604    0.75   -0.13   -0.40    1.86    1.87    1.91   -3.85   -1.31   -0.99   -0.42    0.12    0.36
+Ethane          220.00 0.721    0.10   -0.21   -0.17    1.45    1.45    1.47    0.38    1.36    2.09    0.40    0.67    0.81
+Ethane          250.00 0.819    0.30    0.16    0.29   -0.55   -0.55   -0.56    6.02    6.36    7.07    0.28    0.45    0.44
+Ethane          280.00 0.917    0.63    0.57    0.67   -5.69   -5.68   -5.71   17.68   17.78   18.16   -2.56   -2.40   -2.61
+Ethane          295.00 0.966    0.53    0.50    0.55  -10.96  -10.96  -10.99   31.73   31.83   31.86   -8.68   -8.53   -8.83
+CarbonDioxide   216.60 0.712   -0.37    1.71    3.58    1.09    1.09    1.22   -8.92   -9.42   -5.76   -0.50   -1.83   -2.10
+CarbonDioxide   230.00 0.756   -0.81    0.62    2.35    0.75    0.74    0.81   -5.21   -6.97   -4.03    0.31   -1.02   -1.59
+CarbonDioxide   250.00 0.822   -0.79   -0.09    1.28   -0.58   -0.57   -0.59    1.43   -1.44    0.42    1.09   -0.05   -1.05
+CarbonDioxide   270.00 0.888   -0.31   -0.07    0.84   -3.41   -3.36   -3.46   11.03    8.03    8.73    0.77    0.01   -1.39
+CarbonDioxide   290.00 0.954    0.21    0.23    0.62   -9.20   -9.12   -9.24   28.90   27.00   26.28   -3.37   -3.59   -5.30
+CarbonDioxide   300.00 0.986    0.21    0.20    0.32  -14.74  -14.66  -14.73   43.45   42.88   41.33  -13.49  -13.42  -15.12
+Hydrogen         14.00 0.422  -15.78   -4.32   -4.32    8.40    8.90    8.90   79.28   73.87   73.87   10.94    7.49    7.49
+Hydrogen         17.00 0.513   -4.63    3.68    3.68    7.03    7.42    7.42   64.68   60.06   60.06    7.49    4.26    4.26
+Hydrogen         20.37 0.615    1.27    6.75    6.75    5.19    5.45    5.45   50.72   46.78   46.78    4.07    1.01    1.01
+Hydrogen         24.00 0.724    3.38    6.63    6.63    2.57    2.71    2.71   39.83   36.40   36.40    0.53   -2.40   -2.40
+Hydrogen         28.00 0.845    3.11    4.64    4.64   -1.79   -1.76   -1.76   32.86   29.83   29.83   -4.29   -7.08   -7.08
+Hydrogen         31.00 0.935    1.79    2.35    2.35   -7.22   -7.22   -7.22   31.65   28.94   28.94  -11.21  -13.82  -13.82
+
+== Saturation sweep (30 T from the triple point to Tr 0.95): mean |dev| % per Tr band, S / T / F ==
+fluid            Tr band   n  Psat S  Psat T  Psat F  rhoL S  rhoL T  rhoL F   cpL S   cpL T   cpL F  hvap S  hvap T  hvap F
+Nitrogen         0.5-0.7  13    1.89    0.42    1.61    1.33    1.27    1.28    5.51    0.83    1.51    1.01    0.23    0.78
+Nitrogen        0.7-0.85  10    0.33    0.29    0.09    0.81    0.79    0.79    3.62    3.30    2.78    0.20    0.19    0.22
+Nitrogen       0.85-0.95   7    0.53    0.20    0.31    4.45    4.40    4.39   17.97   17.35   16.86    2.94    2.28    2.56
+Nitrogen       all<=0.85  23    1.21    0.37    0.95    1.11    1.06    1.07    4.69    1.90    2.06    0.65    0.21    0.54
+Methane          Ttr-0.5   2    1.34    1.32    3.35    1.85    1.61    1.61    1.20    2.25    0.55    0.19    0.30    0.92
+Methane          0.5-0.7  12    0.76    0.38    1.20    2.14    1.95    1.95    0.87    0.52    1.36    0.18    0.19    0.54
+Methane         0.7-0.85   9    0.66    0.21    0.04    0.94    0.89    0.89    5.98    3.51    2.92    0.27    0.34    0.10
+Methane        0.85-0.95   7    0.80    0.25    0.31    4.66    4.57    4.56   18.68   17.36   16.98    3.18    2.09    2.26
+Methane        all<=0.85  23    0.77    0.40    0.93    1.64    1.51    1.51    2.90    1.84    1.90    0.22    0.26    0.40
+Ethane           Ttr-0.5  10   12.14    1.55    0.82    0.86    0.85    0.85    7.93    3.74    1.57    2.21    0.27    0.18
+Ethane           0.5-0.7   8    1.01    0.20    0.35    1.74    1.74    1.78    3.82    1.07    1.03    0.51    0.23    0.34
+Ethane          0.7-0.85   7    0.19    0.15    0.19    0.95    0.95    0.97    3.27    3.79    4.52    0.36    0.58    0.65
+Ethane         0.85-0.95   5    0.57    0.50    0.61    5.14    5.13    5.16   16.61   16.75   17.16    2.43    2.28    2.46
+Ethane         all<=0.85  25    5.23    0.73    0.49    1.17    1.16    1.18    5.31    2.90    2.22    1.15    0.34    0.36
+CarbonDioxide   0.7-0.85  17    0.74    0.52    2.06    0.69    0.68    0.74    4.13    5.10    3.00    0.64    0.75    1.43
+CarbonDioxide  0.85-0.95  13    0.27    0.11    0.81    4.61    4.55    4.65   14.69   11.93   12.35    1.03    0.80    2.16
+CarbonDioxide  all<=0.85  17    0.74    0.52    2.06    0.69    0.68    0.74    4.13    5.10    3.00    0.64    0.75    1.43
+Hydrogen         Ttr-0.5   5   10.86    2.17    2.17    7.88    8.34    8.34   73.84   68.75   68.75    9.55    6.20    6.20
+Hydrogen         0.5-0.7  11    2.14    6.08    6.08    5.32    5.60    5.60   52.63   48.60   48.60    4.46    1.86    1.86
+Hydrogen        0.7-0.85   8    3.38    5.85    5.85    1.42    1.48    1.48   36.42   33.17   33.17    1.74    4.32    4.32
+Hydrogen       0.85-0.95   6    2.29    3.17    3.17    5.22    5.22    5.22   31.85   29.03   29.03    8.59   11.27   11.27
+Hydrogen       all<=0.85  24    4.37    5.19    5.19    4.56    4.80    4.80   51.64   47.65   47.65    4.61    3.58    3.58
+
+== Dense and supercritical probe states outside the critical band: rho and cp deviation %, S / T / F ==
+fluid             T[K]  P[MPa]     Tr   rho S   rho T   rho F    cp S    cp T    cp F
+Nitrogen         77.36    5.00   0.61    1.53    1.45    1.47   -6.07   -1.74   -3.05
+Nitrogen         77.36   10.00   0.61    1.46    1.37    1.40   -6.79   -2.35   -3.68
+Nitrogen        100.00   10.00   0.79    1.79    1.73    1.76   -1.53   -1.96   -2.81
+Nitrogen        130.00    6.00   1.03   -5.60   -5.76   -5.71    7.05    7.53    7.12
+Nitrogen        130.00   10.00   1.03   -1.55   -1.68   -1.63    4.14    3.46    3.02
+Nitrogen        150.00   10.00   1.19   -4.05   -4.65   -4.57   -3.75   -3.25   -3.43
+Nitrogen        300.00   10.00   2.38    0.24   -1.08   -1.07    1.00    2.03    2.06
+Methane         110.00   10.00   0.58    2.14    1.93    1.94   -1.39   -1.42   -2.73
+Methane         150.00   10.00   0.79    1.76    1.67    1.69    2.10   -0.69   -1.39
+Methane         200.00   10.00   1.05   -4.69   -5.00   -4.97    4.95    5.59    5.36
+Methane         250.00   10.00   1.31    0.11   -1.17   -1.15   -4.56   -4.56   -4.57
+Methane         300.00   10.00   1.57    0.95   -0.33   -0.33   -0.17    0.06    0.07
+Ethane          200.00   10.00   0.66    2.20    2.19    2.23   -3.63   -1.85   -1.28
+Ethane          300.00   10.00   0.98   -2.91   -2.93   -2.92    6.25    6.33    6.59
+Ethane          320.00   10.00   1.05   -5.92   -5.96   -5.90    4.59    4.71    4.60
+Ethane          400.00   10.00   1.31    0.01   -0.09    0.20   -2.04   -2.03   -2.03
+CarbonDioxide   280.00    8.00   0.92   -3.24   -3.15   -3.19    9.22    6.19    6.37
+CarbonDioxide   280.00   10.00   0.92   -2.38   -2.29   -2.29    6.80    3.63    3.86
+CarbonDioxide   350.00   10.00   1.15    0.87    0.62    1.25   -3.61   -4.09   -4.38
+CarbonDioxide   400.00   10.00   1.32    0.58    0.16    0.71    0.01   -0.25   -0.64
+Hydrogen        300.00   10.00   9.05    0.73    1.13    1.13    0.22    0.22    0.22
+Hydrogen        623.00    6.00  18.80   -0.03    0.08    0.08    0.13    0.14    0.14
+Hydrogen        650.00    9.00  19.61   -0.09    0.06    0.06    0.18    0.19    0.19
+Hydrogen        663.00    9.10  20.00   -0.10    0.04    0.04    0.18    0.19    0.19
+Hydrogen        700.00   10.00  21.12   -0.15   -0.00   -0.00    0.18    0.19    0.19
+
+== Translation c [cm3/mol] re-anchored at Tr = 0.8 per alpha: Soave / Twu / fitted ==
+  Nitrogen         3.519   3.564   3.541
+  Methane          3.389   3.471   3.453
+  Ethane           3.454   3.475   3.459
+  CarbonDioxide    1.170   1.107   1.004
+  Hydrogen         4.298   4.106   4.106

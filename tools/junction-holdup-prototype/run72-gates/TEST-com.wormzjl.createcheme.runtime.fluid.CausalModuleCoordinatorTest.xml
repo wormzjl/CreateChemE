@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-09-25T06:39:30.499Z" hostname="WORMZ-PC" time="2.975">
+  <properties/>
+  <testcase name="deadlineDrivenAdvanceMatchesThePolledHostAcrossABufferRemoval()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.185"/>
+  <testcase name="restartWithPartialFeedOrPendingProductsContinuesTheSamePhysicalTrajectory()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.495"/>
+  <testcase name="removedProductRetainsPendingMaterialOrModuleHoldupAndReleasesOtherIslands()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.048"/>
+  <testcase name="aKnownZeroCycleResolvesItsHorizonWithoutWakingACertifiedFeed()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.032"/>
+  <testcase name="emptyCycleWithDifferentCadencesBootstrapsWithoutCircularProductionWait()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.02"/>
+  <testcase name="deadlineDrivenAdvanceReproducesThePolledCycleSequence()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.306"/>
+  <testcase name="removingAnUnusedZeroFractionOutletDoesNotStrandTheActiveProduct()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.037"/>
+  <testcase name="strandedBuffersAndPartialInputsBehaveTheSameUnderCertificates()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.574"/>
+  <testcase name="certifiedIslandsReproduceTheModuleOutcomeOfIslandsThatSolveEveryInterval()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="1.016"/>
+  <testcase name="coupledHydraulicsAndFifteenSecondModulePreserveAllOwnersAtEveryCommit()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.069"/>
+  <testcase name="twoBufferedModulesRecycleActuallyOwnedMaterialWithoutSchedulingDeadlock()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.057"/>
+  <testcase name="theDriveIndexHoldsPositiveWithdrawalsAndDueInputsButNoKnownZeroCycle()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.065"/>
+  <system-out><![CDATA[coupled: 27 publications, module scans 964 polled, 31 deadline-driven
+empty-cycle: 18 publications, module scans 946 polled, 28 deadline-driven
+recycle: 18 publications, module scans 946 polled, 28 deadline-driven
+coupled (reads true): 118 vs 120 solves, certificates 20, wakes 20, rested ticks 200, materialisations 2
+coupled (reads false): 118 vs 120 solves, certificates 20, wakes 18, rested ticks 200, materialisations 2
+empty-cycle (reads true): 6 vs 90 solves, certificates 3, wakes 0, rested ticks 5600, materialisations 56
+empty-cycle (reads false): 6 vs 90 solves, certificates 3, wakes 0, rested ticks 5600, materialisations 56
+recycle (reads true): 62 vs 90 solves, certificates 1, wakes 0, rested ticks 2800, materialisations 28
+recycle (reads false): 62 vs 90 solves, certificates 1, wakes 0, rested ticks 0, materialisations 0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

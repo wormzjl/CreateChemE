@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3ColumnInitializerTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:57.617Z" hostname="WORMZ-PC" time="0.003">
+  <properties/>
+  <testcase name="materialClosedSeedIncludesAFeedTrayDrawInDownflowAndBottoms()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnInitializerTest" time="0.001"/>
+  <testcase name="totalCondenserRequiresLiquidOutletFlashEvenWhenMeshEquationsClose()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnInitializerTest" time="0.001"/>
+  <testcase name="materialPhaseFlowRatiosIncludeThePriorStageTotalVaporToLiquidRatio()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnInitializerTest" time="0.0"/>
+  <testcase name="exactZeroFeedComponentIsEliminatedFromTheSeedWithoutAFloor()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnInitializerTest" time="0.0"/>
+  <testcase name="positiveRefluxSeedIsFinitePositiveAndClosesEveryComponentMaterialRowWithoutPublishingSuccess()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnInitializerTest" time="0.0"/>
+  <testcase name="zeroRefluxTwoPhaseAndVaporOnlySeedBranchesRemainMaterialClosed()" classname="com.wormzjl.createcheme.science.column.v3.V3ColumnInitializerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

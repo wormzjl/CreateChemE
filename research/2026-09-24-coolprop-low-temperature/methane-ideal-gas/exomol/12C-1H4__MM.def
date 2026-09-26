@@ -1,0 +1,131 @@
+EXOMOL.def                                                                      # ID
+(12C)(1H)4                                                                      # IsoFormula
+12C-1H4                                                                         # Iso-slug
+MM                                                                              # Isotopologue dataset name
+20240113                                                                        # Version number with format YYYYMMDD
+74-82-8                                                                         # CAS Registry Number
+InChI=1S/CH4/h1H4                                                               # In-ChI of molecule
+VNWKTOKETHGBQD-UHFFFAOYSA-N                                                     # In-ChI key of molecule
+5                                                                               # Number of atoms
+12                                                                              # Isotope number 1
+C                                                                               # Element symbol 1
+1                                                                               # Isotope number 2
+H                                                                               # Element symbol 2
+16.03130013 2.66206002e-26                                                      # Isotopologue mass (Da) and (kg)
+Td                                                                              # Symmetry group
+5                                                                               # Number of irreducible representations
+A1                                                                              # Irreducible representation label 1
+5                                                                               # Nuclear spin degeneracy 1
+A2                                                                              # Irreducible representation label 2
+5                                                                               # Nuclear spin degeneracy 2
+E                                                                               # Irreducible representation label 3
+2                                                                               # Nuclear spin degeneracy 3
+T1                                                                              # Irreducible representation label 4
+3                                                                               # Nuclear spin degeneracy 4
+T2                                                                              # Irreducible representation label 5
+3                                                                               # Nuclear spin degeneracy 5
+2000.00                                                                         # Maximum temperature of linelist
+2                                                                               # No. of pressure broadeners available
+0                                                                               # Cooling function availability (1=yes, 0=no)
+0                                                                               # Specific heat availability (1=yes, 0=no)
+0                                                                               # Photo-absorption continuum cross-sections availability (1=yes, 0=no)
+9155208                                                                         # No. of states in .states file
+0                                                                               # Hyperfine resolved dataset (1=yes, 0=no)
+1                                                                               # Uncertainty availability (1=yes, 0=no)
+1                                                                               # Lifetime availability (1=yes, 0=no)
+0                                                                               # Lande g-factor availability (1=yes, 0=no)
+sphcs                                                                           # Quantum case label
+3                                                                               # No. of quantum number types
+26                                                                              # No. of quanta defined
+Grve                                                                            # Quantum label 1
+A3 %3s                                                                          # Format quantum label 1
+Total (rovibronic) symmetry                                                     # Description quantum label 1
+Polyad:P                                                                        # Quantum label 2
+I2 %2d                                                                          # Format quantum label 2
+Polyad number                                                                   # Description quantum label 2
+Polyad:Pnum                                                                     # Quantum label 3
+I3 %3d                                                                          # Format quantum label 3
+Polyad counting number                                                          # Description quantum label 3
+Herzberg:n1                                                                     # Quantum label 4
+I6 %6d                                                                          # Format quantum label 4
+[0/10] A_1_-symmetry normal mode quantum number                                 # Description quantum label 4
+Herzberg:n2                                                                     # Quantum label 5
+I4 %4d                                                                          # Format quantum label 5
+[0/20] E-symmetry normal mode quantum number                                    # Description quantum label 5
+Herzberg:L2                                                                     # Quantum label 6
+I4 %4d                                                                          # Format quantum label 6
+[0/20] L_2_ vib. angular momentum quantum number                                # Description quantum label 6
+Herzberg:n3                                                                     # Quantum label 7
+I4 %4d                                                                          # Format quantum label 7
+[0/10] F_1_-symmetry normal mode quantum number                                 # Description quantum label 7
+Herzberg:L3                                                                     # Quantum label 8
+I4 %4d                                                                          # Format quantum label 8
+[0/10] L_3_ vib. angular momentum quantum number                                # Description quantum label 8
+Herzberg:M3                                                                     # Quantum label 9
+I4 %4d                                                                          # Format quantum label 9
+[0/10] M_3_ Multiplicity index quantum number                                   # Description quantum label 9
+Herzberg:n4                                                                     # Quantum label 10
+I4 %4d                                                                          # Format quantum label 10
+[0/20] F_2_-symmetry normal mode quantum number                                 # Description quantum label 10
+Herzberg:L4                                                                     # Quantum label 11
+I4 %4d                                                                          # Format quantum label 11
+[0/20] L_4_ vib. angular momentum quantum number                                # Description quantum label 11
+Herzberg:M4                                                                     # Quantum label 12
+I4 %4d                                                                          # Format quantum label 12
+[0/20] M_4_ Multiplicity index quantum number                                   # Description quantum label 12
+TROVE:Gvib                                                                      # Quantum label 13
+A3 %3s                                                                          # Format quantum label 13
+Vibrational symmetry                                                            # Description quantum label 13
+TROVE:irot                                                                      # Quantum label 14
+I2 %2d                                                                          # Format quantum label 14
+Index in rotational symmetry block                                              # Description quantum label 14
+TROVE:Grot                                                                      # Quantum label 15
+A3 %3s                                                                          # Format quantum label 15
+Rotational symmetry                                                             # Description quantum label 15
+TROVE:ivib                                                                      # Quantum label 16
+I2 %2d                                                                          # Format quantum label 16
+Index in vibrational symmetry block                                             # Description quantum label 16
+TROVE:Coef                                                                      # Quantum label 17
+F5.2 %5.2f                                                                      # Format quantum label 17
+Coefficient with the largest contribution                                       # Description quantum label 17
+TROVE:v1                                                                        # Quantum label 18
+I4 %4d                                                                          # Format quantum label 18
+[0/10] Local mode vibrational quantum number                                    # Description quantum label 18
+TROVE:v2                                                                        # Quantum label 19
+I4 %4d                                                                          # Format quantum label 19
+[0/20] Local mode vibrational quantum number                                    # Description quantum label 19
+TROVE:v3                                                                        # Quantum label 20
+I4 %4d                                                                          # Format quantum label 20
+[0/20] Local mode vibrational quantum number                                    # Description quantum label 20
+TROVE:v4                                                                        # Quantum label 21
+I4 %4d                                                                          # Format quantum label 21
+[0/20] Local mode vibrational quantum number                                    # Description quantum label 21
+TROVE:v5                                                                        # Quantum label 22
+I4 %4d                                                                          # Format quantum label 22
+[0/20] Local mode vibrational quantum number                                    # Description quantum label 22
+TROVE:v6                                                                        # Quantum label 23
+I4 %4d                                                                          # Format quantum label 23
+[0/20] Local mode vibrational quantum number                                    # Description quantum label 23
+TROVE:v7                                                                        # Quantum label 24
+I4 %4d                                                                          # Format quantum label 24
+[0/20] Local mode vibrational quantum number                                    # Description quantum label 24
+TROVE:v8                                                                        # Quantum label 25
+I4 %4d                                                                          # Format quantum label 25
+[0/20] Local mode vibrational quantum number                                    # Description quantum label 25
+TROVE:v9                                                                        # Quantum label 26
+I4 %4d                                                                          # Format quantum label 26
+[0/20] Local mode vibrational quantum number                                    # Description quantum label 26
+SourceType                                                                      # Auxiliary title 1
+A2 %2s                                                                          # Format title 1
+Ma=MARVEL,Ca=Calculated,EH=Effective Hamiltonian,IE=Isotopologue extrapolation  # Description title 1
+Ecal                                                                            # Auxiliary title 2
+F12.6 %12.6f                                                                    # Format title 2
+Calculated energy in cm-1                                                       # Description title 2
+50395644806                                                                     # Total number of transitions
+120                                                                             # No. of transition files
+12000.00                                                                        # Maximum wavenumber (in cm-1)
+18000.00                                                                        # Higher energy with complete set of transitions (in cm-1)
+5000.00                                                                         # Maximum temperature of partition function
+1.00                                                                            # Step size of temperature
+0.0488                                                                          # Default value of Lorentzian half-width for all lines (in cm-1/bar)
+0.400                                                                           # Default value of temperature exponent for all lines

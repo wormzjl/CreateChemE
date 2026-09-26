@@ -1,0 +1,855 @@
+==== PAGE 1 ====
+Published: January 06, 2012
+r 2012 American Chemical Society 590 dx.doi.org/10.1021/je2011677 | J. Chem. Eng. Data 2012, 57, 590 –597
+ARTICLE
+pubs.acs.org/jced
+Equation of State for Solid Carbon Dioxide Based on the Gibbs Free
+Energy
+Andreas J€ager* and Roland Span
+Thermodynamics, Ruhr-Universit€at Bochum, 44801 Bochum, Germany
+’ INTRODUCTION
+Planning and dimensioning of pipelines for the transport of
+CO2 in carbon capture and storage (CCS) applications require
+highly accurate thermodynamic property models for pure carbon
+dioxide as well as for CO2-rich mixtures with impurities (e.g., N2).
+Since scenarios with sharp expansion are conceivable, phase
+equilibria involving solid and liquid as well as solid and gas may
+occur. Simple correlation equations for the sublimation pressures
+and the melting pressures as a function of temperature can be very
+accurate but do not allow for ﬂash calculations. For this reason a
+fundamental equation of state for dry ice based on the Gibbs
+free energy was established, following a general approach
+described by Tillner-Roth. 1 Functions for the isobaric heat
+capacity along an isobar and the temperature and pressure
+dependence of the molar volume (thermal equation of state)
+are required, which upon integration yield the Gibbs free
+energy of solid carbon dioxide.
+’ EQUATION OF STATE
+The Gibbs free energy may be written as:
+gðp, TÞ¼ h0 /C0 Ts0 þ
+Z T
+T0
+cpðT, p0Þ dT /C0 T
+Z T
+T0
+cpðT, p0Þ
+T dT
+þ
+Z p
+p0
+vðp, TÞ dp ð1Þ
+In this equation, cp(T, p0) is the isobaric heat capacity along an
+isobar p0, v(T, p) is a thermal equation of state explicit in the
+molar volume, and h0 and s0 are integration constants. Hence a
+model for the isobaric heat capacity at p0 and a thermal equation
+of state for dry ice are needed to integrate eq 1. Some simplifying
+assumptions have to be made since only few experimental data
+are available for solid carbon dioxide and experimental data in the
+pressure range from 0 MPa to the triple point pressure ptr were
+mostly measured along the sublimation curve:
+1 The pressure dependence of cp(T, p) is negligible for 0 MPa
+< p < ptr.
+2 The pressure dependence of the thermal expansion coe ﬃ-
+cient α(T, p) is negligible for 0 MPa < p < ptr.
+3 The pressure dependence of the compressibility k(T, p)i s
+negligible for 0 MPa < p < ptr.
+The impact of these assumptions will be analyzed in the
+discussion. For the heat capacity a functional form proposed by
+Feistel and Wagner 2 was used and slightly modi ﬁed:
+cpðT, p0Þ¼ aT5 þ bT3
+T4 þ cT2 þ d ð2Þ
+By a nonlinear least-squares ﬁt (which was chosen for all ﬁtting
+done in this work) the constantsa, b, c, and d were ﬁtted to data of
+Giauque and Egan.3 As also pointed out by Manzhelii et al., 4 the
+experimental data by Giauque and Egan3 are considered the most
+accurate experimental data for the heat capacity of dry ice over a
+wide temperature range.
+The required thermal equation of state is split into two parts.
+An equation for the expansion coe ﬃcient along an isobar and an
+equation for the ﬁrst derivative of the molar volume with respect
+to pressure as a function of temperature and pressure are needed.
+Once these two functions are given, the molar volume may be
+Received: October 31, 2011
+Accepted: November 28, 2011
+ABSTRACT: In this work a fundamental equation of state
+explicit in the Gibbs free energy was established, which was
+ﬁtted to experimental data (heat capacity, molar volume,
+expansion coe ﬃcient, and compressibility) of solid carbon
+dioxide. Almost all of the data that the equation was ﬁtted to
+are represented within the experimental uncertainty given by
+the authors. However, only very limited data for the thermo-
+dynamic properties of solid carbon dioxide are available. The new equation behaves physically reasonably within its range of validity.
+Sublimation and melting pressures of dry ice are predicted accurately using Gibbs energies calculated from the new dry ice equation
+and from the fundamental equation by Span and Wagner for theﬂuid phase (J. Phys. Chem. Data 1996, 25, 1509/C0 1596). The results
+agree with those of the reference equations for sublimation and melting pressure published by Span and Wagner mostly within the
+uncertainty given for these equations. The resulting sublimation and melting pressures are very sensitive to variations of the Gibbs
+energy. The use of another equation of state for the ﬂuid phase has a signiﬁcant impact on the calculated equilibrium pressures. It is
+shown that the equation for dry ice also might be used for the calculation of equilibria with dry ice in the solid phase and mixtures in
+the ﬂuid phase.
+
+==== PAGE 2 ====
+591 dx.doi.org/10.1021/je2011677 |J. Chem. Eng. Data 2012, 57, 590–597
+Journal of Chemical & Engineering Data ARTICLE
+obtained by integration of the total di ﬀerential:
+v /C0 v0 ¼
+Z v
+v0
+dv ¼
+Z T
+T0
+∂v
+∂T ðT, p0Þ dT þ
+Z p
+p0
+∂v
+∂pðT, pÞ dp
+ð3Þ
+The functional form for the expansion coeﬃcient is chosen to be
+the same as for the heat capacity:
+αðT, p0Þ¼ α1T5 þ α2T3
+T4 þ α3T2 þ α4
+¼ 1
+v
+∂v
+∂T ð4Þ
+The constants α1, α2, α3, and α4 have been ﬁtted to data of
+Manzhelii et al. 4 For convenience we write the integral of α as
+fαðTÞ¼
+Z T
+T0
+αðT, p0Þ dT ð5Þ
+For the partial derivative of the molar volume with respect to
+pressure consider the following form:
+∂v
+∂p ¼/C0 A
+n ðAp þ BÞ/C0ð n þ 1Þ=nðK1T2 þ K2T þ K3Þð 6Þ
+The ﬁrst pressure-dependent part ensures that the compressi-
+bility decreases with an increase of pressure, and the tempera-
+ture-dependent part ensures that the compressibility increases
+with an increase of temperature. For convenience the tempera-
+ture-dependent part will further be referred to as
+KðTÞ¼ K1T2 þ K2T þ K3 ð7Þ
+The constants A, B, n, K1, K2, and K3 were ﬁtted to isothermal
+compressibility data of Manzhelii et al. 4 and to data for the
+pressure dependence of the molar volume of Olinger5 and Liu6 at
+a temperature of about 296 K.
+Combining eqs 2 to 6 with eq 1 and reducing the resulting
+equation by the reference temperature T0 and the universal gas
+constant R = 8.314472 J 3 mol/C0 1
+3 K/C0 1 leads to the Gibbs free
+energy for dry ice in the following form:
+g
+RT0
+¼ g0 þ g1Δϑ þ g2Δϑ2
+þ g3 ln ϑ2 þ g2
+4
+1 þ g2
+4
+ !
+/C0 2ϑ
+g4
+arctan ϑ
+g4
+ !
+/C0 arctan 1
+g4
+ !"#()
+þ g5 ln ϑ2 þ g2
+6
+1 þ g2
+6
+ !
+/C0 2ϑ
+g6
+arctan ϑ
+g6
+ !
+/C0 arctan 1
+g6
+ !"#()
+þ g7Δπ½efα ðϑÞ þ KðϑÞg8/C138þ g9KðϑÞ½ðπ þ g10Þðn /C0 1Þ=n
+/C0ð 1 þ g10Þðn /C0 1Þ=n/C138ð 8Þ
+The temperature T and the pressure p are replaced by the
+reduced temperature ϑ and the reduced pressure π. It is:
+ϑ ¼ T
+T0
+, Δϑ ¼ ϑ /C0 1, π ¼ p
+p0
+, Δπ ¼ π /C0 1
+ð9Þ
+The reference state has been set to
+T0 ¼ 150 K, p0 ¼ 101325 Pa,
+v0 ¼ 2:7186286 3 10/C0 5 m3
+3 mol/C0 1 ð10Þ
+The coeﬃcients g2 to g6 result from the integration of cp, and
+the coeﬃcients g7 to g10 result from the integration of the thermal
+equation of state. g0 and g1 are integration constants and may be
+used to link eq 8 to the equation of state for the ﬂuid phase.
+Hence g0 and g1 may be calculated according to the following
+relations:
+gsolðTtr, ptrÞ¼ gvapðTtr, ptrÞ¼ gliqðTtr, ptrÞð 19Þ
+ssolðTtr, ptrÞ¼ sliqðTtr, ptrÞ/C0 Δhmelt
+Ttr
+ð20Þ
+Δhmelt is the melting enthalpy at the triple point, and s is the
+molar entropy of the indicated phase. The melting enthalpy was
+measured by Kuehnen and Robson 7 and Maass and Barnes8 and
+may be found in the Gas Encyclopædia of Air Liquide.9 The value
+used in this work was treated as an adjustable parameter and has
+been set to Δhmelt =8 8 7 5J 3 mol/C0 1. According to Span and
+Wagner10 the temperature and pressure at the triple point is set
+to Ttr = 216.592 K and ptr = 517950 Pa.
+Table 1. Values for the Parameters of Equation 8
+g0 = /C0 2.6385478 3 100 g0
+α = 3.9993365 3 10/C0 2
+g1 = 4.5088732 3 100 g1
+α = 2.3945101 3 10/C0 3
+g2 = /C0 2.0109135 3 100 g2
+α = 3.2839467 3 10/C0 1
+g3 = /C0 2.7976237 3 100 g3
+α = 5.7918471 3 10/C0 2
+g4 = 2.6427834 3 10/C0 1 g4
+α = 2.3945101 3 10/C0 3
+g5 = 3.8259935 3 100 g5
+α = /C0 2.6531689 3 10/C0 3
+g6 = 3.1711996 3 10/C0 1 g6
+α = 1.6419734 3 10/C0 1
+g7 = 2.2087195 3 10/C0 3 g7
+α = 1.7594802 3 10/C0 1
+g8 = /C0 1.1289668 3 100 g8
+α = 2.6531689 3 10/C0 3
+g9 = 9.2923982 3 10/C0 3 g0
+k = 2.2690751 3 10/C0 1
+g10 = 3.3914617 3 103 g1
+k = /C0 7.5019750 3 10/C0 2
+n =7 g2
+k = 2.6442913 3 10/C0 1
+Table 2. Relation of Thermodynamic Properties to Equation
+8 and Its Partial Derivatives
+thermodynamic property relation to g
+volume v ¼ ∂g
+∂p ð11Þ
+entropy s ¼/C0 ∂g
+∂T ð12Þ
+enthalpy h ¼ g /C0 T ∂g
+∂T ð13Þ
+internal energy u ¼ g /C0 T ∂g
+∂T /C0 p∂g
+∂p ð14Þ
+Helmholtz energy f ¼ g /C0 p∂g
+∂p ð15Þ
+isochoric heat capacity cp ¼/C0 T ∂2g
+∂T2 ð16Þ
+cubic expansion coe ﬃcient
+α ¼ ∂2g
+∂T∂p
+ !
+= ∂g
+∂p
+ !
+ð17Þ
+isothermal compressibility
+k ¼/C0 ∂2g
+∂p2
+ !
+= ∂g
+∂p
+ !
+ð18Þ
+==== PAGE 3 ====
+592 dx.doi.org/10.1021/je2011677 |J. Chem. Eng. Data 2012, 57, 590–597
+Journal of Chemical & Engineering Data ARTICLE
+Finally combining eqs 4, 5, and 10 yields:
+fαðϑÞ¼ gα
+0 ðϑ2 /C0 1Þþ gα
+1 ln ϑ2 /C0 gα
+2 ϑ þ gα
+3
+1 /C0 gα
+2 þ gα
+3
+ !
+þ gα
+4 ln ϑ2 þ gα
+2 ϑ þ gα
+3
+1 þ gα
+2 þ gα
+3
+ !
+þ gα
+5 arctan ϑ /C0 gα
+6
+gα
+7
+ !"
+/C0 arctan 1 /C0 gα
+6
+gα
+7
+ !#
+þ gα
+8 arctan ϑ þ gα
+6
+gα
+7
+ !"
+/C0 arctan 1 þ gα
+6
+gα
+7
+ !#
+ð21Þ
+Replacing the temperature in eq 7 by the reduced temperature
+leads to:
+KðϑÞ¼ gk
+0 ϑ2 þ gk
+1 ϑ þ gk
+2 ð22Þ
+Values for all constants of eq 8, 21, and 22 are listed in Table 1.g0
+and g1 have been chosen such that the equation for dry ice has the
+same reference point as the reference equation for CO 2 in the
+ﬂuid phase by Span and Wagner. 10
+’ RESULTS AND DISCUSSION
+To analyze the behavior of eq 8 we examined the deviations
+between the measured thermodynamic properties and the prop-
+erties calculated using the new fundamental equation of state. All
+thermodynamic properties of a substance can be calculated from
+a fundamental equation and its derivatives with respect to the
+independent variables on which the equation depends. Table 2
+gives a brief overview of the partial derivatives used to calculate
+thermodynamic properties from eq 8. The respectively needed
+derivatives are given in Table 3. The derivatives of K and fα are
+given in Table 4. Numerical values at di ﬀerent temperatures and
+pressures are provided in Table 5.
+In Figure 1 the relative deviation of calculated heat capacity
+data from experimental values is plotted over temperature. All
+of the data were measured along the sublimation curve, so the
+corresponding pressure to each temperature is the respective
+Table 3. Partial Derivatives of Equation 8 with Respect to Temperature and Pressure
+equations for the derivatives of the Gibbs energy
+∂g
+∂T ¼ Rg 1 þ g22Δϑ /C0 2g3
+g4
+arctan ϑ
+g4
+ !
+/C0 arctan 1
+g4
+ !"#
+/C0 2g5
+g6
+arctan ϑ
+g6
+ !
+/C0 arctan 1
+g6
+ !"#(
+þ g7Δπ expðfαðϑÞÞ∂fαðϑÞ
+∂ϑ þ g8
+∂KðϑÞ
+∂ϑ
+/C20/C21
+þ g9
+∂KðϑÞ
+∂ϑ ½ðπ þ g10Þðn /C0 1Þ=n /C0ð 1 þ g10Þðn /C0 1Þ=n/C138
+/C27
+∂g
+∂p ¼ RT0
+p0
+g7½expðf αðϑÞÞ þ g8KðϑÞ/C138 þ g9KðϑÞn /C0 1
+n ðπ þ g10Þ /C0 1=n
+/C26/C27
+∂2g
+∂T∂p ¼ R
+p0
+g7 expðf αðϑÞÞ∂f αðϑÞ
+∂ϑ þ g8
+∂KðϑÞ
+∂ϑ
+/C20/C21
+þ g9
+∂KðϑÞ
+∂ϑ
+n /C0 1
+n ðπ þ g10Þ /C0 1=n
+/C26/C27
+∂2g
+∂T2 ¼ R
+T0
+2g2 /C0 2g3
+ϑ2 þ g42 /C0 2g5
+ϑ2 þ g62 þ g7Δπ expðfαðϑÞÞ∂2fαðϑÞ
+∂ϑ2 þ expðfαðϑÞÞ ∂fαðϑÞ
+∂ϑ
+/C18/C19 2
+þ g8
+∂2KðϑÞ
+∂ϑ2
+"#
+þ g9
+∂2KðϑÞ
+∂ϑ2 ½ðπ þ g10Þðn /C0 1Þ=n /C0ð 1 þ g10Þðn /C0 1Þ=n/C138
+( )
+∂2g
+∂p2 ¼ RT0
+p02 g9KðϑÞ1 /C0 n
+n2 ðπ þ g10Þ /C0ð n þ 1Þ=n
+/C26/C27
+Table 4. Partial Derivatives of K and fα with Respect to Temperature and Pressure
+equation for the derivatives of K and fα
+∂KðϑÞ
+∂ϑ ¼ 2gk
+0 ϑ þ gk
+1
+∂2KðϑÞ
+∂ϑ2 ¼ 2gk
+0
+∂fαðϑÞ
+∂ϑ ¼ 2gα
+0 ϑ þ gα
+1
+2ϑ /C0 gα
+2
+ϑ2 /C0 gα
+2 ϑ þ gα
+3
+þ gα
+4
+2ϑ þ gα
+2
+ϑ2 þ gα
+2 ϑ þ gα
+3
+þ gα
+5
+gα
+7
+1
+1 þ ϑ /C0 gα
+6
+gα
+7
+ ! 2 þ gα
+8
+gα
+7
+1
+1 þ ϑ þ gα
+6
+gα
+7
+ ! 2
+∂2fαðϑÞ
+∂ϑ2 ¼ 2gα
+0 þ gα
+1
+2ðϑ2 /C0 gα
+2 ϑ þ gα
+3 Þ/C0ð 2ϑ /C0 gα
+2 Þ2
+ðϑ2 /C0 gα
+2 ϑ þ gα
+3 Þ2 þ gα
+4
+2ðϑ2 þ gα
+2 ϑ þ gα
+3 Þ/C0ð 2ϑ þ gα
+2 Þ2
+ðϑ2 þ gα
+2 ϑ þ gα
+3 Þ2
+/C0 gα
+5
+ðgα
+7 Þ2
+1
+1 þ ϑ /C0 gα
+6
+gα
+7
+ ! 20
+@
+1
+A
+22ϑ /C0 gα
+6
+gα
+7
+/C0 gα
+8
+ðgα
+7 Þ2
+1
+1 þ ϑ þ gα
+6
+gα
+7
+ ! 20
+@
+1
+A
+22ϑ þ gα
+6
+gα
+7
+==== PAGE 4 ====
+593 dx.doi.org/10.1021/je2011677 |J. Chem. Eng. Data 2012, 57, 590–597
+Journal of Chemical & Engineering Data ARTICLE
+sublimation pressure. Equation 2 was only ﬁtted to the data of
+Giauque and Egan,3 who state an experimental uncertainty of 0.2
+% for temperatures between (35 and 195) K. As seen in Figure 1
+the maximum deviation does not exceed 0.4 %. But the deviation
+of some heat capacities calculated from eq 8 from the experi-
+mental data of Giauque and Egan 3 exceeds the experimental un-
+certainty. Concerning the year the data were measured and tak-
+ing a closer look at it, we think Giauque and Egan 3 might have
+underestimated their uncertainties slightly. Nevertheless, com-
+pared to data of other authors, the data of Giauque and Egan 3
+are the most accurate for temperatures greater than 80 K.
+Eucken and Hauck 11 state an uncertainty of 1.5 %; the
+other authors do not give information about their estimated
+measurement uncertainties. Heat capacities for temperatures
+lower than 80 K were not only measured by Giauque and
+Egan3 but also by Eucken 11 and Manzhelii et al. 4 as displayed
+in Figure 2.
+In Figure 3 relative deviations of molar volume data from
+calculated values are plotted over temperature. Again the corre-
+sponding pressure is the sublimation pressure. The most accurate
+measurements are considered to be those of Manzhelii et al.4 The
+deviations of calculated values from the experimental data by
+Manzhelii et al. 4 do not exceed 0.2 %. Deviations from experi-
+mental data by Keesom and K €ohler14 and Maass and Barnes8 do
+not exceed 0.4 %, respectively.
+In Figure 4 thermal expansion coe ﬃcient data and calculated
+values from eq 17 and in Figure 5 isothermal compressibility data
+and values calculated from eq 18 are plotted over temperature.
+Again the pressure corresponds to the sublimation pressure. In
+setting up the equation, one of the assumptions we had to make
+was that, at a constant temperature for 0 MPa toptr cp, α and k are
+constant. To assess the impact of these assumptions we analyzed
+relative deviations of these properties for temperatures between
+80 K and Ttr and pressures between 0 MPa and ptr. The maxi-
+mum deviation for the heat capacity was found at Ttr and is
+(cp(Ttr,0M P a )/C0 cp(Ttr, ptr))/cp(Ttr, ptr) = 0.02 %. The maximum
+Table 5. Numerical Check Values
+T = Ttr = 216.592 K T = 100 K
+thermodynamic property p = ptr = 0.51795 MPa p = 100 MPa
+g/(J 3 mol/C0 1) /C0 1.447007522 3 103 /C0 2.961795962 3 103
+v/(m3
+3 mol/C0 1) 2.848595255 3 10/C0 5 2.614596591 3 10/C0 5
+s/(J 3 mol/C0 1
+3 K/C0 1) /C0 1.803247012 3 101 /C0 5.623154438 3 101
+cp/(J 3 mol/C0 1
+3 K/C0 1) 5.913420271 3 101 3.911045710 3 101
+α/(K/C0 1) 8.127788321 3 10/C0 4 3.843376525 3 10/C0 4
+k/(Pa/C0 1) 2.813585169 3 10/C0 10 1.149061787 3 10/C0 10
+Figure 1. Relative deviations 100Δcp/cp,calc = 100(cp,calc /C0 cp,exp)/cp,calc
+of heat capacity data from values calculated from eq 16. /C2 ,
+Eucken;12 4, Eucken and Hauck; 11 O, Giauque and Egan; 3 ], Maass
+and Barnes.8
+Figure 2. Isobaric heat capacity: experimental data and values
+calculated from eq 16. — , calculated; /C2 , Eucken; 12 4, Eucken and
+Hauck;11 O, Giauque and Egan; 3 ], Maass and Barnes; 8 +, Manzhelii
+et al.4
+Figure 3. Relative deviations 100 Δv/vcalc = 100( vcalc /C0 vexp)/vcalc of
+molar volume data from values calculated from eq 11. ], Maass and
+Barnes;8 4, Manzhelii et al.; 4 0, Keesom and K €ohler.14
+Figure 4. Thermal expansion coe ﬃcient α: data and values calculated
+from eq 17. — , calculated; 0, Keesom and K€ohler;14 4, Manzhelii et al.4
+Figure 5. Compressibility k: data and values calculated from eq 18. — ,
+calculated; 4, Manzhelii et al. 4
+==== PAGE 5 ====
+594 dx.doi.org/10.1021/je2011677 |J. Chem. Eng. Data 2012, 57, 590–597
+Journal of Chemical & Engineering Data ARTICLE
+deviation for k was found to be 0.165 % and forα 0.096 %. These
+deviations are small compared to deviations from the measured
+values available; the initial assumptions are justi ﬁed.
+Range of Validity and Extrapolation Behavior. To use the
+dry ice equation for phase equilibrium calculations eq 8 has to
+cover a wide range of pressures and temperatures, for which no
+experimental data are available. Thus, it has to be proven that eq 8
+behaves qualitatively correctly within a sufficiently large range of
+validity. For demonstration purposes isobars and isotherms for
+some thermodynamic properties are plotted over temperature in
+Figure 6. Equation 8 shows reasonable physical behavior up to
+pressures of about 500 MPa. The lower temperature limit has
+been set to 80 K since for very low temperatures physically in-
+correct solutions may occur. Thus the range of validity for eq 8
+has been set to 0 MPa < p < 500 MPa and 80 K < T < 300 K. The
+upper temperature limit corresponds to a melting pressure of
+about 500 MPa.
+For some thermal properties experimental data are available
+outside the range of validity; extrapolation of these properties yields
+good results. The high-pressure molar volume data of Olinger 5
+and Liu 6 are reproduced with a maximum deviation of about
+2 % (Figure 7) and the deviation from experimental data for
+Figure 6. Isobars and isotherms for some properties calculated from eq 8 and its derivatives.
+Figure 7. Relative deviations 100 Δv/vcalc = 100( vcalc /C0 vexp)/vcalc of
+molar volume data from calculated values from eq 11. 0, Liu; 6 ],
+Olinger.5
+Figure 8. Deviations Δcp = cp,calc /C0 cp,exp of low temperature heat
+capacity data from values calculated from eq 16. /C2 , Eucken; 12 O,
+Giauque and Egan; 3 +, Manzhelii et al. 4
+==== PAGE 6 ====
+595 dx.doi.org/10.1021/je2011677 |J. Chem. Eng. Data 2012, 57, 590–597
+Journal of Chemical & Engineering Data ARTICLE
+extrapolation of cp to temperatures lower than 80 K does not
+exceed 0.4 J 3 mol/C0 1
+3 K/C0 1 as shown in Figure 8. The thermal
+expansion coeﬃcient and the isothermal compressibility may be
+extrapolated to lower temperatures too (for pressures up to the
+triple point pressure) as seen before in Figures 4 and 5. It can be
+seen from Figure 3 that extrapolation to temperatures lower than
+80 K for the molar volume at pressures up to the triple point
+pressure also gives good results.
+Sublimation Pressure. Sublimation pressures of CO 2 have
+been measured by Bedford et al.,15 Bilkadi et al.,16 Bryson et al.,17
+Ambrose,18 Giauque and Egan, 3 and Fernandez-Fassnacht and
+del Rio.19 Span and Wagner10 established an accurate correlation
+equation for the sublimation pressure, based on selected experi-
+mental data. They state that the uncertainty of their equation is
+Δpsub e ( 250 Pa for 185 K e T e Ttr, Δpsub e ( 100 Pa for
+170 K e T e 185 K, and Δpsub e ( 50 Pa for T e 170 K.
+Equation 8 allows for equilibrium pressure calculations by find-
+ing pressures p and temperatures T, which satisfy the phase equi-
+librium condition for pure substances:
+μsolðT, pÞ¼ μvapðT, pÞ S gsolðT, pÞ¼ gvapðT, pÞð 23Þ
+Since eq 23 cannot be solved analytically, we have to find a
+solution numerically setting the break condition to
+/C12/C12/C12/C12/C12gsolðT, pÞ/C0 gvapðT, pÞ
+/C12/C12/C12/C12/C12< 0:000001 J 3 mol/C0 1 ð24Þ
+In Figure 9 deviations of the correlation equation from experi-
+mental values and values calculated using eq 8 for the solid phase
+and the reference equation for carbon dioxide by Span and
+Wagner10 for the gas phase are presented. Additionally the uncer-
+tainties of the correlation equation given by Span and Wagner 10
+are shown.
+Ideally, the calculated sublimation pressures, which are in-
+dicated by the solid line, should stay within the uncertainty of the
+correlation equation. The results do not quite meet this require-
+ment, and some calculated values deviate slightly more than the
+uncertainty of the correlation equation. We studied this e ﬀect by
+using another equation of state for the gas phase. Employing the
+also highly accurate equation by Ely et al.20 required some modi-
+ﬁcation of eq 8 regarding the constants g0 and g1 since both the
+entropy of the liquid at the triple point (see eq 20) and the Gibbs
+free energy of the vapor and liquid phases at the triple point (see
+eq 19) change. After recalculation of the constants the phase
+equilibrium condition remains the same. The results obtained by
+using the equation of state by Ely et al. 20 instead of the equation
+by Span and Wagner 10 are shown in Figure 10.
+The calculated sublimation pressures depend signi ﬁcantly on
+the equation used for the ﬂuid phase. Furthermore small di ﬀere-
+nces in the Gibbs energy for either the ﬂuid or the solid phase
+lead to signi ﬁcant changes in calculated sublimation pressures.
+Considering this, better results for sublimation pressure calcula-
+tion could only be achieved by either ﬁtting the equation for the
+solid or ﬁtting the equation for the ﬂuid phase to the sublimation
+Figure 9. Deviations Δpsub = psub,corr.eq /C0 psub,calc(exp) of sublimation
+pressures calculated from the phase equilibrium condition from values
+calculated from the correlation equation by Span and Wagner. 10 The
+fundamental equation by Span and Wagner10 was used for the gas phase.
+— , calculated; /C0/C0 , uncertainty; 0, Ambrose;18 4, Bedford et al.;15 ],
+Bilkadi et al.;16 O, Bryson et al.;17 +, Fernandez-Fassnacht and del Rio;19
+/, Giauque and Egan. 3
+Figure 10. Deviations Δpsub = psub,corr.eq /C0 psub,calc(exp) of sublimation
+pressures calculated from the phase e quilibrium condition from values
+calculated from the correlation equation by Span and Wagner.10 The funda-
+mental equation by Ely et al.20 was used for the gas phase. — , calculated;
+/C0/C0 , uncertainty;0,A m b r o s e ;18 4, Bedford et al.;15 ],B i l k a d ie ta l . ;16 O,
+Bryson et al.;17 +, Fernandez-Fassnacht and del Rio;19 /, Giauque and Egan.3
+Figure 11. Relative deviations 100Δpmelt/pmelt,corr.eq= 100(pmelt,corr.eq/C0
+pmelt,calc(exp))/pmelt,corr.eq of melting pressures calculated from the phase
+equilibrium condition from values calculated from the correlation
+equation by Span and Wagner. 10 The fundamental equation by Span
+and Wagner 10 was used for the ﬂuid phase. — , calculated; /C0/C0 , un-
+certainty; ], Clusius et al.; 22 0, Michels et al. 21
+Figure 12. Relative deviations 100Δpmelt/pmelt,corr.eq = 100(pmelt,corr.eq.
+/C0 pmelt,calc(exp))/pmelt,corr.eq of melting pressures calculated from the
+phase equilibrium condition from values calculated from the correlation
+equation by Span and Wagner. 10 The fundamental equation by Ely
+et al.20 was used for the ﬂuid phase. — , calculated; /C0/C0 , uncertainty; ],
+Clusius et al.; 22 0, Michels et al. 21
+==== PAGE 7 ====
+596 dx.doi.org/10.1021/je2011677 |J. Chem. Eng. Data 2012, 57, 590–597
+Journal of Chemical & Engineering Data ARTICLE
+pressure data. So far phase equilibrium calculations are predictive
+— neither of the two equations of state was ﬁtted to sublimation
+pressures.
+Melting Pressure. Melting pressures of CO 2 have been
+measured by Michels et al.21 and Clusius et al.22 Span and Wagner10
+also established an accurate correlation equation for the melting
+pressure of CO2. They estimated the uncertainty of this equation
+to be Δpmelt/pmelt e ( 1.5 % for Ttr e T e 225 K and Δpmelt/
+pmelt e ( 0.5 % for 225 K e T e 270 K. The phase equilibrium
+condition for the solid and the liquid phase remains the same as
+for the sublimation equilibrium. So eq 23 may be rewritten:
+μsolðT, pÞ¼ μliqðT, pÞ S gsolðT, pÞ¼ gliqðT, pÞð 25Þ
+Again, the phase equilibrium condition has to be solved itera-
+tively. The relative deviations of the correlation equation from
+experimental data as well as from the melting pressures calculated
+using eq 8 and the reference equation for carbon dioxide by Span
+and Wagner10 are presented in Figure 11. The deviations of the
+calculated pressures from the correlation equation from the
+pressures calculated using eq 8 stay within the uncertainty stated
+by Span and Wagner10 throughout the whole temperature range
+for which the correlation equation is valid. For comparison, the
+equation of state for the fluid phase by Ely et al. 20 was used to
+calculate equilibrium pressures in Figure 12. The melting pres-
+sures calculated this way deviate significantly from the correlation
+equation, but this result was to be expected since the Helmholtz
+equation by Ely et al. 20 is valid only for pressures up to 100 MPa
+(the corresponding melting temperature is about 236 K). Never-
+theless it can be stated that calculated melting pressures are
+rather sensitive to the representation of Gibbs energies in the
+liquid phase.
+Equilibrium Pressures for Mixtures. Additionally we studied
+the effect of small impurities (N2) in the CO2 on the equilibrium
+pressures. Therefore we chose three different mixtures ( ψCO2 =
+0.95, ψN2 = 0.05; ψCO2 = 0.99, ψN2 = 0.01; ψCO2 = 0.999, ψN2 =
+0.001) and calculated the sublimation pressure according to
+μsolðT, pÞ¼ μvap
+CO2 ðT, p, ψÞ S gsolðT, pÞ¼ μvap
+CO2 ðT, p, ψÞ
+ð26Þ
+This simple equilibrium condition is valid if the solid phase
+consists only of CO 2 (dry ice). The melting pressure was calcu-
+lated according to
+μsolðT, pÞ¼ μliq
+CO2 ðT, p, ψÞ S gsolðT, pÞ¼ μliq
+CO2 ðT, p, ψÞ
+ð27Þ
+The equations used were again the reference equation for CO2 by
+Span and Wagner 10 and for N 2 the reference equation by Span
+et al.23 was used. The mixing rule was taken from the GERG 2004
+equation of state for natural gases by Kunz et al.24 The solid phase
+is assumed to be pure dry ice. These pressures are compared to
+the ideally calculated equilibrium pressures according to eqs 28
+and 29.
+psubðT, ψÞ¼
+psub
+pure CO2
+ðTÞ
+ψCO2
+ð28Þ
+pmeltðT, ψÞ¼
+pmelt
+pure CO2
+ðTÞ
+ψCO2
+ð29Þ
+The relative deviations of the calculated pressures using the
+new equation for dry ice and the ideal pressures are shown in
+Figures 13 and 14.
+The deviations of the ideally calculated sublimation pressures
+from calculated values (Figure 13) increase as the temperature
+increases and with increasing N 2 concentration. This is some-
+what expected since with the increase of temperature (and by
+that the increase of the sublimation pressure) and with increasing
+N2 concentration the assumption of an ideal mixture gets worse.
+The relative deviations for the melting pressure (Figure 14) also
+increase with the amount of N 2 in the mixture but decrease with
+increasing temperature. In the liquid phase the deviations of the
+ideally calculated melting pressures from the calculated ones are
+much higher than those in the gas phase. The reasons are that the
+ideal mixture model does not work well for liquids and that the
+N2 concentration has a large contribution to g of the mixture.
+’ CONCLUSIONS AND PERSPECTIVE
+A new equation of state for solid carbon dioxide based on the
+Gibbs free energy has been developed; the range of validity was
+set to 0 MPa < p < 500 MPa and 80 K < T < 300 K. Most of the
+available thermodynamic property data are represented within
+the uncertainty of the experimen tal data. For temperatures and
+pressures within the range of validity eq 8 ensures physically
+correct behavior. In combination with a fundamental equation
+for the ﬂuid phase of carbon dioxide, the equation for the solid
+allows for accurate calculation of phase equilibrium pressures.
+Therefore this equation might be used for more complex phase
+equilibrium calculation, for example, ﬂash calculations or phase
+equilibria including mixtures as demonstrated in this work. Further
+improvement of this equation may require another structure of the
+Figure 13. Relative deviations 100 Δpsub/psub = 100(psub /C0 psub,ideal)/
+psub in sublimation pressures for three diﬀerent mixtures of CO2 with N2.
+The deviation of calculated sublimation pressures according to eq 26
+from pressures calculated from eq 28 is plotted over temperature.
+Figure 14. Relative deviations 100 Δpmelt/pmelt = 100( pmelt /C0 pmelt,
+ideal)/pmelt in melting pressures for three diﬀerent mixtures of CO2 with
+N2. The deviation of calculated melting pressures according to eq 27
+from pressures calculated from eq 29 is plotted over temperature.
+==== PAGE 8 ====
+597 dx.doi.org/10.1021/je2011677 |J. Chem. Eng. Data 2012, 57, 590–597
+Journal of Chemical & Engineering Data ARTICLE
+equation and anotherﬁtting procedure, where the equilibrium data
+is also taken into account. Therefore the next step would be to think
+about a general form for the Gibbs free energy of solids andﬁtt h i s
+equation and its derivatives to the experimental data, like it is done
+for fundamental equations of state for the ﬂuid phase.
+’ AUTHOR INFORMATION
+Corresponding Author
+*E-mail: a.jaeger@thermo.rub.de.
+’ REFERENCES
+(1) Tillner-Roth, R. Fundamental Equations of State ; Shaker Verlag:
+Aachen, 1998.
+(2) Feistel, R.; Wagner, W. High-pressure Thermodynamic Gibbs
+Functions of Ice and Sea Ice. J. Mar. Res. 2005, 63,9 5–139.
+(3) Giauque, W. F.; Egan, C. J. Carbon Dioxide. The Heat Capacity
+and Vapor Pressure of the Solid. The Heat of Sublimation. Thermo-
+dynamic and Spectroscopic Values of the Entropy. J. Chem. Phys. 1937,
+5,4 5–54.
+(4) Manzhelii, V. G.; Tolkachev, A. M.; Bagatskii, M. I.; Voitovich,
+E. I. Thermal Expansion, Heat Capacity, and Compressibility of Solid
+CO2. Phys. Status Solidi B 1971, 44,3 9–49.
+(5) Olinger, B. The Compression of Solid CO 2 at 296 K to 10 GPa.
+J. Chem. Phys. 1982, 77, 6255–6258.
+(6) Liu, L. Compression and Phase Behaviour of Solid CO 2 to Half a
+Megabar. Earth Planet. Sci. Lett. 1984, 71, 104–110.
+(7) Kuehnen, J. P.; Robson, W. G. The Thermal Properties of
+Carbon Dioxide and of Ethane. Philos. Mag. 1902, 3, 622–630.
+(8) Maass, O.; Barnes, W. H. Some Thermal Constants of Solid and
+Liquid Carbon Dioxide. Proc. Roy. Soc. 1926, A111, 224–244.
+(9) Air Liquide. Gas Encyclopædia; Elsevier: New York, 1976.
+(10) Span, R.; Wagner, W. A New Equation of State for Carbon
+Dioxide Covering the Fluid Region from the Triple-Point Temperature
+to 1100 K at Pressures up to 800 MPa. J. Phys. Chem. Ref. Data 1996, 25
+(6), 1509–1596.
+(11) Eucken, A.; Hauck, F. Die Spezi ﬁschen W €armen cp und cv
+Einiger Sto ﬀe im Festen, Fl €ussigen und Hyperkritischen Gebiet
+Zwischen 80/C176und 320/C176abs. Z. Phys. Chem. 1928, 134, 161–177.
+(12) Eucken, A. €Uber das Thermische Verhalten Einiger Kompri-
+mierter und Kondensierter Gase bei Tiefen Temperaturen. Verh.
+Dtschen. Phys. Ges. 1916, 18 (4), 4–17.
+(13) Venkateswaran, C. S. Speci ﬁc Heat of Solid Carbon Dioxide.
+Indian Acad. Sci. 1943, 12, 252–253.
+(14) Keesom, W. H.; K €ohler, J. W. L. The Lattice Constant and
+Expansion Coe ﬃcient of Solid Carbon Dioxide. Physica 1934,
+1, 655–658.
+(15) Bedford, R. E.; Bonnier, G.; Maas, H.; Pavese, F. Recom-
+mended Values of Temperature for a Selected Set of Secondary
+Reference Points. Metrologia 1984, 20, 145.
+(16) Bilkadi, Z.; Lee, M. W.; Bigeleisen, J. Phase Equilibrium Isotope
+Eﬀects in Molecular Solids and Liquids. Vapor Pressures of the Isotopic
+Carbon Dioxide-Molecules. J. Chem. Phys. 1974, 62, 2087–2093.
+(17) Bryson, C. E.; Cazcarra, V.; Levenson, L. L. Sublimation Rates
+and Vapor Pressures of H 2O, CO 2,N 2O and Xe. J. Chem. Eng. Data
+1974, 19, 107–110.
+(18) Ambrose, D. The Vapour Pressure and Critical Temperatures
+of Acetylene and Carbon Dioxide. Trans. Faraday Soc 1955, 52, 772.
+(19) Fernandez-Fassnacht, F.; del Rio, S. K. The Vapour Pressure of
+CO2 from 194 to 243 K. J. Chem. Thermodyn. 1984, 16, 469–474.
+(20) Ely, J. F.; Magee, J. W.; Haynes, W. M. Thermophysical Proper-
+ties for Special High CO2 Content Mixtures; Research Report RR-110; Gas
+Processors Association: Tulsa, OK, 1987.
+(21) Michels, A.; Blaisse, B.; Hoogschlagen, J. The Melting Line of
+Carbon Dioxide up to 2800 atm. Physica 1942, 9, 565–573.
+(22) Clusius, K.; Piesbergen, U.; Varde, E. Ergebnisse der Tieftem-
+peraturforschung— XXXI. Die Schmelzkurven von Kohlendioxyd und
+Distickstoﬀoxyd bis 250 Atm. und ihr Volumensprung am Schmelz-
+punkt. Helv. Chim. Acta 1960, 43, 1290–1298.
+(23) Span, R.; Lemmon, E. W.; Jacobsen, R. T.; Wagner, W.;
+Yokozeki, A. A Reference Quality Thermodynamic Property Formula-
+tion for Nitrogen. J. Phys. Chem. Ref. Data 2000, 29 (6), 1361–1433.
+(24) Kunz, O.; Klimeck, R.; Wagner, W.; Jaeschke, M. The GERG-
+2004 Wide-Range Reference Equation of State for Natural Gases and Other
+Mixtures, GERG Technical Monograph 15; Fortschr.-Ber. VDI:
+D€usseldorf, 2007.

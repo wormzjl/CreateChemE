@@ -1,0 +1,320 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.143'
+    id 'idea'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    exclude '**/*.bbmodel'
+    exclude 'src/generated/**/.cache'
+}
+
+sourceSets {
+    // Benchmarks remain outside main and test source sets: they are runnable diagnostics,
+    // never production dependencies and never timing assertions in CI.
+    benchmark {
+        java.srcDir 'benchmarks'
+        compileClasspath += sourceSets.main.output + configurations.runtimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.createmod.net' }
+    maven { url = 'https://maven.ithundxr.dev/snapshots' }
+    maven { url = 'https://maven.blamejared.com' }
+    maven {
+        url = 'https://maven.latvian.dev/releases'
+        content {
+            includeGroup 'dev.latvian.mods'
+            includeGroup 'dev.latvian.apps'
+        }
+    }
+    maven {
+        url = 'https://jitpack.io'
+        content {
+            includeGroup 'com.github.rtyley'
+        }
+    }
+}
+
+neoForge {
+    version = neo_version
+
+    parchment {
+        minecraftVersion = parchment_minecraft_version
+        mappingsVersion = parchment_mappings_version
+    }
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+
+        gameTestServer {
+            type = 'gameTestServer'
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+
+        data {
+            data()
+            programArguments.addAll(
+                '--mod', mod_id,
+                '--all',
+                '--output', file('src/generated/resources').absolutePath,
+                '--existing', file('src/main/resources').absolutePath
+            )
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    // Create's slim development jar deliberately excludes its companion libraries.
+    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") {
+        transitive = false
+    }
+    implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
+    runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
+    implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+
+    // JEI is an optional client integration: APIs at compile time, full mod only in dev runs.
+    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
+    localRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+
+    // Milestone 1 requires the KubeJS preset adapter. Its POM supplies Rhino and runtime helpers.
+    api("dev.latvian.mods:kubejs-neoforge:${kubejs_version}")
+
+    testImplementation(platform("org.junit:junit-bom:${junit_version}"))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+}
+
+def metadataProperties = [
+    minecraft_version      : minecraft_version,
+    minecraft_version_range: minecraft_version_range,
+    neo_version            : neo_version,
+    loader_version_range   : loader_version_range,
+    mod_id                 : mod_id,
+    mod_name               : mod_name,
+    mod_license            : mod_license,
+    mod_version            : mod_version,
+    mod_authors            : mod_authors,
+    mod_description        : mod_description,
+    create_version_range   : create_version_range,
+    jei_version_range      : jei_version_range,
+    kubejs_version_range   : kubejs_version_range
+]
+
+def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    inputs.properties metadataProperties
+    expand metadataProperties
+    from 'src/main/templates'
+    into layout.buildDirectory.dir('generated/sources/modMetadata')
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+tasks.register('legacyColumnBenchmark', JavaExec) {
+    group = 'verification'
+    description = 'Measures legacy column scopes and writes a durable diagnostic report.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.benchmarks.LegacyColumnBenchmark'
+    args '--samples=' + providers.gradleProperty('benchmarkSamples').getOrElse('7')
+    args '--warmup=' + providers.gradleProperty('benchmarkWarmup').getOrElse('1')
+    def benchmarkStages = providers.gradleProperty('benchmarkStages').getOrElse('all')
+    if (benchmarkStages != 'all') {
+        args '--stages=' + benchmarkStages
+    }
+    def benchmarkReport = providers.gradleProperty('benchmarkReport').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/legacy-column-report.json').get().asFile.absolutePath)
+    args '--report=' + benchmarkReport
+    outputs.file(benchmarkReport)
+    outputs.upToDateWhen { false }
+    if (providers.gradleProperty('benchmarkJfr').isPresent()) {
+        def jfrFile = layout.buildDirectory.file('reports/benchmarks/legacy-column.jfr').get().asFile
+        jfrFile.parentFile.mkdirs()
+        jvmArgs "-XX:StartFlightRecording=filename=${jfrFile.absolutePath},settings=profile,dumponexit=true"
+        args '--jfr=' + jfrFile.absolutePath
+    }
+}
+
+tasks.register('legacyColumnBenchmarkHarnessTest', JavaExec) {
+    group = 'verification'
+    description = 'Checks legacy-column benchmark argument parsing and nonconvergence report serialization.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.benchmarks.LegacyColumnBenchmark'
+    args '--self-test'
+}
+
+tasks.register('v3TimeoutBenchmark', JavaExec) {
+    group = 'verification'
+    description = 'Serial V3 timeout diagnostics with optional per-case JFR, CPU, allocation and outcome reports.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3TimeoutBenchmark'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--samples=' + providers.gradleProperty('v3Samples').getOrElse('1')
+    args '--warmup=' + providers.gradleProperty('v3Warmup').getOrElse('1')
+    args '--deadlineSeconds=' + providers.gradleProperty('v3DeadlineSeconds').getOrElse('90')
+    args '--cases=' + providers.gradleProperty('v3Cases').getOrElse('150-off,110-off,110-on,100-off,110-test-feed,110-matched-duty')
+    args '--profile=' + providers.gradleProperty('v3Profile').getOrElse('false')
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/v3-timeout.json').get().asFile.absolutePath)
+}
+
+tasks.register('v3TimeoutBenchmarkHarnessTest', JavaExec) {
+    group = 'verification'
+    description = 'Checks V3 timeout benchmark argument validation and timeout report serialization.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3TimeoutBenchmark'
+    args '--self-test'
+}
+
+tasks.register('v3FlashFailureCapture', JavaExec) {
+    group = 'verification'
+    description = 'Captures flash failure inputs and caught exception stacks in an owned debugger JVM.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3FlashFailureCapture'
+    jvmArgs '--add-modules=jdk.jdi'
+    args '--pressureKpa=' + providers.gradleProperty('flashPressureKpa').getOrElse('100')
+    args '--cutoff=' + providers.gradleProperty('flashCutoff').getOrElse('0')
+    args '--report=' + providers.gradleProperty('flashReport').getOrElse('build/reports/benchmarks/v3-flash-capture.json')
+}
+
+tasks.register('v3FlashReplayProbe', JavaExec) {
+    group = 'verification'
+    description = 'Replays captured TP-flash inputs with diagnostic iteration traces and explicit counterfactual controls.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.thermo.V3FlashReplayProbe'
+    args '--input=' + providers.gradleProperty('flashInput').getOrElse('benchmarks/results/v3-flash-investigation/100-off-capture.json')
+    args '--event=' + providers.gradleProperty('flashEvent').getOrElse('0')
+    args '--maxIterations=' + providers.gradleProperty('flashMaxIterations').getOrElse('64')
+    args '--relaxation=' + providers.gradleProperty('flashRelaxation').getOrElse('0.5')
+    args '--skipInactiveConvergence=' + providers.gradleProperty('flashSkipInactive').getOrElse('false')
+    args '--polishRoots=' + providers.gradleProperty('flashPolishRoots').getOrElse('false')
+    if (providers.gradleProperty('flashReplayPressurePascal').isPresent()) {
+        args '--pressurePascal=' + providers.gradleProperty('flashReplayPressurePascal').get()
+    }
+    args '--report=' + providers.gradleProperty('flashReport').getOrElse('build/reports/benchmarks/v3-flash-replay.json')
+}
+
+tasks.register('v3FlashTruncationProbe', JavaExec) {
+    group = 'verification'
+    description = 'Records strict/reference-validated flash pairs and conservation evidence; not a timing benchmark.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationProbe'
+    args '--report=' + providers.gradleProperty('flashReport').getOrElse('build/reports/benchmarks/v3-flash-truncation.json')
+}
+
+tasks.register('v3ContinuationProbe', JavaExec) {
+    group = 'verification'
+    description = 'Traces the first V3 continuation path without recovery; diagnostic counterfactuals only.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3ContinuationProbe'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--mode=' + providers.gradleProperty('v3ProbeMode').getOrElse('stage-local')
+    args '--branch=' + providers.gradleProperty('v3ProbeBranch').getOrElse('preferred')
+    args '--linearDiagnostics=' + providers.gradleProperty('v3LinearDiagnostics').getOrElse('0')
+    args '--deadlineSeconds=' + providers.gradleProperty('v3DeadlineSeconds').getOrElse('90')
+    args '--feedKmolH=' + providers.gradleProperty('v3FeedKmolH').getOrElse('2610.7')
+    args '--pressureKpa=' + providers.gradleProperty('v3PressureKpa').getOrElse('110')
+    args '--dutyMW=' + providers.gradleProperty('v3DutyMW').getOrElse('8')
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/v3-continuation-probe.json').get().asFile.absolutePath)
+}
+
+tasks.register('v3LowPressureProbe', JavaExec) {
+    group = 'verification'
+    description = 'Replays the actual 60-to-55 kPa pressure failure and tests numerical counterfactuals without production changes.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3LowPressureProbe'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse('build/reports/benchmarks/v3-low-pressure.json')
+    if (providers.gradleProperty('v3SmallSteps').isPresent()) args '--smallSteps'
+    if (providers.gradleProperty('v3Adaptive').isPresent()) args '--adaptive'
+    if (providers.gradleProperty('v3TruncatedProbe').isPresent()) args '--truncated'
+    if (providers.gradleProperty('v3RemaskProbe').isPresent()) args '--remask'
+    if (providers.gradleProperty('v3RemaskP0bProbe').isPresent()) args '--remask-p0b'
+}
+
+tasks.register('v3LowPressureLinearProbe', JavaExec) {
+    group = 'verification'
+    description = 'Inspects captured low-pressure Jacobians and Newton line searches without production edits.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3LowPressureLinearProbe'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    if (providers.gradleProperty('v3ConditioningCensus').isPresent()) args '--conditioning'
+    args '--input=' + providers.gradleProperty('v3LinearInput').getOrElse('benchmarks/results/v3-low-pressure/replay-counterfactuals.json')
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse('build/reports/benchmarks/v3-low-pressure-linear.json')
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+}

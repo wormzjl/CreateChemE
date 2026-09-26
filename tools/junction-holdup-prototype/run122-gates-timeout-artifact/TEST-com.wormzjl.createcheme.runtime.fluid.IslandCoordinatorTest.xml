@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" tests="18" skipped="0" failures="15" errors="0" timestamp="2026-09-26T05:01:17.518Z" hostname="WORMZ-PC" time="0.075">
+  <properties/>
+  <testcase name="aHeldOwnerRetriesExactlyAtItsRetryDeadlineAndIsNotVisitedBefore()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.aHeldOwnerRetriesExactlyAtItsRetryDeadlineAndIsNotVisitedBefore(IslandCoordinatorTest.java:159)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="aBudgetHoldHalvesTheSliceAndReplacesTheSolver()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.aBudgetHoldHalvesTheSliceAndReplacesTheSolver(IslandCoordinatorTest.java:217)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="thePerTickDispatchBudgetResumesOnTheNextTickWithoutPolling()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.002"/>
+  <testcase name="aDeadlineRetriesAShorterWholeIntervalThenGrowsWithoutDiscardingDebt()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.aDeadlineRetriesAShorterWholeIntervalThenGrowsWithoutDiscardingDebt(IslandCoordinatorTest.java:83)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="deadlineKeepsDebtAndDoesNotReuseACancelledButStillRunningOwner()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.deadlineKeepsDebtAndDoesNotReuseACancelledButStillRunningOwner(IslandCoordinatorTest.java:55)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="theAllocatorShrinkIsObservedExactlyAtItsDeadlineWithNoOtherActivity()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.002"/>
+  <testcase name="staleStampAndStopCannotPublishAnUncommittedCandidate()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.staleStampAndStopCannotPublishAnUncommittedCandidate(IslandCoordinatorTest.java:101)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="laterIndependentGroupMayPublishWhileEarlierGroupStillComputes()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.laterIndependentGroupMayPublishWhileEarlierGroupStillComputes(IslandCoordinatorTest.java:75)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="aRefusedFallbackIsRetriedAsAFullSolveUntilAnIntervalIsAccepted()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.aRefusedFallbackIsRetriedAsAFullSolveUntilAnIntervalIsAccepted(IslandCoordinatorTest.java:229)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="anExpiredRoundClosesWithinOneTickOfItsWallBudgetOnASlowServer()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.002"/>
+  <testcase name="aReproducedThermoDomainViolationWaitsForAnInputChangeInsteadOfTheLadder()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.002">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.onDomainHold(IslandCoordinator.java:351)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.aReproducedThermoDomainViolationWaitsForAnInputChangeInsteadOfTheLadder(IslandCoordinatorTest.java:309)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="aRoundTimeoutClosesTheRoundFromItsDeadlineAlone()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.aRoundTimeoutClosesTheRoundFromItsDeadlineAlone(IslandCoordinatorTest.java:124)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="splitAndMergeAtAnAlignedFencePreserveEveryInventoryAndOnlineDebt()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.splitAndMergeAtAnAlignedFencePreserveEveryInventoryAndOnlineDebt(IslandCoordinatorTest.java:107)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="anIndependentGroupUsesFreeWorkersWithoutBreakingTheEarlierBarrierOrDeadline()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.anIndependentGroupUsesFreeWorkersWithoutBreakingTheEarlierBarrierOrDeadline(IslandCoordinatorTest.java:63)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="nonblockingBarrierCommitsACompleteRoundAndThenCatchesUpFairly()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.nonblockingBarrierCommitsACompleteRoundAndThenCatchesUpFairly(IslandCoordinatorTest.java:42)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="aDifferentViolationOnTheRetryKeepsTheLadder()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.aDifferentViolationOnTheRetryKeepsTheLadder(IslandCoordinatorTest.java:351)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="fencesAlignUnequalClocksWithoutApplyingAnEventRetroactively()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.001">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.fencesAlignUnequalClocksWithoutApplyingAnEventRetroactively(IslandCoordinatorTest.java:93)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="aHeldOwnerRetriesAFreshSolverOnHalvedSlicesAndThenWaitsLongerAtOneTick()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest" time="0.0">
+    <failure message="java.lang.IllegalStateException: Island coordinator belongs to its server thread" type="java.lang.IllegalStateException">java.lang.IllegalStateException: Island coordinator belongs to its server thread
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.owned(IslandCoordinator.java:282)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.register(IslandCoordinator.java:284)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.register(IslandCoordinatorTest.java:39)
+	at com.wormzjl.createcheme.runtime.fluid.IslandCoordinatorTest.aHeldOwnerRetriesAFreshSolverOnHalvedSlicesAndThenWaitsLongerAtOneTick(IslandCoordinatorTest.java:191)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

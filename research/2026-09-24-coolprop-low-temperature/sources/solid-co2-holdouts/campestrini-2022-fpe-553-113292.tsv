@@ -1,0 +1,85 @@
+# Campestrini M., Rabino F., Marques D., Atig D., Stringari P., Franzoni G., Picutti B. (2022).
+# Experimental investigation of the effect of nitrogen on the phase equilibrium behavior of the CH4-CO2 mixture
+# at low temperature for natural and biogas purification. Fluid Phase Equilibria 553, 113292.
+# DOI 10.1016/j.fluid.2021.113292. Source copy: HAL hal-03519082 (author manuscript, CC BY-NC 4.0),
+# raw/campestrini-2022-fpe-hal-03519082.pdf (sha256 8414018cb7455ad9761773e43f2bc7088681fa0602f7299a3beaf8ab1560ccc8).
+# Tables 4 (p.14, SVE, CH4 + CO2), 6 (p.18, SLE, CH4 + CO2), 7 and 8 (p.20, SVE and SLE, solvent B = 5 % N2 + 95 % CH4),
+# 9 and 10 (p.21, SVE and SLE, solvent C = 10 % N2 + 90 % CH4), 12 (p.27, SLVE, solvents B and C); page numbers are the
+# manuscript's printed numbers. Tables 5 and 11 (VLE, no solid) are not transcribed.
+# Units: T in K, p in MPa, compositions in mole fraction. U = expanded uncertainty as printed (the text calls them
+# "expanded and combined standard uncertainties"); U(T) = 0.004 K and U(P) = 0.002 MPa for every point (table footers).
+# phase: vapor (y) or liquid (x). For SVE rows the solid CO2 coexists with the vapor, for SLE rows with the liquid,
+# for SLVE rows with both. Nominal pressure 4 MPa, 170 to 210 K.
+# Table 12 of the manuscript prints no x1 or y1 (N2) columns, only U(x1) and U(y1); the N2 value is therefore blank here
+# (it is 1 - CH4 - CO2 by closure, not transcribed). Points marked (1) in Table 12 (78 to 81, 85, 88) have no liquid sample:
+# "the amount of the liquid phase within the equilibrium cell was not enough developed to be sampled".
+# Digits verbatim from the PyMuPDF text layer; Tables 7, 8 and 12 were checked against a 140-170 dpi page render.
+# Transcribed 2026-09-25 for batch 2026-09-24-coolprop-low-temperature (P5/G5 holdout; SVE rows also P4 context).
+table	equilibrium	point	T_K	p_MPa	phase	N2	U_N2	CH4	U_CH4	CO2	U_CO2
+4	SVE	1	205.423	4.010	vapor			0.8944	0.0039	0.1056	0.0039
+4	SVE	2	202.433	4.010	vapor			0.9128	0.0033	0.0872	0.0033
+4	SVE	3	199.445	4.152	vapor			0.9273	0.0028	0.0727	0.0028
+4	SVE	4	196.461	4.009	vapor			0.9403	0.0023	0.0597	0.0023
+4	SVE	5	194.458	4.008	vapor			0.9474	0.0022	0.0526	0.0022
+4	SVE	6	193.497	4.004	vapor			0.9504	0.0021	0.0496	0.0021
+4	SVE	7	193.268	4.019	vapor			0.9514	0.0020	0.0486	0.0020
+4	SVE	8	191.532	4.005	vapor			0.9559	0.0018	0.0441	0.0018
+4	SVE	9	190.823	3.982	vapor			0.9581	0.0019	0.0419	0.0019
+4	SVE	10	190.555	4.011	vapor			0.9583	0.0015	0.0417	0.0015
+4	SVE	11	190.543	4.015	vapor			0.9581	0.0018	0.0419	0.0018
+4	SVE	12	190.406	4.007	vapor			0.9586	0.0015	0.0414	0.0015
+6	SLE	26	189.643	3.969	liquid			0.9059	0.0040	0.0941	0.0040
+6	SLE	27	188.756	3.996	liquid			0.9103	0.0035	0.0897	0.0035
+6	SLE	28	185.513	3.984	liquid			0.9244	0.0036	0.0756	0.0036
+6	SLE	29	182.553	3.993	liquid			0.9360	0.0024	0.0640	0.0024
+6	SLE	30	179.590	4.006	liquid			0.9467	0.0020	0.0533	0.0020
+6	SLE	31	176.612	3.931	liquid			0.9551	0.0017	0.0449	0.0017
+7	SVE	32	205.480	3.999	vapor	0.0437	0.0020	0.8522	0.0050	0.1041	0.0035
+7	SVE	33	202.415	3.995	vapor	0.0446	0.0021	0.8698	0.0045	0.0856	0.0029
+7	SVE	34	199.406	4.000	vapor	0.0452	0.0021	0.8839	0.0041	0.0709	0.0025
+7	SVE	35	196.423	3.996	vapor	0.0459	0.0021	0.8959	0.0037	0.0582	0.0020
+7	SVE	36	193.458	4.006	vapor	0.0466	0.0022	0.9052	0.0035	0.0482	0.0017
+7	SVE	37	190.462	4.002	vapor	0.0469	0.0022	0.9131	0.0033	0.0400	0.0014
+7	SVE	38	189.514	3.997	vapor	0.0469	0.0022	0.9150	0.0032	0.0381	0.0013
+7	SVE	39	188.509	3.999	vapor	0.0473	0.0022	0.9165	0.0032	0.0362	0.0013
+8	SLE	40	182.565	4.002	liquid	0.0458	0.0022	0.8939	0.0038	0.0603	0.0021
+8	SLE	41	181.576	4.002	liquid	0.0458	0.0022	0.8969	0.0037	0.0573	0.0020
+8	SLE	42	179.551	4.001	liquid	0.0462	0.0022	0.9028	0.0035	0.0510	0.0018
+8	SLE	43	177.548	3.998	liquid	0.0464	0.0022	0.9077	0.0034	0.0459	0.0016
+8	SLE	44	176.558	4.001	liquid	0.0459	0.0021	0.9109	0.0033	0.0432	0.0015
+8	SLE	45	175.767	4.000	liquid	0.0460	0.0021	0.9123	0.0033	0.0417	0.0015
+9	SVE	46	205.408	3.995	vapor	0.0882	0.0037	0.8073	0.0059	0.1045	0.0031
+9	SVE	47	202.418	3.993	vapor	0.0896	0.0038	0.8248	0.0056	0.0855	0.0026
+9	SVE	48	199.413	4.000	vapor	0.0911	0.0038	0.8385	0.0052	0.0704	0.0021
+9	SVE	49	196.845	3.993	vapor	0.0926	0.0039	0.8483	0.0051	0.0591	0.0018
+9	SVE	50	196.438	3.997	vapor	0.0924	0.0039	0.8499	0.0050	0.0577	0.0018
+9	SVE	51	193.467	4.010	vapor	0.0935	0.0040	0.8591	0.0049	0.0474	0.0015
+9	SVE	52	190.579	3.994	vapor	0.0952	0.0045	0.8658	0.0054	0.0390	0.0014
+9	SVE	53	190.479	4.004	vapor	0.0944	0.0040	0.8670	0.0048	0.0387	0.0012
+9	SVE	54	187.496	3.999	vapor	0.0956	0.0041	0.8726	0.0047	0.0318	0.0010
+9	SVE	55	186.501	4.001	vapor	0.0957	0.0041	0.8745	0.0047	0.0298	0.0010
+9	SVE	56	185.506	4.001	vapor	0.0960	0.0044	0.8758	0.0050	0.0282	0.0010
+9	SVE	57	184.521	3.999	vapor	0.0968	0.0043	0.8766	0.0048	0.0266	0.0009
+10	SLE	58	178.765	4.003	liquid	0.0903	0.0045	0.8625	0.0051	0.0462	0.0016
+10	SLE	59	178.496	3.992	liquid	0.0906	0.0041	0.8638	0.0051	0.0456	0.0015
+10	SLE	60	177.573	4.007	liquid	0.0909	0.0039	0.8656	0.0048	0.0435	0.0014
+10	SLE	61	176.652	3.995	liquid	0.0911	0.0039	0.8673	0.0047	0.0416	0.0013
+10	SLE	62	175.721	3.996	liquid	0.0920	0.0039	0.8685	0.0047	0.0395	0.0013
+12	SLVE	78(1)	183.560	4.002	vapor		0.0049	0.8646	0.0053	0.0247	0.0008
+12	SLVE	79(1)	183.537	4.040	vapor		0.0050	0.8620	0.0055	0.0246	0.0008
+12	SLVE	80(1)	183.521	4.014	vapor		0.0049	0.8622	0.0053	0.0246	0.0008
+12	SLVE	81(1)	182.571	3.998	vapor		0.0055	0.8504	0.0059	0.0229	0.0007
+12	SLVE	82	182.533	4.025	liquid		0.0035	0.8795	0.0059	0.0585	0.0030
+12	SLVE	82	182.533	4.025	vapor		0.0056	0.8471	0.0060	0.0227	0.0007
+12	SLVE	83	181.540	4.000	liquid		0.0031	0.8760	0.0044	0.0553	0.0019
+12	SLVE	83	181.540	4.000	vapor		0.0061	0.8344	0.0065	0.0212	0.0007
+12	SLVE	84	181.521	4.006	liquid		0.0038	0.8757	0.0054	0.0554	0.0044
+12	SLVE	84	181.521	4.006	vapor		0.0063	0.8330	0.0067	0.0210	0.0007
+12	SLVE	85(1)	181.055	4.003	vapor		0.0068	0.8264	0.0071	0.0203	0.0007
+12	SLVE	86	181.039	3.997	liquid		0.0033	0.8736	0.0045	0.0535	0.0018
+12	SLVE	86	181.039	3.997	vapor		0.0065	0.8266	0.0069	0.0203	0.0006
+12	SLVE	87	180.541	3.998	liquid		0.0034	0.8710	0.0046	0.0518	0.0017
+12	SLVE	87	180.541	3.998	vapor		0.0069	0.8187	0.0072	0.0195	0.0006
+12	SLVE	88(1)	180.058	3.998	vapor		0.0074	0.8109	0.0077	0.0188	0.0006
+12	SLVE	89	180.043	3.998	liquid		0.0036	0.8682	0.0048	0.0502	0.0017
+12	SLVE	89	180.043	3.998	vapor		0.0075	0.8106	0.0077	0.0188	0.0006

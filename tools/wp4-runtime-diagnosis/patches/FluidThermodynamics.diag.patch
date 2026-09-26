@@ -1,0 +1,113 @@
+diff --git a/C:/Users/wormz/AppData/Local/Temp/orig.java b/build/diagnosis/patch-src/com/wormzjl/createcheme/science/fluid/thermo/FluidThermodynamics.java
+index 0bd04dd..438cabf 100644
+--- a/C:/Users/wormz/AppData/Local/Temp/orig.java
++++ b/build/diagnosis/patch-src/com/wormzjl/createcheme/science/fluid/thermo/FluidThermodynamics.java
+@@ -210,10 +210,32 @@ public final class FluidThermodynamics {
+     /** The Region 1 temperature terms and the saturation pressure are functions of temperature alone, so a prepared
+      * temperature keeps them for every pressure trial at that temperature; the pressure terms are evaluated per call. */
+     public WaterLiquid waterLiquid(double t,double p,Prepared prepared) {
++        if(DIAG_MODE!=0){double[] d=diagWater(t,p,match(prepared,t));return new WaterLiquid(d[0],d[1]+waterEnthalpyOffset,d[2],d[3]!=0);}
+         var w=waterAt(t,p,match(prepared,t));
+         return new WaterLiquid(w.specificVolume()*waterMolecularWeight,w.specificEnthalpy()*waterMolecularWeight+waterEnthalpyOffset,
+                 w.volumePressureDerivative()*waterMolecularWeight,w.metastable());
+     }
++    // ---- WP4 runtime diagnosis only (scratch copy under build/diagnosis, never tracked) ----
++    // diag.water=region1 (default) | legacy (Region 1 at 2 MPa carried by exp(-1e-9 (P-2 MPa)), the retired path) |
++    // kappa (Region 1 at 101,325 Pa carried by exp(-k (P-P0)), k = diag.waterKappa): isolates the compressibility.
++    /** [0..3] flashes by branch (no hydrocarbon, dry split, saturated split, bisection); [4..7] split iterations by branch;
++     * [8] bisection iterations; [9] splits in bisection. */
++    public static final long[] DIAG=new long[16];
++    public static final java.util.TreeMap<Integer,long[]> DIAG_WFRAC=new java.util.TreeMap<>();
++    private static int diagBranch=-1;
++    static final boolean DIAG_FLASH_FIX=Boolean.getBoolean("diag.flashFix");
++    static final int DIAG_MODE=switch(System.getProperty("diag.water","region1")){case "legacy"->1;case "kappa"->2;default->0;};
++    static final double DIAG_KAPPA=DIAG_MODE==1?1e-9:Double.parseDouble(System.getProperty("diag.waterKappa","1e-9"));
++    static final double DIAG_P0=DIAG_MODE==1?2e6:101325;
++    /** {molar volume, molar enthalpy without offset, dv/dP molar, metastable flag, compressibility}. */
++    private double[] diagWater(double t,double p,Prepared prepared) {
++        var w=waterAt(t,DIAG_P0,prepared);double mw=waterMolecularWeight;
++        double v0=w.specificVolume()*mw,vt0=w.volumeTemperatureDerivative()*mw,h0=w.specificEnthalpy()*mw;
++        double exponent=-DIAG_KAPPA*(p-DIAG_P0);double factor=Math.exp(exponent),integral=-Math.expm1(exponent)/DIAG_KAPPA;
++        double v=v0*factor,h=h0+(v0-t*vt0)*integral;
++        double saturation=prepared==null?saturationPressure(t):prepared.saturationPressure();
++        return new double[]{v,h,-DIAG_KAPPA*v,p<saturation?1:0,DIAG_KAPPA};
++    }
+ 
+     /** Direct properties of specified phase amounts, without an inner flash. */
+     public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure) {
+@@ -253,9 +275,12 @@ public final class FluidThermodynamics {
+         if(waterLiquid<0||waterVapor<0||!Double.isFinite(waterLiquid+waterVapor))throw new IllegalArgumentException("Invalid water split");
+         double kw=0;
+         if(waterLiquid>0) {
++            if(DIAG_MODE!=0){WaterRegion1.requireTemperature(domain.packageId(),water,t,p);double[] d=diagWater(t,p,prepared);vw=waterLiquid*d[0];volume+=vw;h+=waterLiquid*(d[1]+waterEnthalpyOffset);kw=d[4];}
++            else {
+             var w=waterAt(t,p,prepared);double molarVolume=w.specificVolume()*waterMolecularWeight;
+             vw=waterLiquid*molarVolume;volume+=vw;h+=waterLiquid*(w.specificEnthalpy()*waterMolecularWeight+waterEnthalpyOffset);
+             kw=-w.volumePressureDerivative()/w.specificVolume();
++            }
+         }
+         if(waterVapor>0) {if(nv==0)gasVolume=waterVapor*R*t/p;h+=waterVapor*(prepared==null?vaporWaterEnthalpy(t):prepared.vaporEnthalpy());}
+         double pw=waterVapor>0?waterVapor*R*t/gasVolume:0;
+@@ -287,8 +312,9 @@ public final class FluidThermodynamics {
+         // Refused before any equilibrium ratio is formed: outside a component's range the flash's numbers mean nothing,
+         // and the violation says which component, not which intermediate overflowed.
+         domain.checkTotals(t,p,overall);
+-        if(nh==0)return state(t,p,hc,hc,p>=saturationPressure(t)?w:0,p>=saturationPressure(t)?0:w,0);
+-        if(w==0) {var terms=hydrocarbon.prepare(t);var split=splitHydrocarbon(t,p,p,hc,checkpoint,terms);return state(t,p,split[0],split[1],0,0,p,terms);}
++        if(nh==0){DIAG[0]++;return state(t,p,hc,hc,p>=saturationPressure(t)?w:0,p>=saturationPressure(t)?0:w,0);}
++        diagBranch=w==0?1:2;
++        if(w==0) {DIAG[1]++;var terms=hydrocarbon.prepare(t);var split=splitHydrocarbon(t,p,p,hc,checkpoint,terms);return state(t,p,split[0],split[1],0,0,p,terms);}
+         double ps=saturationPressure(t);
+         TranslatedPengRobinson.Workspace terms=null;
+         if(p>ps+1e-6) {
+@@ -296,17 +322,38 @@ public final class FluidThermodynamics {
+             double pc=p-ps;var split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
+             double nv=sum(split[1]);double vg=nv>0?nv*hydrocarbon.phase(t,pc,split[1],PhaseRoot.VAPOR,terms).molarVolume():0;
+             double required=ps*vg/(R*t);
+-            if(required<=w)return state(t,p,split[0],split[1],w-required,required,pc,terms);
++            if(required<=w){DIAG[2]++;diagBranch=-1;return state(t,p,split[0],split[1],w-required,required,pc,terms);}
++            // [diag.flashFix] Unsaturated gas: every mole of water is vapour and pc solves pc + w R T / vg(pc) = p. Its root sits
++            // w R T / vg below p (a trace of 1e-13 puts it 1e-13 p below), so start there, from the split already at hand, and
++            // verify with the bisection's own residual test; the bisection below remains the fallback.
++            if(DIAG_FLASH_FIX&&vg>0) {
++                double guess=p/(1+w*R*t/(vg*pc));
++                for(int fixedPoint=0;fixedPoint<3;fixedPoint++) {
++                    checkpoint.run();
++                    var trial=splitHydrocarbon(t,p,guess,hc,checkpoint,terms);
++                    double tv=sum(trial[1]);double tvg=tv>0?tv*hydrocarbon.phase(t,guess,trial[1],PhaseRoot.VAPOR,terms).molarVolume():0;
++                    if(!(tvg>0))break;
++                    double residual=guess+w*R*t/tvg-p;
++                    if(Math.abs(residual)<1e-8*p) {
++                        var fixed=state(t,p,trial[0],trial[1],0,w,guess,terms);
++                        if(Math.abs(guess+fixed.waterPartialPressure-p)<=1e-6*p){DIAG[10]++;diagBranch=-1;return fixed;}
++                        break;
++                    }
++                    guess=p-w*R*t/tvg;
++                }
++                DIAG[11]++;
++            }
+         }
++        DIAG[3]++;diagBranch=3;DIAG_WFRAC.computeIfAbsent((int)Math.floor(Math.log10(w/(nh+w))),key->new long[1])[0]++;
+         double low=1e-6,high=p;double[][] split=null;double pc=high;
+         for(int iteration=0;iteration<70;iteration++) {
+-            checkpoint.run();pc=(low+high)*.5;if(terms==null)terms=hydrocarbon.prepare(t);split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
++            checkpoint.run();DIAG[8]++;DIAG[9]++;pc=(low+high)*.5;if(terms==null)terms=hydrocarbon.prepare(t);split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
+             double nv=sum(split[1]);double vg=nv>0?nv*hydrocarbon.phase(t,pc,split[1],PhaseRoot.VAPOR,terms).molarVolume():0;
+             double residual=vg>0?pc+w*R*t/vg-p:Double.POSITIVE_INFINITY;
+             if(Math.abs(residual)<1e-8*p)break;
+             if(residual>0)high=pc;else low=pc;
+         }
+-        var result=state(t,p,split[0],split[1],0,w,pc,terms);
++        diagBranch=-1;var result=state(t,p,split[0],split[1],0,w,pc,terms);
+         if(Math.abs(pc+result.waterPartialPressure-p)>1e-6*p)throw new IllegalArgumentException("Hybrid TP initialization did not converge");
+         return result;
+     }
+@@ -317,7 +364,7 @@ public final class FluidThermodynamics {
+             k[i]=Math.exp(Math.clamp(Math.log(c.criticalPressure()/vaporPressure)+5.373*(1+c.acentricFactor())*(1-c.criticalTemperature()/t),-600,600));}
+         double beta=0;
+         for(int iteration=0;iteration<200;iteration++) {
+-            checkpoint.run();double f0=0,f1=0;for(int i=0;i<n;i++){f0+=z[i]*(k[i]-1);f1+=z[i]*(1-1/k[i]);}
++            checkpoint.run();if(diagBranch>0)DIAG[4+diagBranch]++;double f0=0,f1=0;for(int i=0;i<n;i++){f0+=z[i]*(k[i]-1);f1+=z[i]*(1-1/k[i]);}
+             if(f0<=0)beta=0;else if(f1>=0)beta=1;else {
+                 double lo=0,hi=1;
+                 for(int j=0;j<70;j++){double mid=(lo+hi)/2,f=0;for(int i=0;i<n;i++)f+=z[i]*(k[i]-1)/((1-mid)+mid*k[i]);if(f>0)lo=mid;else hi=mid;}

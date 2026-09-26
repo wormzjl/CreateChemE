@@ -1,0 +1,325 @@
+  A attempt=0 t=0.0 step=0.05
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET] closed=[false, false] phases=[2, 2, 2] start=[4.440892098500626E-16, 0.0011453530861832012] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-0.00115 1:0.00 2:0.00 3:-6.66e-19 4:-0.873 5:0.00
+      N it=0 fresh=true norm=0.8733439675757629 worst=4 alpha=1.0 bt=0 next=1.2177855674522926E-10 nextWorst=4 descent=true
+    P conv pass=0 it=1 flows=[0.0011453511197571683, 0.001145351119757072] heads=[0.0, 698675.3480232622] changed=true nextModes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false]
+    P pass=1 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101324.83 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:-4.31e-15 2:0.00 3:-2.33e-12 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139586223800445 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139586223800445 worst=3 alpha=0.0625 bt=4 next=0.5287572088467818 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287572088467818 worst=3 alpha=9.765625E-4 bt=10 next=0.528240160958182 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.528240160958182 worst=3 alpha=2.44140625E-4 bt=12 next=0.528111153629519 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.528111153629519 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280466763778533 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280466763778533 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280144443505518 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280144443505518 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280063873345273 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280063873345273 worst=3 alpha=1.9073486328125E-6 bt=19 next=0.5280053802410803 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.5280053802410803 worst=3 alpha=1.0 bt=0 next=1.9442848942589672 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442848942589672 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.944284894259243 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442848942589672 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.944284894259116 nextWorst=3 descent=false
+    P FAIL pass=1: Newton line search stalled at residual 1.9442848942589672
+  A REJ t=0.0 step=0.05 Nonconvergence: Newton line search stalled at residual 1.9442848942589672; active-set pass=1
+  A attempt=1 t=0.0 step=0.025
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=0.025 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=2 t=0.0 step=0.0125
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=0.0125 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=3 t=0.0 step=0.00625
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=0.00625 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=4 t=0.0 step=0.003125
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=0.003125 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=5 t=0.0 step=0.0015625
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=0.0015625 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=6 t=0.0 step=7.8125E-4
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=7.8125E-4 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=7 t=0.0 step=3.90625E-4
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=3.90625E-4 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=8 t=0.0 step=1.953125E-4
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=1.953125E-4 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=9 t=0.0 step=9.765625E-5
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=9.765625E-5 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=10 t=0.0 step=4.8828125E-5
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=4.8828125E-5 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=11 t=0.0 step=2.44140625E-5
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=2.44140625E-5 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=12 t=0.0 step=1.220703125E-5
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=1.220703125E-5 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=13 t=0.0 step=6.103515625E-6
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=6.103515625E-6 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=14 t=0.0 step=3.0517578125E-6
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=3.0517578125E-6 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=15 t=0.0 step=1.52587890625E-6
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=1.52587890625E-6 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=16 t=0.0 step=7.62939453125E-7
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=7.62939453125E-7 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=17 t=0.0 step=3.814697265625E-7
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=3.814697265625E-7 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=18 t=0.0 step=1.9073486328125E-7
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=1.9073486328125E-7 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+  A attempt=19 t=0.0 step=9.5367431640625E-8
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:0.00 2:0.00 3:-1.72e-06 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=0.5 bt=1 next=0.5139573234483068 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.5139573234483068 worst=3 alpha=0.0625 bt=4 next=0.5287560590962266 nextWorst=3 descent=true
+      N it=2 fresh=true norm=0.5287560590962266 worst=3 alpha=9.765625E-4 bt=10 next=0.5282390123323716 nextWorst=3 descent=true
+      N it=3 fresh=true norm=0.5282390123323716 worst=3 alpha=2.44140625E-4 bt=12 next=0.5281100052842482 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.5281100052842482 worst=3 alpha=1.220703125E-4 bt=13 next=0.5280455281727666 nextWorst=3 descent=true
+      N it=5 fresh=true norm=0.5280455281727666 worst=3 alpha=6.103515625E-5 bt=14 next=0.5280132962155137 nextWorst=3 descent=true
+      N it=6 fresh=true norm=0.5280132962155137 worst=3 alpha=1.52587890625E-5 bt=16 next=0.5280052392170085 nextWorst=3 descent=true
+      N it=7 fresh=true norm=0.5280052392170085 worst=3 alpha=9.5367431640625E-7 bt=20 next=0.528004735672029 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.528004735672029 worst=3 alpha=1.0 bt=0 next=1.9442854513704666 nextWorst=3 descent=true
+      N it=9 fresh=false norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513707426 nextWorst=3 descent=false
+      N it=10 fresh=true norm=1.9442854513704666 worst=3 alpha=1.1920928955078125E-7 bt=23 next=1.9442854513706163 nextWorst=3 descent=false
+    P FAIL pass=0: Newton line search stalled at residual 1.9442854513704666
+  A REJ t=0.0 step=9.5367431640625E-8 Nonconvergence: Newton line search stalled at residual 1.9442854513704666; active-set pass=0
+HELD Substep refinement exhausted: Newton line search stalled at residual 1.9442854513704666; active-set pass=0

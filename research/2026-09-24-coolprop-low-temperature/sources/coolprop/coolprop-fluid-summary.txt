@@ -1,0 +1,182 @@
+CoolProp 8.0.0 (commit ae81610e7d23efc57f9d051c8e70a4d66e87537f) dev/fluids summary; MIT licence.
+
+Ammonia
+    EOS Gao-JPCRD-2020; CP0 
+    Ttriple 195.49 K, T_max 725 K, p_max 1000 MPa
+    Tc 405.56 K, pc 11363391.162815327 Pa, rhoc 13696 mol/m3; triple p 6055.81357453296 Pa
+    acentric 0.2556905229865023, M 0.01703052 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein]
+    alphar [Power, Gaussian, GaoB]
+    melting none
+    pS ancillary 195.495..405.56 K, max err 0.05181632089212851 %
+    viscosity Fenghour-JPCRD-1995; conductivity Tufeu-BBPC-1984 [partly hardcoded]
+Argon
+    EOS Tegeler-JPCRD-1999; CP0 
+    Ttriple 83.806 K, T_max 2000 K, p_max 1000 MPa
+    Tc 150.687 K, pc 4863000 Pa, rhoc 13407.429658556124 mol/m3; triple p 68892.4770797671 Pa
+    acentric -0.00219, M 0.039948 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, EnthalpyEntropyOffset]
+    alphar [Power, Gaussian]
+    melting polynomial_in_Tr 83.806..260 K (Tegeler-JPCRD-1999)
+    pS ancillary 83.80600000000001..150.68699999999976 K, max err 0.007682715770895854 %
+    viscosity Lemmon-IJT-2004; conductivity Lemmon-IJT-2004
+CarbonDioxide
+    EOS Span-JPCRD-1996; CP0 
+    Ttriple 216.592 K, T_max 2000 K, p_max 800 MPa
+    Tc 304.1282 K, pc 7377300 Pa, rhoc 10624.9063 mol/m3; triple p 517964.34344772575 Pa
+    acentric 0.22394, M 0.0440098 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein, EnthalpyEntropyOffset]
+    alphar [Power, Gaussian, NonAnalytic]
+    melting polynomial_in_Theta 216.592..330 K (Span-JPCRD-1996)
+    pS ancillary 216.592..304.1281999999994 K, max err 0.0010595686337877552 %
+    viscosity Laesecke-JPCRD-2017-CO2 [partly hardcoded]; conductivity Huber-JPCRD-2016-CO2 [partly hardcoded]
+CarbonMonoxide
+    EOS Lemmon-JCED-2006; CP0 
+    Ttriple 68.16 K, T_max 500 K, p_max 100 MPa
+    Tc 132.86 K, pc 3494000 Pa, rhoc 10850 mol/m3; triple p 15536.876656446813 Pa
+    acentric 0.0497, M 0.0280101 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, Power, PlanckEinstein]
+    alphar [Power]
+    melting Simon 68.16..90 K (Barreiros-JCT-1982)
+    pS ancillary 68.16000000000001..132.8599999999997 K, max err 0.0655505132825307 %
+    viscosity none; conductivity none
+Ethane
+    EOS Buecker-JPCRD-2006; CP0 
+    Ttriple 90.368 K, T_max 675 K, p_max 900 MPa
+    Tc 305.322 K, pc 4872200 Pa, rhoc 6856.8866849999995 mol/m3; triple p 1.142107639085233 Pa
+    acentric 0.099, M 0.03006904 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein, EnthalpyEntropyOffset]
+    alphar [Power, Gaussian]
+    melting polynomial_in_Tr 90.368..190 K (Buecker-JPCRD-2006)
+    pS ancillary 90.36800000000001..305.3219999999994 K, max err 0.023914433726957007 %
+    viscosity Friend-JPCRD-1991 [partly hardcoded]; conductivity Friend-JPCRD-1991 [partly hardcoded]
+Ethylene
+    EOS Smukala-JPCRD-2000; CP0 
+    Ttriple 103.989 K, T_max 450 K, p_max 300 MPa
+    Tc 282.35 K, pc 5041800 Pa, rhoc 7636.765980745539 mol/m3; triple p 122.02676384261189 Pa
+    acentric 0.0866, M 0.02805376 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein, EnthalpyEntropyOffset]
+    alphar [Power, Gaussian]
+    melting polynomial_in_Tr 103.989..190 K (Smukala-JPCRD-2000)
+    pS ancillary 103.98900000000002..282.3499999999994 K, max err 0.012376938726232911 %
+    viscosity none; conductivity none
+Hydrogen
+    EOS Leachman-JPCRD-2009; CP0 
+    Ttriple 13.957 K, T_max 1000 K, p_max 2000 MPa
+    Tc 33.145 K, pc 1296400 Pa, rhoc 15508 mol/m3; triple p 7357.828141607672 Pa
+    acentric -0.219, M 0.00201588 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinsteinFunctionT]
+    alphar [Power, Gaussian]
+    melting Simon 13.957..700 K (Datchi-PRB-2000)
+    pS ancillary 13.957000000000011..33.144999999999925 K, max err 0.006522036925715735 %
+    viscosity Muzny-JCED-2013 [partly hardcoded]; conductivity Assael-JPCRD-2011-Hydrogen
+HydrogenSulfide
+    EOS Lemmon-JCED-2006; CP0 
+    Ttriple 187.7 K, T_max 760 K, p_max 170 MPa
+    Tc 373.1 K, pc 9000000 Pa, rhoc 10190 mol/m3; triple p 23258.855838991203 Pa
+    acentric 0.1005, M 0.03408088 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, Power, PlanckEinstein]
+    alphar [Power]
+    melting none
+    pS ancillary 187.7..373.09999999999945 K, max err 0.01406124754110838 %
+    viscosity QuinonesCisneros-JCED-2012; conductivity none
+IsoButane
+    EOS Buecker-JPCRD-2006B; CP0 
+    Ttriple 113.73 K, T_max 575 K, p_max 35 MPa
+    Tc 407.817 K, pc 3629000 Pa, rhoc 3879.756788283995 mol/m3; triple p 0.022890839011893836 Pa
+    acentric 0.183531783208, M 0.0581222 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein, EnthalpyEntropyOffset]
+    alphar [Power, Gaussian]
+    melting polynomial_in_Tr 113.73..127 K (Buecker-JPCRD-2006B)
+    pS ancillary 113.73000000000002..407.81699999999915 K, max err 0.019699846909193575 %
+    viscosity Vogel-IJT-2000; conductivity Perkins-JCED-2002-Isobutane
+Isopentane
+    EOS Lemmon-JCED-2006; CP0 
+    Ttriple 112.65 K, T_max 500 K, p_max 1000 MPa
+    Tc 460.35 K, pc 3378000 Pa, rhoc 3271 mol/m3; triple p 0.00008949025483876957 Pa
+    acentric 0.2274, M 0.07214878 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein]
+    alphar [Power]
+    melting Simon 112.65..212.16 K (Reeves-JCP-1964)
+    pS ancillary 112.65000000000002..460.3499999999989 K, max err 0.016885314228098913 %
+    viscosity Chung-IECR-1988; conductivity Vassiliou-JPCRD-2015-pentanes
+Methane
+    EOS Setzmann-JPCRD-1991; CP0 
+    Ttriple 90.6941 K, T_max 625 K, p_max 1000 MPa
+    Tc 190.564 K, pc 4599200 Pa, rhoc 10139.128 mol/m3; triple p 11696.064114962215 Pa
+    acentric 0.01142, M 0.0160428 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinsteinFunctionT, EnthalpyEntropyOffset]
+    alphar [Power, Gaussian]
+    melting Simon 90.6941..600 K (Abramson-HPR-2011)
+    pS ancillary 90.69410000000002..190.56399999999954 K, max err 0.0043709218045084874 %
+    viscosity QuinonesCisneros-JPCB-2006; conductivity Friend-JPCRD-1989 [hardcoded Methane]
+Nitrogen
+    EOS Span-JPCRD-2000; CP0 
+    Ttriple 63.151 K, T_max 2000 K, p_max 2200 MPa
+    Tc 126.19200000000001 K, pc 3395800 Pa, rhoc 11183.901464580624 mol/m3; triple p 12519.78348430944 Pa
+    acentric 0.0372, M 0.02801348 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, Power, PlanckEinsteinFunctionT]
+    alphar [Power, Gaussian]
+    melting polynomial_in_Tr 63.151..287 K (Span-JPCRD-2000)
+    pS ancillary 63.15100000000001..126.19199999999978 K, max err 0.005700555888288328 %
+    viscosity Lemmon-IJT-2004; conductivity Lemmon-IJT-2004
+Oxygen
+    EOS Schmidt-FPE-1985,Stewart-JPCRD-1991; CP0 
+    Ttriple 54.361 K, T_max 2000 K, p_max 80 MPa
+    Tc 154.58100000000002 K, pc 5043000 Pa, rhoc 13630 mol/m3; triple p 146.27764705809653 Pa
+    acentric 0.0222, M 0.0319988 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein, EnthalpyEntropyOffset]
+    alphar [Power]
+    melting Simon 54.361..63.1 K (Younglove-NIST-1982)
+    pS ancillary 54.361000000000004..154.58099999999973 K, max err 0.004247266065049438 %
+    viscosity Lemmon-IJT-2004; conductivity Lemmon-IJT-2004
+Propylene
+    EOS Lemmon-PROPYLENE-2013; CP0 
+    Ttriple 87.953 K, T_max 575 K, p_max 1000 MPa
+    Tc 364.211 K, pc 4555000 Pa, rhoc 5457 mol/m3; triple p 0.0007469480313533406 Pa
+    acentric 0.146, M 0.04207974 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein, EnthalpyEntropyOffset]
+    alphar [Power, Gaussian]
+    melting Simon 87.953..145.3 K (Reeves-JCP-1964)
+    pS ancillary 87.95300000000002..364.2109999999991 K, max err 0.02358382509746182 %
+    viscosity Huber-IECR-2003; conductivity Huber-IECR-2003
+Water
+    EOS Wagner-JPCRD-2002; CP0 
+    Ttriple 273.16 K, T_max 2000 K, p_max 1000 MPa
+    Tc 647.096 K, pc 22064000 Pa, rhoc 17873.72799560906 mol/m3; triple p 611.6548008968684 Pa
+    acentric 0.3442920843, M 0.018015268 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein]
+    alphar [Power, Gaussian, NonAnalytic]
+    melting polynomial_in_Tr 251.165..355 K (IAPWS-Melting-2011)
+    pS ancillary 273.16..647.0959999999985 K, max err 0.01384518934277601 %
+    viscosity Huber-JPCRD-2009 [hardcoded Water]; conductivity Huber-JPCRD-2012 [hardcoded Water]
+n-Butane
+    EOS Buecker-JPCRD-2006B; CP0 
+    Ttriple 134.895 K, T_max 575 K, p_max 12 MPa
+    Tc 425.125 K, pc 3796000 Pa, rhoc 3922.769612987809 mol/m3; triple p 0.6656582208078881 Pa
+    acentric 0.200810094644, M 0.0581222 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein, EnthalpyEntropyOffset]
+    alphar [Power, Gaussian]
+    melting polynomial_in_Tr 134.895..163.9 K (Buecker-JPCRD-2006B)
+    pS ancillary 134.895..425.124999999999 K, max err 0.02366371569104686 %
+    viscosity Vogel-HTHP-1999; conductivity Perkins-JCED-2002-nButane
+n-Pentane
+    EOS Thol-FPE-2019-alkanes-pentane; CP0 
+    Ttriple 143.47 K, T_max 650 K, p_max 780 MPa
+    Tc 469.70000000000005 K, pc 3367518.9947363394 Pa, rhoc 3215.5775884221466 mol/m3; triple p 0.0780280732735637 Pa
+    acentric 0.251031912680427, M 0.07214878 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein]
+    alphar [Power, Gaussian]
+    melting Simon 143.47..230.3 K (Reeves-JCP-1964)
+    pS ancillary 143.47..469.7 K, max err 0.029330284037554222 %
+    viscosity QuinonesCisneros-JPCB-2006; conductivity Vassiliou-JPCRD-2015-pentanes
+n-Propane
+    EOS Lemmon-JCED-2009; CP0 
+    Ttriple 85.525 K, T_max 650 K, p_max 1000 MPa
+    Tc 369.89 K, pc 4251200 Pa, rhoc 5000.000000000001 mol/m3; triple p 0.00017184840809308612 Pa
+    acentric 0.1521, M 0.04409562 kg/mol, pseudo_pure false
+    alpha0 [Lead, LogTau, PlanckEinstein]
+    alphar [Power, Gaussian]
+    melting Simon 85.525..175 K (Reeves-JCP-1964)
+    pS ancillary 85.52500000000002..369.8899999999991 K, max err 0.016222893634509905 %
+    viscosity Vogel-JPCRD-1998; conductivity Marsh-JCED-2002

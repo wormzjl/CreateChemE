@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:network",
+  "extends": "createcheme:crude_19",
+  "components": [
+    "Nitrogen"
+  ],
+  "properties": [
+    "createcheme:fluid_nitrogen"
+  ]
+}

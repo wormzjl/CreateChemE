@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:21.471Z" hostname="WORMZ-PC" time="0.006">
+  <properties/>
+  <testcase name="zeroTotalPhaseIsUntestableAndNoTestablePhaseConservativelyRetains()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="aSideDrawTrayKeepsTheLiquidItReceivesAndNotAWholeBandBackToTheFeed()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.001"/>
+  <testcase name="validatesCutoffShapeAndPointAccessWithoutAcceptingNonfinitePhaseTotals()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.001"/>
+  <testcase name="strictlyBelowCutoffInBothPhasesRemovesThePointOnlyAtThoseStages()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="[1] TWO_PHASE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="[2] VAPOR_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="[3] LIQUID_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="disconnectedUpperGroupIsPrunedEvenWhenPositiveRefluxCreatesACycle()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.001"/>
+  <testcase name="exactlyCutoffInEitherPhaseRetainsTheWholePointAndFeedTrayIsExempt()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="zeroCutoffStillAppliesTheFlowFloorAndReusesIdentityWhenNothingIsBelowIt()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="[1] TWO_PHASE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="[2] VAPOR_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="[3] LIQUID_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="condenserAndReboilerLoseSupportWhenTheirOnlyInflowNeighborIsRemoved()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="[1] TWO_PHASE" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.001"/>
+  <testcase name="[2] VAPOR_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <testcase name="[3] LIQUID_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationSupportTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

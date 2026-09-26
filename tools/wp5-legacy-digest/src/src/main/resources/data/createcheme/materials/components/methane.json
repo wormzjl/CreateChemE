@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "Methane",
+  "kind": "chemical",
+  "translation_key": "material.createcheme.methane",
+  "fallback": "Methane",
+  "appearance": {
+    "color": "#F3F4EA",
+    "transparency": 0.85,
+    "estimated": true
+  }
+}

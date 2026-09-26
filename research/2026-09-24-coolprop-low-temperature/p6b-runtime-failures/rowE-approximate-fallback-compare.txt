@@ -1,0 +1,16 @@
+interval 1: 548.3 ms, 1324561 checkpoints, substeps 59 rejected 16 (UV 56 calls 1227578 kernel 0 failed, warm 4/4; TP 74 calls 23186 kernel) | vessel 123.431 K 257830 Pa L 0.0710 V 0.9259 m3 crystal 114.627 mol, fluid CH4 2055.94 CO2 1.858 N2 20.7367 | reasons {Newton iteration limit at residual #; active-set pass=#=3, Embedded 
+interval 2: 1130.9 ms, 5015036 checkpoints, substeps 164 rejected 4 (UV 166 calls 5002673 kernel 0 failed, warm 0/0; TP 0 calls 0 kernel) | vessel 123.228 K 247139 Pa L 0.0211 V 0.9742 m3 crystal 174.680 mol, fluid CH4 787.42 CO2 0.550 N2 7.9421 | reasons {Embedded pipe error #=2, Step refinement error #=2}
+   approximate refused after 2.4 ms, 7 checkpoints: Device regime changed
+interval 3: 2081.9 ms, 10489051 checkpoints, substeps 209 rejected 1 (UV 211 calls 10474226 kernel 0 failed, warm 0/0; TP 0 calls 0 kernel) | vessel 123.479 K 247172 Pa L 0.0016 V 0.9920 m3 crystal 240.186 mol, fluid CH4 293.40 CO2 0.053 N2 2.9593 | reasons {Embedded pipe error #=1}
+   approximate refused after 2.1 ms, 146 checkpoints: Device regime changed
+interval 4: 563.9 ms, 2887385 checkpoints, substeps 111 rejected 3 (UV 110 calls 2848653 kernel 0 failed, warm 66/70; TP 317 calls 29879 kernel) | vessel 187.654 K 227148 Pa L 0.0000 V 0.9919 m3 crystal 290.826 mol, fluid CH4 109.10 CO2 37.706 N2 1.1004 | reasons {Step refinement error #=1, Embedded pipe error #=1, Newton line s
+   approximate refused after 9.0 ms, 2526 checkpoints: Substep refinement exhausted: Conservative reconstruction fails equation gate: 2.498879144843813E-6
+interval 5: 18.8 ms, 75490 checkpoints, substeps 5 rejected 0 (UV 7 calls 73917 kernel 0 failed, warm 3/7; TP 20 calls 1138 kernel) | vessel 199.157 K 213575 Pa L 0.0000 V 0.9918 m3 crystal 291.859 mol, fluid CH4 40.48 CO2 90.744 N2 0.4083 | reasons {}
+   approximate refused after 0.6 ms, 369 checkpoints: Device regime changed
+interval 6: 11.2 ms, 47926 checkpoints, substeps 3 rejected 0 (UV 5 calls 47345 kernel 0 failed, warm 2/5; TP 12 calls 324 kernel) | vessel 202.439 K 212919 Pa L 0.0000 V 0.9919 m3 crystal 286.731 mol, fluid CH4 14.94 CO2 114.542 N2 0.1506 | reasons {}
+   approximate refused after 0.5 ms, 198 checkpoints: Device regime changed
+interval 7: 5.7 ms, 19238 checkpoints, substeps 2 rejected 1 (UV 4 calls 18689 kernel 0 failed, warm 2/4; TP 12 calls 308 kernel) | vessel 203.664 K 214825 Pa L 0.0000 V 0.9921 m3 crystal 280.298 mol, fluid CH4 5.44 CO2 124.789 N2 0.0549 | reasons {Embedded state error #=1}
+   approximate refused after 0.5 ms, 210 checkpoints: Device regime changed
+interval 8: 5.4 ms, 19373 checkpoints, substeps 2 rejected 1 (UV 4 calls 18812 kernel 0 failed, warm 2/4; TP 12 calls 312 kernel) | vessel 204.126 K 216077 Pa L 0.0000 V 0.9923 m3 crystal 273.411 mol, fluid CH4 1.98 CO2 128.878 N2 0.0200 | reasons {Embedded state error #=1}
+   approximate refused after 1.2 ms, 914 checkpoints: Device regime changed
+total 4366.0 ms

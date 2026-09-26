@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" tests="5" skipped="0" failures="3" errors="0" timestamp="2026-09-23T16:49:44.976Z" hostname="WORMZ-PC" time="144.35">
+  <properties/>
+  <testcase name="aSixTankChainPassesTheStartThatHeldItForever()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="44.026">
+    <failure message="org.opentest4j.AssertionFailedError: past its first two seconds: online 2400, committed 0, 24 jobs, 48.0 s of work, HELD: wall deadline, Optional.empty [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: past its first two seconds: online 2400, committed 0, 24 jobs, 48.0 s of work, HELD: wall deadline, Optional.empty [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest.aSixTankChainPassesTheStartThatHeldItForever(FluidPumpedFillLineTest.java:143)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="everyPumpedChainCommitsItsFirstTickFromAColdSolver()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="4.241"/>
+  <testcase name="aPumpedThreeTankChainFillsToThePumpsShutoffAndCertifies()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="9.011"/>
+  <testcase name="aGasTransferStopsAtTheModelsTemperatureFloorAndItsRetriesBackOff()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="83.224">
+    <failure message="org.opentest4j.AssertionFailedError: the suction tank stands at the model's temperature floor: online 24000, committed 400, 240 jobs, 58.2 s of work, HELD: Substep refinement exhausted: Newton iteration limit at residual 0.060552309518239665; active-set pass=0, Optional.empty [76561.4 Pa, 275.20 K, liquid 0.0000] [128226.8 Pa, 319.36 K, liquid 0.0000] ==&gt; expected: &lt;273.16&gt; but was: &lt;275.19984672447634&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: the suction tank stands at the model's temperature floor: online 24000, committed 400, 240 jobs, 58.2 s of work, HELD: Substep refinement exhausted: Newton iteration limit at residual 0.060552309518239665; active-set pass=0, Optional.empty [76561.4 Pa, 275.20 K, liquid 0.0000] [128226.8 Pa, 319.36 K, liquid 0.0000] ==&gt; expected: &lt;273.16&gt; but was: &lt;275.19984672447634&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+	at app//com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest.aGasTransferStopsAtTheModelsTemperatureFloorAndItsRetriesBackOff(FluidPumpedFillLineTest.java:160)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="aVentedChainReachesThroughFlowAtThePumpsTarget()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="3.828">
+    <failure message="java.util.NoSuchElementException: No value present" type="java.util.NoSuchElementException">java.util.NoSuchElementException: No value present
+	at java.base/java.util.Optional.orElseThrow(Optional.java:377)
+	at com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest.aVentedChainReachesThroughFlowAtThePumpsTarget(FluidPumpedFillLineTest.java:126)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[six-tank fill: online 2400, committed 0, 24 jobs, 48.0 s of work, HELD: wall deadline, Optional.empty [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000]
+GUPRPRPR: first tick accepted=45 rejected=17 reasons={Step refinement error #=9, Embedded pipe error #=6, Newton line search stalled at residual #; active-set pass=#=2}
+GUPRPRPRPRPRPR: first tick accepted=44 rejected=19 reasons={Embedded pipe error #=7, Newton iteration limit at residual #; active-set pass=#=5, Newton line search stalled at residual #; active-set pass=#=1, Step refinement error #=6}
+GUPRPRPRPRPRPRPV: first tick accepted=44 rejected=19 reasons={Embedded pipe error #=7, Newton iteration limit at residual #; active-set pass=#=5, Newton line search stalled at residual #; active-set pass=#=1, Step refinement error #=6}
+three-tank fill: online 5280, committed 5280, 59 jobs, 9.7 s of work, STEADY: replaying 1.326e-09 kg/s since 264.0 s, next check at 15294.0 s, Optional[Certified[STEADY, since 5280, base 5280, horizon 305880, largest flow 1.3263836116055016E-9]] [601325.0 Pa, 298.17 K, liquid 0.9799] [601325.0 Pa, 298.19 K, liquid 0.8923] [601325.0 Pa, 298.31 K, liquid 0.6200]
+gas transfer: online 24000, committed 400, 240 jobs, 58.2 s of work, HELD: Substep refinement exhausted: Newton iteration limit at residual 0.060552309518239665; active-set pass=0, Optional.empty [76561.4 Pa, 275.20 K, liquid 0.0000] [128226.8 Pa, 319.36 K, liquid 0.0000] deferred=null
+vented three-tank chain: online 12000, committed 0, 120 jobs, 4.2 s of work, HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0, Optional.empty [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000] [101325.0 Pa, 298.15 K, liquid 0.0000]
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

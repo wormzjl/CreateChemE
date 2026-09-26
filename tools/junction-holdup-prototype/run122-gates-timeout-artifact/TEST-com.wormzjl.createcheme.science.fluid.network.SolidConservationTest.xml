@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.SolidConservationTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-26T05:06:37.475Z" hostname="WORMZ-PC" time="0.026">
+  <properties/>
+  <testcase name="coupledStepReconstructsParticlesAndAllThreeMomentsAtTheReceiver()" classname="com.wormzjl.createcheme.science.fluid.network.SolidConservationTest" time="0.001"/>
+  <testcase name="adaptiveStagesAndPipeHistoryPreserveExactPopulations()" classname="com.wormzjl.createcheme.science.fluid.network.SolidConservationTest" time="0.003"/>
+  <testcase name="filterCapturesEveryPopulationAndPassesOnlyFluid()" classname="com.wormzjl.createcheme.science.fluid.network.SolidConservationTest" time="0.001"/>
+  <testcase name="loadedFilterClosesWithoutLosingItsCapturedMaterial()" classname="com.wormzjl.createcheme.science.fluid.network.SolidConservationTest" time="0.005"/>
+  <testcase name="canonicalSizesPreserveDistinctPopulationsAndTracesStillOccupySlots()" classname="com.wormzjl.createcheme.science.fluid.network.SolidConservationTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

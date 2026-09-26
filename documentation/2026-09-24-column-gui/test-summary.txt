@@ -1,0 +1,3 @@
+{'tests': 1049, 'failures': 0, 'errors': 0, 'skipped': 0}
+Command: gradlew.bat test --offline --console=plain
+JDK: 21.0.11

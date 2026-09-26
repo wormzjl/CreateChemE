@@ -1,0 +1,39 @@
+# Patch re-apply checks, 2026-09-24 13:35:45, HEAD f9d6be1 (final tree)
+# method: a throw-away index (GIT_INDEX_FILE=$(mktemp); git read-tree <sha>) and git apply --cached --check [--reverse];
+# round trip: git apply --cached on the removing commit's tree, then the resulting blob ids compared with the parent's;
+# stored sources: git show <parent>:<path> | cmp - <stored copy>; working tree: git apply --check in this CRLF checkout.
+## in-game rig: removed in c1b8464 (parent 88df883)
+OK   git apply --check (forward) tools/fluid-in-game-rig/mod-side/reattach.patch on c1b8464
+OK   git apply --check (forward) tools/fluid-in-game-rig/mod-side/reattach.patch on f9d6be1
+OK   git apply --check --reverse tools/fluid-in-game-rig/mod-side/reattach.patch on 88df883
+SAME build.gradle: blob 517b9c8ee667342599d14f9286b1a29bca79afc5 after applying on c1b8464 = 88df883:build.gradle
+SAME src/main/java/com/wormzjl/createcheme/CreateChemE.java: blob fb1281066a265b3e463d70168874e2b1e011bf15 after applying on c1b8464 = 88df883:src/main/java/com/wormzjl/createcheme/CreateChemE.java
+SAME src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidInGameDiagnostics.java: blob 9f1eb758a22d4138cdb09aea1f332ab7e927eac3 after applying on c1b8464 = 88df883:src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidInGameDiagnostics.java
+SAME src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidInGameClientDiagnostics.java: blob 84bef60bce9be4ed495fb2544e989be58e73c883 after applying on c1b8464 = 88df883:src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidInGameClientDiagnostics.java
+SAME git show 88df883:src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidInGameDiagnostics.java = tools/fluid-in-game-rig/mod-side/FluidInGameDiagnostics.java
+SAME git show 88df883:src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidInGameClientDiagnostics.java = tools/fluid-in-game-rig/mod-side/FluidInGameClientDiagnostics.java
+## F3 payload breakdown hook: removed in 68d8877 (parent c1b8464)
+OK   git apply --check (forward) tools/fluid-probes/f3/instrumentation/payload-breakdown-hook.patch on 68d8877
+OK   git apply --check (forward) tools/fluid-probes/f3/instrumentation/payload-breakdown-hook.patch on f9d6be1
+OK   git apply --check --reverse tools/fluid-probes/f3/instrumentation/payload-breakdown-hook.patch on c1b8464
+SAME src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidCheckpointCodec.java: blob 30a80b465c7a0ff06ca112e78136b4d316d026ff after applying on 68d8877 = c1b8464:src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidCheckpointCodec.java
+## retired profile replays: removed in 68d8877 (parent c1b8464)
+OK   git apply --check (forward) tools/retired/fluid-profile-replays/reattach.patch on 68d8877
+OK   git apply --check (forward) tools/retired/fluid-profile-replays/reattach.patch on f9d6be1
+OK   git apply --check --reverse tools/retired/fluid-profile-replays/reattach.patch on c1b8464
+SAME build.gradle: blob 0f669a80653ed54f990def434c6be332bc1f88dc after applying on 68d8877 = c1b8464:build.gradle
+SAME src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidStressProfileTest.java: blob 120bf075a04dc918220a5a8a00fd1c2f16337a4e after applying on 68d8877 = c1b8464:src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidStressProfileTest.java
+SAME src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidModuleProfileTest.java: blob c00ae7421b7674d38372b4f502a95a500aebc1c7 after applying on 68d8877 = c1b8464:src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidModuleProfileTest.java
+SAME git show c1b8464:src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidStressProfileTest.java = tools/retired/fluid-profile-replays/FluidStressProfileTest.java
+SAME git show c1b8464:src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidModuleProfileTest.java = tools/retired/fluid-profile-replays/FluidModuleProfileTest.java
+## all three together on the final tree (they touch build.gradle in different hunks)
+OK   git apply --check tools/fluid-in-game-rig/mod-side/reattach.patch tools/fluid-probes/f3/instrumentation/payload-breakdown-hook.patch tools/retired/fluid-profile-replays/reattach.patch on f9d6be1
+## the working tree (CRLF checkout, core.autocrlf=true), as a re-attaching agent would run it
+OK   working tree git apply --check tools/fluid-in-game-rig/mod-side/reattach.patch
+OK   working tree git apply --check tools/fluid-probes/f3/instrumentation/payload-breakdown-hook.patch
+OK   working tree git apply --check tools/retired/fluid-profile-replays/reattach.patch
+## historical patches kept with the tools, against the commits they were made on
+OK   git apply --check (forward) tools/fluid-probes/f1/instrumentation/wip-with-trace-instrumentation.patch on 23beadd
+OK   git apply --check (forward) tools/fluid-probes/f1/instrumentation/wip-2-with-cap-and-trace.patch on 23beadd
+OK   git apply --check (forward) tools/fluid-probes/f2/instrumentation/instrumentation-before.patch on 41de055
+OK   git apply --check (forward) tools/fluid-in-game-rig/mod-side/baseline-eb28fc5/tracked-files.patch on eb28fc5

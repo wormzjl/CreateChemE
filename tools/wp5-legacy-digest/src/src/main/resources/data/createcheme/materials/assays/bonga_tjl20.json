@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:bonga",
+  "package": "createcheme:bonga_tjl20",
+  "basis": "mass",
+  "provenance": {
+    "source_reference": "BONGA25Y",
+    "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2025/bonga.pdf",
+    "source_pdf_sha256": "0ee57146598b561ee885c67959173f6f3f630443a7bcc1dc0bab22b30dcdecd7",
+    "source_whole_crude": {
+      "density_15c_kg_per_m3": 888.4,
+      "sulfur_mass_percent": 0.26,
+      "nitrogen_mass_ppm": 1462.0,
+      "nickel_mass_ppm": 3.5,
+      "vanadium_mass_ppm": 0.3,
+      "iron_mass_ppm": 7.4,
+      "sodium_mass_ppm": 0.4,
+      "mercury_mass_ppb": 1.0,
+      "arsenic_mass_ppb": 213.0
+    },
+    "residual_mass_rounding_scale": 0.998275512274295,
+    "tail": {
+      "model": "exponential_survival_constrained_by_residue_vabp",
+      "estimated_above_celsius": 590,
+      "scale_celsius": 78.88679245283019,
+      "remaining_at_590_volume_percent": 5.299999999999997,
+      "residue_550_plus_mean_celsius": 637.0,
+      "estimated_mass_percent_above_590": 6.03700716845878
+    }
+  },
+  "appearance": {
+    "color": "#302219",
+    "transparency": 0.03,
+    "estimated": true
+  },
+  "revision": "crude-regrouped-r1",
+  "amounts_by_component": {
+    "Ethane": 0.0001,
+    "Propane": 0.0017000000000000001,
+    "Isobutane": 0.0017000000000000001,
+    "N-butane": 0.0042,
+    "Isopentane": 0.004,
+    "N-pentane": 0.0042,
+    "crude_pc01": 0.024904272798528634,
+    "crude_pc02": 0.057100575297920286,
+    "crude_pc03": 0.06245152664382925,
+    "crude_pc04": 0.09016340693226081,
+    "crude_pc05": 0.12652197755844433,
+    "crude_pc06": 0.13568914385678943,
+    "crude_pc07": 0.12445032668033923,
+    "crude_pc08": 0.14719125958064036,
+    "crude_pc09": 0.12678099005883545,
+    "crude_pc10": 0.06062993666040964,
+    "crude_pc11": 0.02027374652832474,
+    "crude_pc12": 0.00794283740367788
+  }
+}

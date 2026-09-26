@@ -1,0 +1,62 @@
+[
+  {
+    "record": "createcheme:pilot_nitrogen",
+    "fluid_file": "Nitrogen.json",
+    "oracle_critical_temperature_kelvin": 126.19200000000001,
+    "record_critical_temperature_kelvin": 126.192,
+    "reduced_temperature": 0.8,
+    "temperature_kelvin": 100.9536,
+    "pressure_pascal": 830956.9070807779,
+    "liquid_density_mol_per_m3": 24400.287159318385,
+    "molar_volume_m3_per_mol": 4.098312423417949E-5,
+    "shift_m3_per_mol": 3.5188320295791208E-6,
+    "shift_cm3_per_mol": 3.518832,
+    "old_anchor": "liquid_calibration.json (NIST 90 K, 2 MPa)",
+    "old_shift_cm3_per_mol": 4.063490
+  },
+  {
+    "record": "createcheme:pilot_methane",
+    "fluid_file": "Methane.json",
+    "oracle_critical_temperature_kelvin": 190.564,
+    "record_critical_temperature_kelvin": 190.564,
+    "reduced_temperature": 0.8,
+    "temperature_kelvin": 152.4512,
+    "pressure_pascal": 1159979.5409666544,
+    "liquid_density_mol_per_m3": 21996.96870151107,
+    "molar_volume_m3_per_mol": 4.546080933102867E-5,
+    "shift_m3_per_mol": 3.3891077557313983E-6,
+    "shift_cm3_per_mol": 3.389108,
+    "old_anchor": "liquid_calibration.json (NIST 150 K, 2 MPa)",
+    "old_shift_cm3_per_mol": 3.643535
+  },
+  {
+    "record": "createcheme:pilot_ethane",
+    "fluid_file": "Ethane.json",
+    "oracle_critical_temperature_kelvin": 305.322,
+    "record_critical_temperature_kelvin": 305.32,
+    "reduced_temperature": 0.8,
+    "temperature_kelvin": 244.256,
+    "pressure_pascal": 1100180.1723689875,
+    "liquid_density_mol_per_m3": 15236.219559720383,
+    "molar_volume_m3_per_mol": 6.56330788671276E-5,
+    "shift_m3_per_mol": 3.4516724888147886E-6,
+    "shift_cm3_per_mol": 3.451672,
+    "old_anchor": "liquid_calibration.json (NIST 240 K, 2 MPa)",
+    "old_shift_cm3_per_mol": 3.831907
+  },
+  {
+    "record": "createcheme:pilot_carbon_dioxide",
+    "fluid_file": "CarbonDioxide.json",
+    "oracle_critical_temperature_kelvin": 304.1282,
+    "record_critical_temperature_kelvin": 304.1282,
+    "reduced_temperature": 0.8,
+    "temperature_kelvin": 243.30256,
+    "pressure_pascal": 1435091.8271856345,
+    "liquid_density_mol_per_m3": 24428.36231649361,
+    "molar_volume_m3_per_mol": 4.0936022932852E-5,
+    "shift_m3_per_mol": 1.1697068292696497E-6,
+    "shift_cm3_per_mol": 1.169707,
+    "old_anchor": "P2 pilot_carbon_dioxide standard density 1046.8822148292945 kg/m3 at 250 K, 2 MPa (oracle)",
+    "old_shift_cm3_per_mol": 0.945916
+  }
+]

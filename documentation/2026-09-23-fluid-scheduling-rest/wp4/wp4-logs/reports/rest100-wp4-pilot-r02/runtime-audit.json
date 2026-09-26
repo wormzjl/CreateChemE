@@ -1,0 +1,19 @@
+{
+    "status": "PASS",
+    "errorCount": 0,
+    "patterns": [
+        "Error executing task on Server",
+        "process_solver lifecycle=DRAIN_FAILED",
+        "Encountered an unexpected exception",
+        "Game test server crashed",
+        "process_solver lifecycle=STOPPED_WITH_FAULT",
+        "OutOfMemoryError",
+        "fluid_presentation device="
+    ],
+    "examples": [
+        
+    ],
+    "artifactSha256": "faed3ead901470f25d86835abbeb1cea691a0f7019960f76bacc65ac580d8118",
+    "reportSha256": "75457f0f02d0606664d2965961e74df59586a3083b05c3077421e3d6a587ca59",
+    "logSha256": "ed783a48db88b08ef1d6ad28142f1fdd6f2cbe078f23f19900e79497f9fb4484"
+}

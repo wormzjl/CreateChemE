@@ -1,0 +1,65 @@
+[
+  {
+    "reservoirs": 2,
+    "compiledEdges": 1,
+    "components": 21,
+    "equations": 91,
+    "profile": "Unpaced 5 simulated seconds; wet TJL20 + nitrogen; 350 K; P\u003d150000+1000*cos(0.7*i) Pa; 100 m pipe runs",
+    "status": "CONVERGED",
+    "acceptedSubsteps": 30,
+    "rejectedSubsteps": 9,
+    "rejectionReasons": {
+      "Embedded pipe error #": 9
+    },
+    "integrator": "TR-BDF2 with filtered embedded 2(3) estimator; valve intervals use step doubling",
+    "firstCallMilliseconds": 140.6277,
+    "warmRepeatedMilliseconds": [
+      47.6812,
+      34.4749
+    ],
+    "wallMilliseconds": 222.7955,
+    "propertyRevision": "b661160bfc2a10505c26c4e968808580d5746a1c539599aab1df8b801b090ef3:fluid-shared-k-v1:ambient-293.15-v1:catalog-volume-reference-v1:k\u003d0x1.12e0be826d695p-30"
+  },
+  {
+    "reservoirs": 10,
+    "compiledEdges": 9,
+    "components": 21,
+    "equations": 459,
+    "profile": "Unpaced 5 simulated seconds; wet TJL20 + nitrogen; 350 K; P\u003d150000+1000*cos(0.7*i) Pa; 100 m pipe runs",
+    "status": "CONVERGED",
+    "acceptedSubsteps": 19,
+    "rejectedSubsteps": 14,
+    "rejectionReasons": {
+      "Embedded pipe error #": 14
+    },
+    "integrator": "TR-BDF2 with filtered embedded 2(3) estimator; valve intervals use step doubling",
+    "firstCallMilliseconds": 98.6177,
+    "warmRepeatedMilliseconds": [
+      75.1197,
+      67.3208
+    ],
+    "wallMilliseconds": 241.0618,
+    "propertyRevision": "b661160bfc2a10505c26c4e968808580d5746a1c539599aab1df8b801b090ef3:fluid-shared-k-v1:ambient-293.15-v1:catalog-volume-reference-v1:k\u003d0x1.12e0be826d695p-30"
+  },
+  {
+    "reservoirs": 100,
+    "compiledEdges": 99,
+    "components": 21,
+    "equations": 4599,
+    "profile": "Unpaced 5 simulated seconds; wet TJL20 + nitrogen; 350 K; P\u003d150000+1000*cos(0.7*i) Pa; 100 m pipe runs",
+    "status": "CONVERGED",
+    "acceptedSubsteps": 37,
+    "rejectedSubsteps": 3,
+    "rejectionReasons": {
+      "Embedded pipe error #": 3
+    },
+    "integrator": "TR-BDF2 with filtered embedded 2(3) estimator; valve intervals use step doubling",
+    "firstCallMilliseconds": 1057.1168,
+    "warmRepeatedMilliseconds": [
+      939.4862,
+      869.7297
+    ],
+    "wallMilliseconds": 2866.337,
+    "propertyRevision": "b661160bfc2a10505c26c4e968808580d5746a1c539599aab1df8b801b090ef3:fluid-shared-k-v1:ambient-293.15-v1:catalog-volume-reference-v1:k\u003d0x1.12e0be826d695p-30"
+  }
+]

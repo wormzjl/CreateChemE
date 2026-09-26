@@ -1,0 +1,252 @@
+[
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": -0.001,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": -4.074366543152522,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": -4.074366543152521
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": -1.0E-12,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": -4.074366543152521E-9,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": -4.074366543152521E-9
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 0.0,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 0.0,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 0.0
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 1.0E-12,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 4.074366543152521E-9,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 4.074366543152521E-9
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 0.001,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 4.074366543152522,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 4.074366543152521
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": -0.001,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": -40.74366543152521,
+    "minorLoss": 0.0,
+    "lengthMetres": 10.0,
+    "expectedPressureDropPa": -40.74366543152521
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": -1.0E-12,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": -4.074366543152521E-8,
+    "minorLoss": 0.0,
+    "lengthMetres": 10.0,
+    "expectedPressureDropPa": -4.074366543152521E-8
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 0.0,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 0.0,
+    "minorLoss": 0.0,
+    "lengthMetres": 10.0,
+    "expectedPressureDropPa": 0.0
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 1.0E-12,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 4.074366543152521E-8,
+    "minorLoss": 0.0,
+    "lengthMetres": 10.0,
+    "expectedPressureDropPa": 4.074366543152521E-8
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 0.001,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 40.74366543152521,
+    "minorLoss": 0.0,
+    "lengthMetres": 10.0,
+    "expectedPressureDropPa": 40.74366543152521
+  },
+  {
+    "diameterMetres": 0.02,
+    "status": "PASS",
+    "massFlowKgPerSecond": -0.001,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": -0.2546479089470326,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": -0.25464790894703254
+  },
+  {
+    "diameterMetres": 0.02,
+    "status": "PASS",
+    "massFlowKgPerSecond": -1.0E-12,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": -2.5464790894703257E-10,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": -2.5464790894703257E-10
+  },
+  {
+    "diameterMetres": 0.02,
+    "status": "PASS",
+    "massFlowKgPerSecond": 0.0,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 0.0,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 0.0
+  },
+  {
+    "diameterMetres": 0.02,
+    "status": "PASS",
+    "massFlowKgPerSecond": 1.0E-12,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 2.5464790894703257E-10,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 2.5464790894703257E-10
+  },
+  {
+    "diameterMetres": 0.02,
+    "status": "PASS",
+    "massFlowKgPerSecond": 0.001,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 0.2546479089470326,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 0.25464790894703254
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": -0.001,
+    "roughnessMetres": 1.0E-4,
+    "actualPressureDropPa": -4.074366543152522,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": -4.074366543152521
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": -1.0E-12,
+    "roughnessMetres": 1.0E-4,
+    "actualPressureDropPa": -4.074366543152521E-9,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": -4.074366543152521E-9
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 0.0,
+    "roughnessMetres": 1.0E-4,
+    "actualPressureDropPa": 0.0,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 0.0
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 1.0E-12,
+    "roughnessMetres": 1.0E-4,
+    "actualPressureDropPa": 4.074366543152521E-9,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 4.074366543152521E-9
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 0.001,
+    "roughnessMetres": 1.0E-4,
+    "actualPressureDropPa": 4.074366543152522,
+    "minorLoss": 0.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 4.074366543152521
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": -0.001,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": -4.641765171549613,
+    "minorLoss": 7.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": -4.641765171549612
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": -1.0E-12,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": -4.07436654371992E-9,
+    "minorLoss": 7.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": -4.07436654371992E-9
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 0.0,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 0.0,
+    "minorLoss": 7.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 0.0
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 1.0E-12,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 4.07436654371992E-9,
+    "minorLoss": 7.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 4.07436654371992E-9
+  },
+  {
+    "diameterMetres": 0.01,
+    "status": "PASS",
+    "massFlowKgPerSecond": 0.001,
+    "roughnessMetres": 0.0,
+    "actualPressureDropPa": 4.641765171549613,
+    "minorLoss": 7.0,
+    "lengthMetres": 1.0,
+    "expectedPressureDropPa": 4.641765171549612
+  }
+]

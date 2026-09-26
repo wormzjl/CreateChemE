@@ -1,0 +1,67 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidCheckpointCodec.java b/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidCheckpointCodec.java
+index 9e230b1..30a80b4 100644
+--- a/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidCheckpointCodec.java
++++ b/src/main/java/com/wormzjl/createcheme/runtime/fluid/FluidCheckpointCodec.java
+@@ -318,30 +318,37 @@ public final class FluidCheckpointCodec {
+      * interval itself and the graph it started from), not its materialised state. The anchor and the certificate's
+      * starting graph are written as "the same graph" or as a state over the same topology whenever they are.
+      */
+-    static byte[] islandUnit(IslandEntry entry,long generation,Strings strings) {
++    static byte[] islandUnit(IslandEntry entry,long generation,Strings strings){return islandUnit(entry,generation,strings,null);}
++    /** As {@link #islandUnit(IslandEntry,long,Strings)}, recording in {@code sections} (when not null) the bytes each
++     * part of the unit took: a diagnostic for the payload breakdown of the F3 review. */
++    static byte[] islandUnit(IslandEntry entry,long generation,Strings strings,Map<String,Integer> sections) {
+         var s=entry.snapshot;var persisted=s.certificate().flatMap(IslandCoordinator.Certified::saved);
+         var graph=persisted.map(saved->saved.interval().result().graph()).orElse(s.graph());
+         var result=persisted.isPresent()?Optional.of(persisted.orElseThrow().interval().result()):s.lastResult();
+         if(!graph.scheduledTransfers().isEmpty())throw new IllegalArgumentException("Request-scoped transfers must be resolved into the committed ledger before saving");
+-        var w=new FluidUnitIO.Writer();
+-        header(w,ISLAND,s.id(),s.revision(),generation);
+-        w.varint(strings.ref(entry.dimension));w.varint(strings.ref(entry.packageId));w.f64(entry.compressibility);
+-        w.text(s.status());
+-        var a=s.allowance();w.varint(a.acceptedIntervals());w.varlong(a.advancedTicks());w.varint(a.capturedCadenceTicks());
++        var w=new FluidUnitIO.Writer();var mark=new int[]{0};
++        java.util.function.Consumer<String> section=name->{if(sections!=null)sections.merge(name,w.size()-mark[0],Integer::sum);mark[0]=w.size();};
++        header(w,ISLAND,s.id(),s.revision(),generation);section.accept("header (identity, revision, generation)");
++        w.varint(strings.ref(entry.dimension));w.varint(strings.ref(entry.packageId));w.f64(entry.compressibility);section.accept("dimension and package");
++        w.text(s.status());section.accept("status");
++        var a=s.allowance();w.varint(a.acceptedIntervals());w.varlong(a.advancedTicks());w.varint(a.capturedCadenceTicks());section.accept("allowance");
+         var fences=new TreeMap<>(s.fences());w.varint(fences.size());
+         for(var fence:fences.entrySet()){w.i64(fence.getKey().getMostSignificantBits());w.i64(fence.getKey().getLeastSignificantBits());w.i64(fence.getValue());}
+-        int topologyStart=w.size();topology(w,graph);int stateStart=w.size();state(w,graph);
++        section.accept("fences");
++        int topologyStart=w.size();topology(w,graph);section.accept("graph topology (nodes and pipes, once)");int stateStart=w.size();state(w,graph);section.accept("graph state (inventories, phases, pipe masks and filters)");
+         var main=new Written(topologyStart,stateStart,w.size());
+         if(s.anchor().isEmpty())w.u8(0);
+         else{var anchor=s.anchor().orElseThrow();related(w,anchor.graph(),graph,main);w.varint(strings.ref(anchor.propertyRevision()));modes(w,anchor.modes());}
++        section.accept("anchor");
+         if(result.isEmpty())w.u8(0);
+         else {
+             var r=result.orElseThrow();w.u8(1);
+-            w.f64(r.advancedSeconds());w.sparse(r.averageMassFlows());w.varint(r.acceptedSubsteps());w.varint(r.rejectedSubsteps());w.f64(r.pumpWorkJoule());
++            w.f64(r.advancedSeconds());w.sparse(r.averageMassFlows());w.varint(r.acceptedSubsteps());w.varint(r.rejectedSubsteps());w.f64(r.pumpWorkJoule());section.accept("history: scalars and flows");
+             w.varint(r.boundaries().size());
+             for(var b:r.boundaries()){w.i64(b.nodeId());w.sparse(b.moles());w.f64(b.totalEnergyJoule());solids(w,b.solids());w.u8(b.solidDirection()+1);}
++            section.accept("history: boundaries");
+             var reasons=new TreeMap<>(r.rejectionReasons());w.varint(reasons.size());for(var reason:reasons.entrySet()){w.text(reason.getKey());w.i32(reason.getValue());}
+-            modes(w,r.endpointModes());w.sparse(r.endpointHeads());w.u8(r.acceptance().ordinal());
++            modes(w,r.endpointModes());w.sparse(r.endpointHeads());w.u8(r.acceptance().ordinal());section.accept("history: reasons, modes, heads");
+             w.varint(r.pipeTransfers().size());
+             for(var p:r.pipeTransfers()) {
+                 w.i64(p.pipeId());int count=p.forward().phaseMoles()[0].length;
+@@ -349,12 +356,15 @@ public final class FluidCheckpointCodec {
+                 w.varint(count);stream(w,p.forward());stream(w,p.reverse());
+             }
+         }
++        section.accept("history: pipe transfers");
+         if(persisted.isEmpty())w.u8(0);
+         else {
+             var saved=persisted.orElseThrow();var signature=saved.signature();w.u8(1);
+             w.varint(strings.ref(signature.propertyRevision()));w.varint(strings.ref(signature.policy()));w.raw(HexFormat.of().parseHex(signature.graph()));
++            section.accept("certificate signature");
+             related(w,saved.interval().before(),graph,main);
+         }
++        section.accept("certificate: interval start graph");
+         return w.toByteArray();
+     }
+     /** A graph beside the island's main one: 1 when it is the same graph (same topology and state bytes), 2 when it

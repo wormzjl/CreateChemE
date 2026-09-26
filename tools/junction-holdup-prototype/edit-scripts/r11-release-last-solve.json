@@ -1,0 +1,3 @@
+[
+["                if(PassiveStepSolver.LOW_ALLOC){coldSeed=null;coldSeedFor=null;}","                // and the step solver's last solve (its equations hold the step's input graph) is read only by TR-BDF2's\n                // companion, which backward Euler never calls.\n                if(PassiveStepSolver.LOW_ALLOC){coldSeed=null;coldSeedFor=null;implicit.releaseLastSolve();}"]
+]

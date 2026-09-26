@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolverTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:10.759Z" hostname="WORMZ-PC" time="0.319">
+  <properties/>
+  <testcase name="registeredPrBinaryNumericalTwoPhaseRootCannotPassTheIndependentPhaseGate()" classname="com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolverTest" time="0.015"/>
+  <testcase name="theDampedCascadeCapIsHonouredAndTheRampsTwoDampingsAreEnough()" classname="com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolverTest" time="0.016"/>
+  <testcase name="registeredTiaJuanaPrNewtonAttemptIsBoundedAndRecordsItsActualConvergenceState()" classname="com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolverTest" time="0.256"/>
+  <testcase name="onlyABudgetThatAsksForItStopsAStalledAttemptAndOnlyAboveItsResidualFloor()" classname="com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolverTest" time="0.012"/>
+  <testcase name="theRungBudgetRejectsLimitsTheSolverCannotHonour()" classname="com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolverTest" time="0.01"/>
+  <testcase name="dampedBandedNewtonRecoversTheManufacturedFullMeshStateOnlyThroughBothAcceptanceGates()" classname="com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolverTest" time="0.01"/>
+  <system-out><![CDATA[V3 real crude Newton outcome: Failure[code=MAX_ITERATIONS, state=com.wormzjl.createcheme.science.column.v3.V3DryMeshState@7430ed93, evidence=Evidence[iterations=128, maximumScaledResidual=6.358876639410545, scaledMerit=189.6836252541162, acceptedStep=0.0, pivotGrowth=0.0, termination=iteration budget exhausted, convergenceEvidence=V3ConvergenceEvidence[hasFinalNewtonStep=true, finalLinearBackwardError=4.608857709881232E-18, maximumLogFlowChange=0.08813496524421538, maximumTemperatureChangeKelvin=3.2975093032512746, maximumTemperatureStepRatio=2347298.5470927153, closureTolerance=1.0E-8]]]; residual families=COMPONENT_MATERIAL_BALANCE=6.358876639410545, VAPOR_LIQUID_EQUILIBRIUM=6.102676582047785, ENERGY_BALANCE=1.2715268193793523, WATER_SATURATION=0.0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

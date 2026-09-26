@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "id": "upper_zakum",
+  "kind": "column",
+  "label": "Upper Zakum",
+  "translation_key": "gui.createcheme.column_preset.upper_zakum",
+  "order": 2,
+  "visible": true,
+  "package": "createcheme:upper_zakum_tjl20",
+  "assay": "createcheme:upper_zakum",
+  "operating": {
+    "feedTemperatureKelvin": 638.15,
+    "stageCount": 40,
+    "feedStageNumber": 37,
+    "topPressurePascal": 250000.0,
+    "stagePressureDropPascal": 0.0,
+    "columnDiameterMetres": 8.0,
+    "sideDraws": [
+      {
+        "trayNumber": 10,
+        "molarFlowMolPerSecond": 136.4735087251832
+      },
+      {
+        "trayNumber": 18,
+        "molarFlowMolPerSecond": 143.18094716871644
+      },
+      {
+        "trayNumber": 28,
+        "molarFlowMolPerSecond": 45.88701039842216
+      }
+    ],
+    "steamFeeds": [
+      {
+        "stageNumber": 41,
+        "molarFlowMolPerSecond": 333.3333333333333,
+        "temperatureKelvin": 533.15
+      }
+    ],
+    "pumparounds": [
+      {
+        "returnTray": 8,
+        "drawTray": 10,
+        "dutyWatts": -12840000.0,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 16,
+        "drawTray": 18,
+        "dutyWatts": -17890000.0,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 26,
+        "drawTray": 28,
+        "dutyWatts": -11200000.0,
+        "split": "UNIFORM"
+      }
+    ],
+    "feedStandardVolumeCubicMetresPerSecond": 0.17956655884461317,
+    "condenserTemperatureKelvin": 332.15,
+    "organicRefluxRatio": 4.17,
+    "reboilerDutyWatts": 0
+  }
+}

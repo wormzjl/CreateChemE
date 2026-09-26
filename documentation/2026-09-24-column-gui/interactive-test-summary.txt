@@ -1,0 +1,4 @@
+Full suite before responsive-height change: {'tests': 1060, 'failures': 0, 'errors': 0, 'skipped': 0}
+BUILD SUCCESSFUL in 3m 37s
+Final focused checks (all V3 codecs, editor draft, responsive layout; MCP compile): {'tests': 40, 'failures': 0, 'errors': 0, 'skipped': 0}
+BUILD SUCCESSFUL in 4s

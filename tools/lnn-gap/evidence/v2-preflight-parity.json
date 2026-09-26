@@ -1,0 +1,48 @@
+{
+ "allArmsReproducePromotionSeeds": true,
+ "arms": {
+  "E2b": {
+   "candidatesOffered": {
+    "distribution": {
+     "1": 330
+    },
+    "maximum": 1,
+    "total": 330
+   },
+   "cases": 330,
+   "comparableToPromotion": 330,
+   "decodeRule": "10.0:SINGLE",
+   "distinctAlternateIds": [],
+   "distinctAlternateSeeds": 0,
+   "mismatchedCases": 0,
+   "mismatchedIds": [],
+   "reproducesPromotionSeeds": true,
+   "supported": 330
+  },
+  "baseline": {
+   "candidatesOffered": {
+    "distribution": {
+     "1": 330
+    },
+    "maximum": 1,
+    "total": 330
+   },
+   "cases": 330,
+   "comparableToPromotion": 330,
+   "decodeRule": "10.0:SINGLE",
+   "distinctAlternateIds": [],
+   "distinctAlternateSeeds": 0,
+   "mismatchedCases": 0,
+   "mismatchedIds": [],
+   "reproducesPromotionSeeds": true,
+   "supported": 330
+  }
+ },
+ "firstCandidateIsInvariantAcrossArms": true,
+ "population": "321d9501b4b909c556970860b40377b0a6402bb807d54a0312dc4c4e3f3d346d",
+ "revision": "lnn-gap-preflight-v1",
+ "studyPlan": {
+  "path": "build/lnn-gap/v2/study-plan.json",
+  "sha256": "b73830891427165e53eff8c27f017f1ba6b50bb9203db8343bfa8d052a6d64f8"
+ }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.thermo.PengRobinson78Test" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:58.323Z" hostname="WORMZ-PC" time="0.001">
+  <properties/>
+  <testcase name="diluteGasApproachesTheIdealGasLimit()" classname="com.wormzjl.createcheme.science.thermo.PengRobinson78Test" time="0.0"/>
+  <testcase name="liquidAndVaporRootsAreSelectedAtAThreeRootState()" classname="com.wormzjl.createcheme.science.thermo.PengRobinson78Test" time="0.0"/>
+  <testcase name="residualEnthalpyApproachesZeroAtLowPressure()" classname="com.wormzjl.createcheme.science.thermo.PengRobinson78Test" time="0.001"/>
+  <testcase name="propaneLiquidResidualEnthalpyIsMoreNegativeThanVapor()" classname="com.wormzjl.createcheme.science.thermo.PengRobinson78Test" time="0.0"/>
+  <testcase name="mixtureResidualEnthalpyMatchesFugacityTemperatureDerivative()" classname="com.wormzjl.createcheme.science.thermo.PengRobinson78Test" time="0.0"/>
+  <testcase name="returnedFugacityVectorCannotMutateTheResult()" classname="com.wormzjl.createcheme.science.thermo.PengRobinson78Test" time="0.0"/>
+  <testcase name="methaneReferencePointMatchesPengRobinsonCalculation()" classname="com.wormzjl.createcheme.science.thermo.PengRobinson78Test" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

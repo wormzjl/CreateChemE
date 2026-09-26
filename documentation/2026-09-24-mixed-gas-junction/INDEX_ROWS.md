@@ -1,0 +1,11 @@
+# Index rows for the merge of batch 2026-09-24-mixed-gas-junction
+
+Prepared 2026-09-26 in WP5 (HANDOFF_REVIEW.md 9.5 (g)). Paste into the main checkout's git-ignored indexes when the branch `claude/charming-elion-1170cc` merges; replace `<merge date>` with the day it reaches `main`. The WP5 commit is `b5ed407`.
+
+## documentation/INDEX.md (replaces the existing row of this batch)
+
+| [2026-09-24-mixed-gas-junction](2026-09-24-mixed-gas-junction/) | Mixed-gas junction startup and transient investigation, then the productized fix: backward-Euler transient basis with owned junction holdup, merged REST/STEADY certificate (checkpoint format 5), suction-density pump rule | Implemented <merge date> (0.6.0; investigation concluded 2026-09-25; WP0-WP5 on `claude/charming-elion-1170cc`: `3dba4b0`, `640d87b`, `b6422e3`, `618ea63`, `5b708fa`, `daa1ccc`, `c7a7dc2`, `b5ed407`; gates after cleanup: fluid suites 406/406, exact regression 0.000e+00, 38/38 adjacent, mixed-gas 32/32 static and 12/12 transients at 286 Newton solves; open owner decisions D14 liquid holdup sizing and D16 roundoff-flow status; in-game mixed-gas check partial) | HANDOFF.md, INVESTIGATION_PLAN.md, JUNCTION_REVIEW.md, JUNCTION_FIX_PLAN.md, BE_INTEGRATOR_PLAN.md, DECISION_LOG.md, HANDOFF_REVIEW.md (sections 6-9) | `PassiveIntervalSolver`, `PassiveStepSolver`, `PassiveNetwork`, `ConservativeTransport`, `IslandCertificate`, `IslandCoordinator`, `FluidCheckpointCodec`; tools/junction-holdup-prototype/, tools/pipe-junction-probe/; `fluidSolverRegression`, `runFluidGameTestServer` |
+
+## tools/INDEX.md (new row)
+
+| [junction-holdup-prototype/](junction-holdup-prototype/) | Owned junction holdup and backward-Euler prototype: switchable patches against 9674bf1, the static/transient/event/memory probes (the first two became `MixedGasJunctionStaticTest` and `MixedGasJunctionTransientTest` at `618ea63`), the removed `TrBdf2StepSolver.java` (as of 9674bf1 and 3dba4b0, removed at `640d87b`) with `reattach-trbdf2-against-640d87b.patch`, init scripts, analysis scripts, runs 1-159 with command lines | 2026-09-24-mixed-gas-junction | Concluded 2026-09-26 (prototype); the productized form Implemented <merge date> | README.md (sections Run, Run index, WP0-WP5 and the removal record), holdup.init.gradle, exclude.init.gradle, holdup-prototype-*.patch, *Probe.java, *.js, runNNN-* |

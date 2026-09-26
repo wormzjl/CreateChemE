@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3SideDrawAuditTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:55.883Z" hostname="WORMZ-PC" time="0.003">
+  <properties/>
+  <testcase name="aDrawAboveTheFeedIsDecidedByItsOwnLiquidSupplyToo()" classname="com.wormzjl.createcheme.science.column.v3.V3SideDrawAuditTest" time="0.001"/>
+  <testcase name="drawnLiquidIsAProductRatherThanATruncationDefectAndLocalBlocksRemainCorrect()" classname="com.wormzjl.createcheme.science.column.v3.V3SideDrawAuditTest" time="0.001"/>
+  <testcase name="aDrawTrayKeepsOnlyTheTraceItsOwnLiquidSupplyDelivers()" classname="com.wormzjl.createcheme.science.column.v3.V3SideDrawAuditTest" time="0.001"/>
+  <testcase name="splitAuditRequiresStrictlyPositiveDownflowEvenWhenStoredFlowsArePositive()" classname="com.wormzjl.createcheme.science.column.v3.V3SideDrawAuditTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

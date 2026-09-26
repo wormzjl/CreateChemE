@@ -1,0 +1,70 @@
+===== science.thermo.qualification.G5F5ReportOnlyLiquidusTest.xml tests="1" skipped="0" failures="0" errors="0"
+dataset | group | T K | P kPa | x_CO2 | kind | model T K | model - measured K | fluid at the onset
+Gao 2012 | CH4 | 113.15 | 118.4 | 0.000172000 | liquidus | 108.337 | -4.813 | SINGLE_LIQUID
+Gao 2012 | CH4 | 123.15 | 249.9 | 0.000823000 | liquidus | 121.456 | -1.694 | SINGLE_LIQUID
+Gao 2012 | CH4 | 129.65 | 361.2 | 0.00141300 | liquidus | 126.775 | -2.875 | SINGLE_LIQUID
+Gao 2012 | CH4 | 135.25 | 507.4 | 0.00247900 | liquidus | 132.829 | -2.421 | SINGLE_LIQUID
+Gao 2012 | CH4 | 139.45 | 636.4 | 0.00367800 | liquidus | 137.433 | -2.017 | SINGLE_LIQUID
+Gao 2012 | CH4 | 144.55 | 815.5 | 0.00566500 | liquidus | 142.848 | -1.702 | SINGLE_LIQUID
+Gao 2012 | CH4 | 150.35 | 1061.2 | 0.00822500 | liquidus | 147.861 | -2.489 | SINGLE_LIQUID
+Gao 2012 | CH4 | 162.05 | 1688.7 | 0.0176400 | liquidus | 159.219 | -2.831 | SINGLE_LIQUID
+Gao 2012 | CH4 | 169.85 | 2242.4 | 0.0289600 | liquidus | 167.470 | -2.380 | SINGLE_LIQUID
+Gao 2012 | N2_10 | 123.15 | 571.0 | 0.000825000 | liquidus | 121.880 | -1.270 | SINGLE_LIQUID
+Gao 2012 | N2_10 | 118.15 | 452.0 | 0.000505000 | liquidus | 117.396 | -0.754 | SINGLE_LIQUID
+Gao 2012 | N2_10 | 113.15 | 347.0 | 0.000280000 | liquidus | 112.445 | -0.705 | SINGLE_LIQUID
+Gao 2012 | N2_10 | 108.15 | 241.0 | 0.000170000 | liquidus | 108.585 | +0.435 | VAPOR_LIQUID
+Gao 2012 | N2_10 | 103.15 | 175.0 | 7.00000e-05 | liquidus | 102.369 | -0.781 | VAPOR_LIQUID
+Gao 2012 | N2_10 | 98.15 | 139.0 | 4.00000e-05 | liquidus | 98.821 | +0.671 | VAPOR_LIQUID
+Gao 2012 | N2_30 | 123.15 | 1115.0 | 0.000900000 | liquidus | 124.180 | +1.030 | VAPOR_LIQUID
+Gao 2012 | N2_30 | 118.15 | 919.0 | 0.000578000 | liquidus | 119.933 | +1.783 | VAPOR_LIQUID
+Gao 2012 | N2_30 | 113.15 | 715.0 | 0.000330000 | liquidus | 114.998 | +1.848 | VAPOR_LIQUID
+Gao 2012 | N2_30 | 108.15 | 545.0 | 0.000189000 | liquidus | 110.517 | +2.367 | VAPOR_LIQUID
+Gao 2012 | N2_30 | 103.15 | 413.0 | 8.40000e-05 | liquidus | 104.640 | +1.490 | VAPOR_LIQUID
+Gao 2012 | N2_30 | 98.15 | 289.0 | 5.00000e-05 | liquidus | 101.229 | +3.079 | VAPOR_LIQUID
+Gao 2012 | N2_30 | 93.15 | 200.0 | 2.90000e-05 | liquidus | 97.901 | +4.751 | VAPOR_LIQUID
+Gao 2012 | N2_30 | 88.15 | 130.0 | 1.50000e-05 | liquidus | 94.181 | +6.031 | VAPOR_LIQUID
+Gao 2012 | N2_50 | 123.15 | 1596.0 | 0.000837000 | liquidus | 126.177 | +3.027 | VAPOR_LIQUID
+Gao 2012 | N2_50 | 118.15 | 1270.0 | 0.000535000 | liquidus | 121.623 | +3.473 | VAPOR_LIQUID
+Gao 2012 | N2_50 | 113.15 | 1000.0 | 0.000300000 | liquidus | 116.299 | +3.149 | VAPOR_LIQUID
+Gao 2012 | N2_50 | 108.15 | 760.0 | 0.000185000 | liquidus | 112.273 | +4.123 | VAPOR_LIQUID
+Gao 2012 | N2_50 | 103.15 | 564.0 | 0.000105000 | liquidus | 107.953 | +4.803 | VAPOR_LIQUID
+Gao 2012 | N2_50 | 98.15 | 419.0 | 5.00000e-05 | liquidus | 102.847 | +4.697 | VAPOR_LIQUID
+Gao 2012 | N2_50 | 93.15 | 292.0 | 2.10000e-05 | liquidus | 97.545 | +4.395 | VAPOR_LIQUID
+Gao 2012 | N2_50 | 88.15 | 196.0 | 1.00000e-05 | liquidus | 93.485 | +5.335 | VAPOR_LIQUID
+Gao 2012 | N2_50 | 83.15 | 124.0 | 3.00000e-06 | liquidus | out of domain: the onset of createcheme:crystal_carbon_dioxide_i lies below the temperature window 90.6941 .. 300.0 K: Thermo domain: Methane at 90.69409999999999 K is below its valid range 90.6941..1200 K (package createcheme:pilot_cryogenic); the state cannot be evaluated
+Gao 2012 | N2_70 | 123.15 | 2023.0 | 0.000640000 | liquidus | 128.726 | +5.576 | VAPOR_LIQUID
+Gao 2012 | N2_70 | 118.15 | 1612.0 | 0.000440000 | liquidus | 124.132 | +5.982 | VAPOR_LIQUID
+Gao 2012 | N2_70 | 113.15 | 1240.0 | 0.000272000 | liquidus | 119.075 | +5.925 | VAPOR_LIQUID
+Gao 2012 | N2_70 | 108.15 | 945.0 | 0.000150000 | liquidus | 113.651 | +5.501 | VAPOR_LIQUID
+Gao 2012 | N2_70 | 103.15 | 703.0 | 7.00000e-05 | liquidus | 107.653 | +4.503 | VAPOR_LIQUID
+Gao 2012 | N2_70 | 98.15 | 505.0 | 4.00000e-05 | liquidus | 103.767 | +5.617 | VAPOR_LIQUID
+Gao 2012 | N2_70 | 93.15 | 353.0 | 1.80000e-05 | liquidus | 98.790 | +5.640 | VAPOR_LIQUID
+Gao 2012 | N2_70 | 88.15 | 240.0 | 9.00000e-06 | liquidus | 94.926 | +6.776 | VAPOR_LIQUID
+Gao 2012 | N2_70 | 83.15 | 145.0 | 6.00000e-06 | liquidus | 92.834 | +9.684 | VAPOR_LIQUID
+Sampson 2023 | CH4 | 122.80 | 10000.0 | 0.000500000 | liquidus | 117.072 | -5.728 | SINGLE_FLUID
+Sampson 2023 | CH4 | 121.40 | 6980.0 | 0.000500000 | liquidus | 117.021 | -4.379 | SINGLE_FLUID
+Sampson 2023 | CH4 | 111.30 | 10090.0 | 0.000100000 | liquidus | out of domain: Thermo domain: Methane at 10090000 Pa is above its valid range 100..10000000 Pa (package createcheme:pilot_cryogenic); the state cannot be evaluated
+Sampson 2023 | CH4 | 111.00 | 7030.0 | 0.000100000 | liquidus | 104.556 | -6.444 | SINGLE_FLUID
+Sampson 2023 | CH4 | 108.40 | 10100.0 | 6.58000e-05 | liquidus | out of domain: Thermo domain: Methane at 10100000 Pa is above its valid range 100..10000000 Pa (package createcheme:pilot_cryogenic); the state cannot be evaluated
+Sampson 2023 | CH4 | 106.30 | 10090.0 | 5.22000e-05 | liquidus | out of domain: Thermo domain: Methane at 10090000 Pa is above its valid range 100..10000000 Pa (package createcheme:pilot_cryogenic); the state cannot be evaluated
+G5F5 report only: dataset | group | scored | holds | out of domain | failures | MAD K | bias K | max K | target K
+Gao 2012 | CH4 | 9 | 0 | 0 | 0 | 2.580 | -2.580 | 4.813 | report
+Gao 2012 | N2_10 | 6 | 0 | 0 | 0 | 0.769 | -0.401 | 1.270 | report
+Gao 2012 | N2_30 | 8 | 0 | 0 | 0 | 2.797 | +2.797 | 6.031 | report
+Gao 2012 | N2_50 | 8 | 0 | 1 | 0 | 4.125 | +4.125 | 5.335 | report
+Gao 2012 | N2_70 | 9 | 0 | 0 | 0 | 6.134 | +6.134 | 9.684 | report
+Sampson 2023 | CH4 | 3 | 0 | 3 | 0 | 5.517 | -5.517 | 6.444 | report
+Gao 2012 (dataset) | all | 40 | 0 | 1 | 0 | 3.461 | +2.124 | 9.684 | report
+Sampson 2023 (dataset) | all | 3 | 0 | 3 | 0 | 5.517 | -5.517 | 6.444 | report
+Kurata-Im Table VI | T K | P data MPa | P model MPa | x data | x model | y data | y model
+Kurata-Im | 210.21 | 3.9990 | 3.9140 | 0.7400 | 0.7712 | 0.1750 | 0.1493
+Kurata-Im | 208.21 | 4.5161 | 4.6821 | 0.6500 | 0.6139 | 0.1500 | 0.1318
+Kurata-Im | 205.43 | 4.8401 | 4.9790 | 0.4300 | 0.2967 | 0.1130 | 0.1169
+Kurata-Im | 205.21 | 4.8470 | 4.9798 | 0.3450 | 0.2865 | 0.1110 | 0.1156
+Kurata-Im | 200.21 | 4.7919 | 4.7924 | 0.2070 | 0.1715 | 0.0780 | 0.0863
+Kurata-Im | 199.82 | 4.7574 | 4.7680 | 0.1970 | 0.1666 | 0.0760 | 0.0841
+Kurata-Im | 190.21 | 3.9783 | 3.9951 | 0.0970 | 0.0953 | 0.0413 | 0.0416
+Kurata-Im | 185.21 | 3.5163 | 3.5430 | 0.0710 | 0.0741 | 0.0300 | 0.0281
+Kurata-Im | 166.54 | 1.9788 | 2.0019 | 0.0355 | 0.0274 | 0.0140 | 0.0058
+Kurata-Im | 165.21 | 1.8961 | 1.9091 | 0.0183 | 0.0253 | 0.0060 | 0.0051
+

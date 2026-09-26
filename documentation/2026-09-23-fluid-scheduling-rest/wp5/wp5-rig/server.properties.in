@@ -1,0 +1,18 @@
+# WP5 in-game benchmark dedicated server; the level-name placeholder is replaced by the run's world folder.
+online-mode=false
+spawn-protection=0
+enable-rcon=true
+rcon.port=25575
+rcon.password=wp5bench
+broadcast-rcon-to-ops=false
+level-name=@LEVEL@
+level-type=minecraft\:flat
+generator-settings={"layers"\:[{"block"\:"minecraft\:air","height"\:1}],"biome"\:"minecraft\:the_void","features"\:true}
+gamemode=creative
+difficulty=peaceful
+spawn-monsters=false
+max-tick-time=-1
+view-distance=10
+simulation-distance=10
+server-port=25565
+motd=CreateChemE WP5 benchmark

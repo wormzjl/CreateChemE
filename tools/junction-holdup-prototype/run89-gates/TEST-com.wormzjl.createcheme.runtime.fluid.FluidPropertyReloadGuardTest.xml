@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FluidPropertyReloadGuardTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:44:36.983Z" hostname="WORMZ-PC" time="0.106">
+  <properties/>
+  <testcase name="metadataOnlyReloadKeepsQualifiedScienceAndNumericalChangeWithoutRevisionBumpHolds()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPropertyReloadGuardTest" time="0.077"/>
+  <testcase name="viscosityOnlyChangeInvalidatesThePinnedFluidModel()" classname="com.wormzjl.createcheme.runtime.fluid.FluidPropertyReloadGuardTest" time="0.029"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodecTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-26T07:39:29.286Z" hostname="WORMZ-PC" time="0.174">
+  <properties/>
+  <testcase name="aTopologyRoundTripsEveryFieldExactlyAndRefusesAMalformedUnit()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodecTest" time="0.017"/>
+  <testcase name="missingClocksMistypedStampsCorruptionUnknownVersionsAndChangedPropertiesAreRejected()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodecTest" time="0.019"/>
+  <testcase name="anEnergyDatumChangeIsRefused()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodecTest" time="0.007"/>
+  <testcase name="aChangedThermodynamicBasisRequiresANewWorldAndNeverReinterpretsStock()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodecTest" time="0.076"/>
+  <testcase name="changingVelocityLimitPreservesSavedStockClocksAndAllowanceButInvalidatesTheOldAnchor()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodecTest" time="0.019"/>
+  <testcase name="roundTripRetainsStockDebtFencesFallbackAndTheUndeliveredEightyKg()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodecTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

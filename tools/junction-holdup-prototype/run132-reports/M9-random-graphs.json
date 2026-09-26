@@ -1,0 +1,68 @@
+[
+  {
+    "reservoirs": 6,
+    "seed": 2026091601,
+    "maximumOrderPressureDifferencePa": 0.0,
+    "energyBalanceJoules": 1.1641532182693481E-10,
+    "componentBalanceMoles": 0.0,
+    "fluid": "nitrogen",
+    "pipes": 6,
+    "status": "PASS",
+    "fixedStepSeconds": 0.05
+  },
+  {
+    "reservoirs": 6,
+    "seed": 2026091602,
+    "maximumOrderPressureDifferencePa": 0.0,
+    "energyBalanceJoules": 5.820766091346741E-11,
+    "componentBalanceMoles": 0.0,
+    "fluid": "nitrogen",
+    "pipes": 6,
+    "status": "PASS",
+    "fixedStepSeconds": 0.05
+  },
+  {
+    "reservoirs": 6,
+    "seed": 2026091603,
+    "maximumOrderPressureDifferencePa": 0.0,
+    "energyBalanceJoules": 5.820766091346741E-11,
+    "componentBalanceMoles": -5.684341886080802E-14,
+    "fluid": "nitrogen",
+    "pipes": 6,
+    "status": "PASS",
+    "fixedStepSeconds": 0.05
+  },
+  {
+    "reservoirs": 6,
+    "seed": 2026091601,
+    "maximumOrderPressureDifferencePa": 0.0,
+    "energyBalanceJoules": 0.0,
+    "componentBalanceMoles": -5.820766091346741E-11,
+    "fluid": "water",
+    "pipes": 6,
+    "status": "PASS",
+    "fixedStepSeconds": 0.05
+  },
+  {
+    "reservoirs": 6,
+    "seed": 2026091602,
+    "maximumOrderPressureDifferencePa": 0.0,
+    "energyBalanceJoules": 0.0,
+    "componentBalanceMoles": 0.0,
+    "fluid": "water",
+    "pipes": 6,
+    "status": "PASS",
+    "fixedStepSeconds": 0.05
+  },
+  {
+    "reservoirs": 6,
+    "seed": 2026091603,
+    "maximumOrderPressureDifferencePa": 2.9103830456733704E-11,
+    "energyBalanceJoules": -1.9073486328125E-6,
+    "componentBalanceMoles": 0.0,
+    "fluid": "water",
+    "pipes": 6,
+    "status": "PASS",
+    "fixedStepSeconds": 0.05
+  }
+]

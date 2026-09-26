@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3TraceFloorSupportTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:17.472Z" hostname="WORMZ-PC" time="0.097">
+  <properties/>
+  <testcase name="theStalledSpikeIsVisibleInTheUntruncatedResidualAndBelowTheSupportFloor()" classname="com.wormzjl.createcheme.science.column.v3.V3TraceFloorSupportTest" time="0.03"/>
+  <testcase name="theRequestedRungConvergesFromTheStalledStateOnTheFloorSupport()" classname="com.wormzjl.createcheme.science.column.v3.V3TraceFloorSupportTest" time="0.067"/>
+  <system-out><![CDATA[  tjl19_pc09 node 10: liquid=1.169e-37 vapor=1.169e-41 floor=4.498e-09 retained=false scaled material residual=5.540e-07
+  tjl19_pc09 node 11: liquid=2.277e-11 vapor=2.492e-15 floor=4.498e-09 retained=false scaled material residual=0.005062
+  tjl19_pc09 node 12: liquid=2.398e-25 vapor=3.186e-29 floor=4.498e-09 retained=false scaled material residual=0.005062
+  floor-supported restart: Converged residual=2.909e-14 iterations=3 truncated=175/608 in 0.0 s (verified final Newton correction)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

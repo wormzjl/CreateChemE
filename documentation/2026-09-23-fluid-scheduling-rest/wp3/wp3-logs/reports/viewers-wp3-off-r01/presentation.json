@@ -1,0 +1,1238 @@
+{
+ "runId": "viewers-wp3-off-r01",
+ "manifest": {
+  "artifactSha256": "3ae597acd7199c1390955c3022e07cc1ac5c425b06aa52b841d1713e7b376bbb",
+  "fixtureClassesSha256": "49edaef5a8bea72d0209f371e31a8ec56f0a8f69a70827ac79f5969657648975"
+ },
+ "warmupTicks": 1200,
+ "measuredSeconds": 120.0202717,
+ "presentation": {
+  "note": "Presentation over the measurement window (online ticks start, end]. Consumers are the open menus and the loaded, bound devices. An edit's reply must be on the first delivery its menu receives after the tick the edit arrived in; an ACCEPTED edit's event must later be reported Applied. Latency is the delivery tick minus the arrival tick.",
+  "windowStartTick": 1247,
+  "windowEndTick": 3616,
+  "windowTicks": 2369,
+  "openMenus": 16,
+  "loadedDevices": 10803,
+  "dirtyDevicesAtEnd": 9392,
+  "menus": [
+   {
+    "network": 0,
+    "device": 1,
+    "kind": "GENERATOR",
+    "role": "ACCEPTED",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 5,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     4,
+     7,
+     10,
+     13,
+     16
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 304,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 1,
+    "device": 58,
+    "kind": "GENERATOR",
+    "role": "INVALID",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     5
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 305,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 2,
+    "device": 181,
+    "kind": "GENERATOR",
+    "role": "ACCEPTED",
+    "deliveriesInWindow": 23,
+    "staticInWindow": 5,
+    "deliveriesPer100Ticks": 0.9708737864077669,
+    "buckets": [
+     5,
+     8,
+     11,
+     14,
+     17
+    ],
+    "totalDeliveries": 33,
+    "firstDeliveryTick": 306,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 3,
+    "device": 265,
+    "kind": "PIPE",
+    "role": "ACCEPTED",
+    "deliveriesInWindow": 23,
+    "staticInWindow": 5,
+    "deliveriesPer100Ticks": 0.9708737864077669,
+    "buckets": [
+     7,
+     6,
+     9,
+     12,
+     15,
+     18
+    ],
+    "totalDeliveries": 33,
+    "firstDeliveryTick": 307,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 4,
+    "device": 412,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     8
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 308,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 5,
+    "device": 524,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     9
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 309,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 6,
+    "device": 592,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     10
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 310,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 7,
+    "device": 730,
+    "kind": "RESERVOIR",
+    "role": "STALE",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     11
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 311,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 8,
+    "device": 812,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     12
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 312,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 9,
+    "device": 979,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     13
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 313,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 10,
+    "device": 1102,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     14
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 314,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 11,
+    "device": 1185,
+    "kind": "RESERVOIR",
+    "role": "STALE",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     15
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 315,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 12,
+    "device": 1322,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 24,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0130856901646264,
+    "buckets": [
+     16
+    ],
+    "totalDeliveries": 34,
+    "firstDeliveryTick": 316,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 13,
+    "device": 1423,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 23,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 0.9708737864077669,
+    "buckets": [
+     17
+    ],
+    "totalDeliveries": 33,
+    "firstDeliveryTick": 317,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 14,
+    "device": 1480,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 23,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 0.9708737864077669,
+    "buckets": [
+     18
+    ],
+    "totalDeliveries": 33,
+    "firstDeliveryTick": 318,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 15,
+    "device": 1618,
+    "kind": "RESERVOIR",
+    "role": "STALE",
+    "deliveriesInWindow": 23,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 0.9708737864077669,
+    "buckets": [
+     19
+    ],
+    "totalDeliveries": 33,
+    "firstDeliveryTick": 319,
+    "lastStatus": "FULL"
+   }
+  ],
+  "livePacketsPer100TicksPerMenu": 0.9998944702406078,
+  "staticPacketsPer100TicksPerMenu": 0.039573659772055715,
+  "menuPacketsPer100TicksPerMenu": 1.0394681300126636,
+  "viewBuildsPer100TicksPerConsumer": 0.9977795344720338,
+  "devicePresentationsPer100TicksPerLoadedDevice": 0.9992573158801198,
+  "bucketFlushes": 2310,
+  "bucketFlushesPer100Ticks": 97.50949767834528,
+  "deliveriesOffTheirBucket": 0,
+  "edits": [
+   {
+    "network": 0,
+    "role": "ACCEPTED",
+    "receivedTick": 1254,
+    "revision": 0,
+    "replyTick": 1304,
+    "latencyTicks": 50,
+    "reply": "Applied",
+    "appliedReplyTick": 1304
+   },
+   {
+    "network": 1,
+    "role": "INVALID",
+    "receivedTick": 1277,
+    "revision": 0,
+    "replyTick": 1305,
+    "latencyTicks": 28,
+    "reply": "Not applied: Controls are outside the supported range"
+   },
+   {
+    "network": 2,
+    "role": "ACCEPTED",
+    "receivedTick": 1300,
+    "revision": 0,
+    "replyTick": 1305,
+    "latencyTicks": 5,
+    "reply": "Applied",
+    "appliedReplyTick": 1305
+   },
+   {
+    "network": 3,
+    "role": "ACCEPTED",
+    "receivedTick": 1323,
+    "revision": 0,
+    "replyTick": 1406,
+    "latencyTicks": 83,
+    "reply": "Applied",
+    "appliedReplyTick": 1406
+   },
+   {
+    "network": 4,
+    "role": "STALE",
+    "receivedTick": 1346,
+    "revision": 7,
+    "replyTick": 1408,
+    "latencyTicks": 62,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 5,
+    "role": "STALE",
+    "receivedTick": 1369,
+    "revision": 7,
+    "replyTick": 1409,
+    "latencyTicks": 40,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 6,
+    "role": "STALE",
+    "receivedTick": 1392,
+    "revision": 7,
+    "replyTick": 1410,
+    "latencyTicks": 18,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 7,
+    "role": "STALE",
+    "receivedTick": 1415,
+    "revision": 7,
+    "replyTick": 1511,
+    "latencyTicks": 96,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 8,
+    "role": "STALE",
+    "receivedTick": 1438,
+    "revision": 7,
+    "replyTick": 1512,
+    "latencyTicks": 74,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 9,
+    "role": "STALE",
+    "receivedTick": 1461,
+    "revision": 7,
+    "replyTick": 1513,
+    "latencyTicks": 52,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 10,
+    "role": "STALE",
+    "receivedTick": 1484,
+    "revision": 7,
+    "replyTick": 1514,
+    "latencyTicks": 30,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 11,
+    "role": "STALE",
+    "receivedTick": 1507,
+    "revision": 7,
+    "replyTick": 1515,
+    "latencyTicks": 8,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 12,
+    "role": "STALE",
+    "receivedTick": 1530,
+    "revision": 7,
+    "replyTick": 1616,
+    "latencyTicks": 86,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 13,
+    "role": "STALE",
+    "receivedTick": 1553,
+    "revision": 7,
+    "replyTick": 1617,
+    "latencyTicks": 64,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 14,
+    "role": "STALE",
+    "receivedTick": 1576,
+    "revision": 7,
+    "replyTick": 1618,
+    "latencyTicks": 42,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 15,
+    "role": "STALE",
+    "receivedTick": 1599,
+    "revision": 7,
+    "replyTick": 1619,
+    "latencyTicks": 20,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 0,
+    "role": "ACCEPTED",
+    "receivedTick": 1654,
+    "revision": 1,
+    "replyTick": 1707,
+    "latencyTicks": 53,
+    "reply": "Applied",
+    "appliedReplyTick": 1707
+   },
+   {
+    "network": 1,
+    "role": "INVALID",
+    "receivedTick": 1677,
+    "revision": 0,
+    "replyTick": 1705,
+    "latencyTicks": 28,
+    "reply": "Not applied: Controls are outside the supported range"
+   },
+   {
+    "network": 2,
+    "role": "ACCEPTED",
+    "receivedTick": 1700,
+    "revision": 1,
+    "replyTick": 1708,
+    "latencyTicks": 8,
+    "reply": "Applied",
+    "appliedReplyTick": 1708
+   },
+   {
+    "network": 3,
+    "role": "ACCEPTED",
+    "receivedTick": 1723,
+    "revision": 1,
+    "replyTick": 1809,
+    "latencyTicks": 86,
+    "reply": "Applied",
+    "appliedReplyTick": 1809
+   },
+   {
+    "network": 4,
+    "role": "STALE",
+    "receivedTick": 1746,
+    "revision": 7,
+    "replyTick": 1808,
+    "latencyTicks": 62,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 5,
+    "role": "STALE",
+    "receivedTick": 1769,
+    "revision": 7,
+    "replyTick": 1809,
+    "latencyTicks": 40,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 6,
+    "role": "STALE",
+    "receivedTick": 1792,
+    "revision": 7,
+    "replyTick": 1810,
+    "latencyTicks": 18,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 7,
+    "role": "STALE",
+    "receivedTick": 1815,
+    "revision": 7,
+    "replyTick": 1911,
+    "latencyTicks": 96,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 8,
+    "role": "STALE",
+    "receivedTick": 1838,
+    "revision": 7,
+    "replyTick": 1912,
+    "latencyTicks": 74,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 9,
+    "role": "STALE",
+    "receivedTick": 1861,
+    "revision": 7,
+    "replyTick": 1913,
+    "latencyTicks": 52,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 10,
+    "role": "STALE",
+    "receivedTick": 1884,
+    "revision": 7,
+    "replyTick": 1914,
+    "latencyTicks": 30,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 11,
+    "role": "STALE",
+    "receivedTick": 1907,
+    "revision": 7,
+    "replyTick": 1915,
+    "latencyTicks": 8,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 12,
+    "role": "STALE",
+    "receivedTick": 1930,
+    "revision": 7,
+    "replyTick": 2016,
+    "latencyTicks": 86,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 13,
+    "role": "STALE",
+    "receivedTick": 1953,
+    "revision": 7,
+    "replyTick": 2017,
+    "latencyTicks": 64,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 14,
+    "role": "STALE",
+    "receivedTick": 1976,
+    "revision": 7,
+    "replyTick": 2018,
+    "latencyTicks": 42,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 15,
+    "role": "STALE",
+    "receivedTick": 1999,
+    "revision": 7,
+    "replyTick": 2019,
+    "latencyTicks": 20,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 0,
+    "role": "ACCEPTED",
+    "receivedTick": 2054,
+    "revision": 2,
+    "replyTick": 2110,
+    "latencyTicks": 56,
+    "reply": "Applied",
+    "appliedReplyTick": 2110
+   },
+   {
+    "network": 1,
+    "role": "INVALID",
+    "receivedTick": 2077,
+    "revision": 0,
+    "replyTick": 2105,
+    "latencyTicks": 28,
+    "reply": "Not applied: Controls are outside the supported range"
+   },
+   {
+    "network": 2,
+    "role": "ACCEPTED",
+    "receivedTick": 2100,
+    "revision": 2,
+    "replyTick": 2111,
+    "latencyTicks": 11,
+    "reply": "Applied",
+    "appliedReplyTick": 2111
+   },
+   {
+    "network": 3,
+    "role": "ACCEPTED",
+    "receivedTick": 2123,
+    "revision": 2,
+    "replyTick": 2212,
+    "latencyTicks": 89,
+    "reply": "Applied",
+    "appliedReplyTick": 2212
+   },
+   {
+    "network": 4,
+    "role": "STALE",
+    "receivedTick": 2146,
+    "revision": 7,
+    "replyTick": 2208,
+    "latencyTicks": 62,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 5,
+    "role": "STALE",
+    "receivedTick": 2169,
+    "revision": 7,
+    "replyTick": 2209,
+    "latencyTicks": 40,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 6,
+    "role": "STALE",
+    "receivedTick": 2192,
+    "revision": 7,
+    "replyTick": 2210,
+    "latencyTicks": 18,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 7,
+    "role": "STALE",
+    "receivedTick": 2215,
+    "revision": 7,
+    "replyTick": 2311,
+    "latencyTicks": 96,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 8,
+    "role": "STALE",
+    "receivedTick": 2238,
+    "revision": 7,
+    "replyTick": 2312,
+    "latencyTicks": 74,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 9,
+    "role": "STALE",
+    "receivedTick": 2261,
+    "revision": 7,
+    "replyTick": 2313,
+    "latencyTicks": 52,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 10,
+    "role": "STALE",
+    "receivedTick": 2284,
+    "revision": 7,
+    "replyTick": 2314,
+    "latencyTicks": 30,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 11,
+    "role": "STALE",
+    "receivedTick": 2307,
+    "revision": 7,
+    "replyTick": 2315,
+    "latencyTicks": 8,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 12,
+    "role": "STALE",
+    "receivedTick": 2330,
+    "revision": 7,
+    "replyTick": 2416,
+    "latencyTicks": 86,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 13,
+    "role": "STALE",
+    "receivedTick": 2353,
+    "revision": 7,
+    "replyTick": 2417,
+    "latencyTicks": 64,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 14,
+    "role": "STALE",
+    "receivedTick": 2376,
+    "revision": 7,
+    "replyTick": 2418,
+    "latencyTicks": 42,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 15,
+    "role": "STALE",
+    "receivedTick": 2399,
+    "revision": 7,
+    "replyTick": 2419,
+    "latencyTicks": 20,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 0,
+    "role": "ACCEPTED",
+    "receivedTick": 2454,
+    "revision": 3,
+    "replyTick": 2513,
+    "latencyTicks": 59,
+    "reply": "Applied",
+    "appliedReplyTick": 2513
+   },
+   {
+    "network": 1,
+    "role": "INVALID",
+    "receivedTick": 2477,
+    "revision": 0,
+    "replyTick": 2505,
+    "latencyTicks": 28,
+    "reply": "Not applied: Controls are outside the supported range"
+   },
+   {
+    "network": 2,
+    "role": "ACCEPTED",
+    "receivedTick": 2500,
+    "revision": 3,
+    "replyTick": 2514,
+    "latencyTicks": 14,
+    "reply": "Applied",
+    "appliedReplyTick": 2514
+   },
+   {
+    "network": 3,
+    "role": "ACCEPTED",
+    "receivedTick": 2523,
+    "revision": 3,
+    "replyTick": 2615,
+    "latencyTicks": 92,
+    "reply": "Applied",
+    "appliedReplyTick": 2615
+   },
+   {
+    "network": 4,
+    "role": "STALE",
+    "receivedTick": 2546,
+    "revision": 7,
+    "replyTick": 2608,
+    "latencyTicks": 62,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 5,
+    "role": "STALE",
+    "receivedTick": 2569,
+    "revision": 7,
+    "replyTick": 2609,
+    "latencyTicks": 40,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 6,
+    "role": "STALE",
+    "receivedTick": 2592,
+    "revision": 7,
+    "replyTick": 2610,
+    "latencyTicks": 18,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 7,
+    "role": "STALE",
+    "receivedTick": 2615,
+    "revision": 7,
+    "replyTick": 2711,
+    "latencyTicks": 96,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 8,
+    "role": "STALE",
+    "receivedTick": 2638,
+    "revision": 7,
+    "replyTick": 2712,
+    "latencyTicks": 74,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 9,
+    "role": "STALE",
+    "receivedTick": 2661,
+    "revision": 7,
+    "replyTick": 2713,
+    "latencyTicks": 52,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 10,
+    "role": "STALE",
+    "receivedTick": 2684,
+    "revision": 7,
+    "replyTick": 2714,
+    "latencyTicks": 30,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 11,
+    "role": "STALE",
+    "receivedTick": 2707,
+    "revision": 7,
+    "replyTick": 2715,
+    "latencyTicks": 8,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 12,
+    "role": "STALE",
+    "receivedTick": 2730,
+    "revision": 7,
+    "replyTick": 2816,
+    "latencyTicks": 86,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 13,
+    "role": "STALE",
+    "receivedTick": 2753,
+    "revision": 7,
+    "replyTick": 2817,
+    "latencyTicks": 64,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 14,
+    "role": "STALE",
+    "receivedTick": 2776,
+    "revision": 7,
+    "replyTick": 2818,
+    "latencyTicks": 42,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 15,
+    "role": "STALE",
+    "receivedTick": 2799,
+    "revision": 7,
+    "replyTick": 2819,
+    "latencyTicks": 20,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 0,
+    "role": "ACCEPTED",
+    "receivedTick": 2854,
+    "revision": 4,
+    "replyTick": 2916,
+    "latencyTicks": 62,
+    "reply": "Applied",
+    "appliedReplyTick": 2916
+   },
+   {
+    "network": 1,
+    "role": "INVALID",
+    "receivedTick": 2877,
+    "revision": 0,
+    "replyTick": 2905,
+    "latencyTicks": 28,
+    "reply": "Not applied: Controls are outside the supported range"
+   },
+   {
+    "network": 2,
+    "role": "ACCEPTED",
+    "receivedTick": 2900,
+    "revision": 4,
+    "replyTick": 2917,
+    "latencyTicks": 17,
+    "reply": "Applied",
+    "appliedReplyTick": 2917
+   },
+   {
+    "network": 3,
+    "role": "ACCEPTED",
+    "receivedTick": 2923,
+    "revision": 4,
+    "replyTick": 3018,
+    "latencyTicks": 95,
+    "reply": "Applied",
+    "appliedReplyTick": 3018
+   },
+   {
+    "network": 4,
+    "role": "STALE",
+    "receivedTick": 2946,
+    "revision": 7,
+    "replyTick": 3008,
+    "latencyTicks": 62,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 5,
+    "role": "STALE",
+    "receivedTick": 2969,
+    "revision": 7,
+    "replyTick": 3009,
+    "latencyTicks": 40,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 6,
+    "role": "STALE",
+    "receivedTick": 2992,
+    "revision": 7,
+    "replyTick": 3010,
+    "latencyTicks": 18,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 7,
+    "role": "STALE",
+    "receivedTick": 3015,
+    "revision": 7,
+    "replyTick": 3111,
+    "latencyTicks": 96,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 8,
+    "role": "STALE",
+    "receivedTick": 3038,
+    "revision": 7,
+    "replyTick": 3112,
+    "latencyTicks": 74,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 9,
+    "role": "STALE",
+    "receivedTick": 3061,
+    "revision": 7,
+    "replyTick": 3113,
+    "latencyTicks": 52,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 10,
+    "role": "STALE",
+    "receivedTick": 3084,
+    "revision": 7,
+    "replyTick": 3114,
+    "latencyTicks": 30,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 11,
+    "role": "STALE",
+    "receivedTick": 3107,
+    "revision": 7,
+    "replyTick": 3115,
+    "latencyTicks": 8,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 12,
+    "role": "STALE",
+    "receivedTick": 3130,
+    "revision": 7,
+    "replyTick": 3216,
+    "latencyTicks": 86,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 13,
+    "role": "STALE",
+    "receivedTick": 3153,
+    "revision": 7,
+    "replyTick": 3217,
+    "latencyTicks": 64,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 14,
+    "role": "STALE",
+    "receivedTick": 3176,
+    "revision": 7,
+    "replyTick": 3218,
+    "latencyTicks": 42,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 15,
+    "role": "STALE",
+    "receivedTick": 3199,
+    "revision": 7,
+    "replyTick": 3219,
+    "latencyTicks": 20,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   }
+  ],
+  "editCount": 80,
+  "replyTexts": {
+   "Applied": 15,
+   "Not applied: Controls are outside the supported range": 5,
+   "Not applied: Reservoir initialization is fixed; existing fluid is conserved.": 15,
+   "Not applied: Stale fluid controls": 45
+  },
+  "latencyTicks": {
+   "count": 80,
+   "median": 42,
+   "p95": 96,
+   "max": 96
+  },
+  "latencyHistogramTenTickBins": {
+   "0": 7,
+   "10": 8,
+   "20": 10,
+   "30": 5,
+   "40": 10,
+   "50": 9,
+   "60": 11,
+   "70": 5,
+   "80": 8,
+   "90": 7
+  },
+  "latencyMinimumTicks": 5,
+  "unanswered": 0,
+  "repliesNotOnTheFollowingBucket": 0,
+  "wrongReplies": 0,
+  "repliesAtTheInputTick": 0,
+  "acceptedEditsNeverApplied": 0,
+  "passed": true
+ },
+ "runtimeCounters": {
+  "note": "Server-thread scheduling counters over the measurement window. A tick's counts cover its tick hooks and the mailbox work since the previous tick. Idle ticks routed no completion, dispatched no solve, published no island and fired no current scheduler deadline.",
+  "measuredSeconds": 120.0202717,
+  "ticks": 2369,
+  "idleTicks": 59,
+  "totals": {
+   "islandVisits": 9628,
+   "moduleScans": 0,
+   "topologySnapshots": 30,
+   "islandSnapshots": 7797,
+   "viewBuilds": 255733,
+   "menuPackets": 394,
+   "readinessPumps": 2366,
+   "solvesDispatched": 2400,
+   "completionsRouted": 2400,
+   "islandsPublished": 2400,
+   "deadlinesFired": 2398,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0,
+   "replayedTicks": 0,
+   "restedTicks": 0,
+   "bucketFlushes": 2310,
+   "devicePresentations": 255733,
+   "staticPayloads": 15,
+   "queuedInputs": 80,
+   "inputReplies": 80
+  },
+  "perSecond": {
+   "islandVisits": 80.21978173875439,
+   "moduleScans": 0,
+   "topologySnapshots": 0.24995777442486827,
+   "islandSnapshots": 64.96402557302326,
+   "viewBuilds": 2130.7483842331612,
+   "menuPackets": 3.2827787707799367,
+   "readinessPumps": 19.713336476307944,
+   "solvesDispatched": 19.99662195398946,
+   "completionsRouted": 19.99662195398946,
+   "islandsPublished": 19.99662195398946,
+   "deadlinesFired": 19.979958102361138,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0,
+   "replayedTicks": 0,
+   "restedTicks": 0,
+   "bucketFlushes": 19.24674863071486,
+   "devicePresentations": 2130.7483842331612,
+   "staticPayloads": 0.12497888721243414,
+   "queuedInputs": 0.6665540651329821,
+   "inputReplies": 0.6665540651329821
+  },
+  "perTick": {
+   "islandVisits": 4.064162093710427,
+   "moduleScans": 0,
+   "topologySnapshots": 0.01266357112705783,
+   "islandSnapshots": 3.29126213592233,
+   "viewBuilds": 107.94976783452934,
+   "menuPackets": 0.16631490080202618,
+   "readinessPumps": 0.9987336428872943,
+   "solvesDispatched": 1.0130856901646264,
+   "completionsRouted": 1.0130856901646264,
+   "islandsPublished": 1.0130856901646264,
+   "deadlinesFired": 1.0122414520894893,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0,
+   "replayedTicks": 0,
+   "restedTicks": 0,
+   "bucketFlushes": 0.9750949767834529,
+   "devicePresentations": 107.94976783452934,
+   "staticPayloads": 0.006331785563528915,
+   "queuedInputs": 0.03376952300548755,
+   "inputReplies": 0.03376952300548755
+  },
+  "maximumPerTick": {
+   "islandVisits": 194,
+   "moduleScans": 0,
+   "topologySnapshots": 2,
+   "islandSnapshots": 267,
+   "viewBuilds": 315,
+   "menuPackets": 3,
+   "readinessPumps": 65,
+   "solvesDispatched": 64,
+   "completionsRouted": 64,
+   "islandsPublished": 64,
+   "deadlinesFired": 93,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0,
+   "replayedTicks": 0,
+   "restedTicks": 0,
+   "bucketFlushes": 1,
+   "devicePresentations": 315,
+   "staticPayloads": 1,
+   "queuedInputs": 1,
+   "inputReplies": 2
+  },
+  "idleTickTotals": {
+   "islandVisits": 0,
+   "moduleScans": 0,
+   "topologySnapshots": 0,
+   "islandSnapshots": 0,
+   "viewBuilds": 0,
+   "menuPackets": 0,
+   "readinessPumps": 0,
+   "solvesDispatched": 0,
+   "completionsRouted": 0,
+   "islandsPublished": 0,
+   "deadlinesFired": 0,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0,
+   "replayedTicks": 0,
+   "restedTicks": 0,
+   "bucketFlushes": 0,
+   "devicePresentations": 0,
+   "staticPayloads": 0,
+   "queuedInputs": 0,
+   "inputReplies": 0
+  },
+  "idleTickPerTick": {
+   "islandVisits": 0,
+   "moduleScans": 0,
+   "topologySnapshots": 0,
+   "islandSnapshots": 0,
+   "viewBuilds": 0,
+   "menuPackets": 0,
+   "readinessPumps": 0,
+   "solvesDispatched": 0,
+   "completionsRouted": 0,
+   "islandsPublished": 0,
+   "deadlinesFired": 0,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0,
+   "replayedTicks": 0,
+   "restedTicks": 0,
+   "bucketFlushes": 0,
+   "devicePresentations": 0,
+   "staticPayloads": 0,
+   "queuedInputs": 0,
+   "inputReplies": 0
+  },
+  "idleTicksWithAny": {
+   "islandVisits": 0,
+   "moduleScans": 0,
+   "topologySnapshots": 0,
+   "islandSnapshots": 0,
+   "viewBuilds": 0,
+   "menuPackets": 0,
+   "readinessPumps": 0,
+   "solvesDispatched": 0,
+   "completionsRouted": 0,
+   "islandsPublished": 0,
+   "deadlinesFired": 0,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0,
+   "replayedTicks": 0,
+   "restedTicks": 0,
+   "bucketFlushes": 0,
+   "devicePresentations": 0,
+   "staticPayloads": 0,
+   "queuedInputs": 0,
+   "inputReplies": 0
+  }
+ }
+}

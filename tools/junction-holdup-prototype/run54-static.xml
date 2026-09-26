@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-25T05:45:46.263Z" hostname="WORMZ-PC" time="1.856">
+  <properties/>
+  <testcase name="coldJunctionMatrix()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe" time="1.856"/>
+  <system-out><![CDATA[HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=102325.0 swap=false unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.005789658815167964> but was: <-0.0035341282828649325>
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=102325.0 swap=false unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.009365971891294178> but was: <-0.0035376429326198725>
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=102325.0 swap=false unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.009397390016305407> but was: <-0.0036786680957606806>
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=102325.0 swap=false unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.008602662008864226> but was: <-0.003796293978287111>
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=150000.0 swap=false unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.0058044714560033794> but was: <-0.003536545394941039>
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=150000.0 swap=false unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.006381558503226414> but was: <-0.00393340297460466>
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=150000.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Negative/nonfinite inventory
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=150000.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Negative/nonfinite inventory
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=102325.0 swap=false unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.0048380279806556625> but was: <-0.0028713645637656812>
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=102325.0 swap=false unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.009064334819304298> but was: <-0.003124597282904869>
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=102325.0 swap=false unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.009840350263795095> but was: <-0.003217970605951565>
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=102325.0 swap=false unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.010156606080631458> but was: <-0.0033527153975133543>
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=150000.0 swap=false unequal=true PASS inlets=1 in=0.009439701026937412 kg T_J=299.9952979116532 P_J=149043.98283698998 substeps=1/0
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=150000.0 swap=false unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.0057193164692099785> but was: <-0.003445551345382312>
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=150000.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Negative/nonfinite inventory
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=150000.0 swap=false unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <-0.2676384422547059> but was: <-0.003487473483425953>
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=102325.0 swap=true unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.005724584119996545> but was: <0.0026991975705180156>
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=102325.0 swap=true unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.006520581740443121> but was: <0.00269568292005449>
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=102325.0 swap=true unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.006265559817741795> but was: <0.002554657757600285>
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=102325.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Negative/nonfinite inventory
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=150000.0 swap=true unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.004502671978798334> but was: <0.0026967804583795524>
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=150000.0 swap=true unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.007189671093596972> but was: <0.0022999228781306496>
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=150000.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Negative/nonfinite inventory
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=150000.0 swap=true unequal=false FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.18149707254049613> but was: <0.0022789253646478737>
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=102325.0 swap=true unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.004155726971144136> but was: <0.0020483444965251744>
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=102325.0 swap=true unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.005153347061665869> but was: <0.002290588612079524>
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=102325.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Negative/nonfinite inventory
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=102325.0 swap=true unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.004012702456002382> but was: <0.002121341352064968>
+HOLDUP_STATIC holdup=1.0E-4 ports=3 pressure=150000.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 2.191412096162098E-5; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-4 ports=4 pressure=150000.0 swap=true unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.004342032036594945> but was: <0.001717805787756643>
+HOLDUP_STATIC holdup=1.0E-4 ports=5 pressure=150000.0 swap=true unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.1533002400013999> but was: <0.001834376626954653>
+HOLDUP_STATIC holdup=1.0E-4 ports=6 pressure=150000.0 swap=true unequal=true FAIL org.opentest4j.AssertionFailedError: component 0 ==> expected: <0.1533002400013999> but was: <0.001834376626954645>
+HOLDUP_STATIC holdup=1.0E-4 passed=1/32
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

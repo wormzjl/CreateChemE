@@ -1,0 +1,2060 @@
+{
+  "bundle": "v3-phase-aware-bundle-v2",
+  "package": "createcheme:tjl20_methane",
+  "property_revision": "tjl20-methane-nist-r1",
+  "new_training_profiles": 116,
+  "model_selection": "Training-only normalization/PCA/weights/correlation fit; validation-only epoch and guard selection; frozen before test.",
+  "benchmark": "Two warmed repetitions per held-out input, rotating all three modes; 15 s request deadline, shared 2 s neural budget, 16 iterations per native pass.",
+  "timing_limits": "One local JVM study per domain; JIT and machine effects remain. Repetitions are not independent operating cases; no broad speedup or confidence-interval claim.",
+  "domains": {
+    "operating": {
+      "training": {
+        "seed": 42,
+        "epochs": 15000,
+        "selected_epoch": 625,
+        "accepted": 107,
+        "attempted": 225,
+        "train": 80,
+        "validation": 12,
+        "test": 32,
+        "validation_normalized_mse": 0.07994797686422186,
+        "pca_rank": 16,
+        "hidden_width": 64,
+        "training_normalized_pca_reconstruction_mse": 0.00023117920379823136,
+        "data_sha256": "06c89b8759c9c94de4b32ff80341f6bf2815020f05c7ec93ef29eb23de0c5cc9",
+        "coverage": "TJL20, 40 trays; condenser 40..75 C; feed T 633.15..643.15 K; P 237.5..262.5 kPa; flow +/-2%; R 4.02..4.32; steam +/-3%; top PA 80..100%; side draws +/-1%; light/heavy composition tilt +/-2%.",
+        "split": "Methane fractions 0.3/0.4/0.5/0.6/0.7 mol% train; 0.45% validation; 0.55% test. Whole columns withheld.",
+        "model_id": "tjl20-multivariable-dry-v1",
+        "label_policy": "equilibrium-only",
+        "training_water_qualification": {
+          "DRY_EQUILIBRIUM": 80
+        },
+        "rejected_label_count": 88,
+        "test_used_for_training_or_selection": false
+      },
+      "attempted": 225,
+      "accepted_teacher_profiles": 195,
+      "teacher_water_counts": {
+        "DRY_EQUILIBRIUM": 107,
+        "DRY_SUPERSATURATED": 88,
+        "FAILED": 30
+      },
+      "model_sha256": "5b780bdc59fe6e4fb4e01a6311cdd2b0cee638cb6122acae131f5c99ec1b7353",
+      "model_bytes": 2355813,
+      "journal_sha256": "06c89b8759c9c94de4b32ff80341f6bf2815020f05c7ec93ef29eb23de0c5cc9",
+      "evaluation_sha256": "21e5f06a2ab5072a7239bbd3c9223afabdb9f658e6a3dd2b29889ffc478737f1",
+      "modes": {
+        "CURRENT_ONLY": {
+          "runs": 64,
+          "accepted_runs": 54,
+          "cases": 32,
+          "cases_accepted_every_repeat": 27,
+          "median_ms": 2746.68655,
+          "p95_ms": 5461.032263999999,
+          "fallback_runs": 0,
+          "water_qualification_by_run": {
+            "DRY_EQUILIBRIUM": 30,
+            "DRY_SUPERSATURATED": 24,
+            "FAILED": 10
+          }
+        },
+        "LNN_ONLY": {
+          "runs": 64,
+          "accepted_runs": 64,
+          "cases": 32,
+          "cases_accepted_every_repeat": 32,
+          "median_ms": 134.0376495,
+          "p95_ms": 380.3244449999998,
+          "fallback_runs": 0,
+          "water_qualification_by_run": {
+            "DRY_EQUILIBRIUM": 36,
+            "DRY_SUPERSATURATED": 28
+          }
+        },
+        "LNN_FIRST": {
+          "runs": 64,
+          "accepted_runs": 64,
+          "cases": 32,
+          "cases_accepted_every_repeat": 32,
+          "median_ms": 135.3495005,
+          "p95_ms": 382.46181584999994,
+          "fallback_runs": 0,
+          "water_qualification_by_run": {
+            "DRY_EQUILIBRIUM": 36,
+            "DRY_SUPERSATURATED": 28
+          }
+        }
+      }
+    },
+    "wet_boundary": {
+      "training": {
+        "seed": 42,
+        "epochs": 15000,
+        "selected_epoch": 225,
+        "accepted": 51,
+        "attempted": 56,
+        "train": 36,
+        "validation": 8,
+        "test": 8,
+        "validation_normalized_mse": 0.02287120520118521,
+        "pca_rank": 16,
+        "hidden_width": 64,
+        "training_normalized_pca_reconstruction_mse": 3.3667445709902624e-06,
+        "data_sha256": "14cddb1a8aa947453afa511d17b07e746947b6d0404d848b4e990b5eaf0ab6d2",
+        "coverage": "TJL20, 40 trays; wet boundary conditioned on methane composition, feed T 633.15..643.15 K, R 4.02..4.32, steam +/-3%, top PA 80..100%; condenser refined inside 40..75 C. Other inputs fixed.",
+        "split": "Methane fractions 0.3/0.4/0.5/0.6/0.7 mol% train; 0.45% validation; 0.55% test. Whole coupled boundaries withheld.",
+        "model_id": "tjl20-multivariable-wet-v1",
+        "label_policy": "equilibrium-only",
+        "training_water_qualification": {
+          "WET_EQUILIBRIUM": 36
+        },
+        "rejected_label_count": 0,
+        "test_used_for_training_or_selection": false
+      },
+      "attempted": 56,
+      "accepted_teacher_profiles": 51,
+      "teacher_water_counts": {
+        "WET_EQUILIBRIUM": 51,
+        "FAILED": 5
+      },
+      "model_sha256": "2ea4f1342b7ef86966eb676ae9f1ec3126d362123f06e6833ded0366877bb1a7",
+      "model_bytes": 2253139,
+      "journal_sha256": "14cddb1a8aa947453afa511d17b07e746947b6d0404d848b4e990b5eaf0ab6d2",
+      "evaluation_sha256": "12c2a544d93f3e525aeb6fcc52cf50b9c9caadcb3cc8adb8bd3765ee5246aff6",
+      "modes": {
+        "CURRENT_ONLY": {
+          "runs": 16,
+          "accepted_runs": 16,
+          "cases": 8,
+          "cases_accepted_every_repeat": 8,
+          "median_ms": 2616.7964,
+          "p95_ms": 7181.54435025,
+          "fallback_runs": 0,
+          "water_qualification_by_run": {
+            "DRY_EQUILIBRIUM": 16
+          }
+        },
+        "LNN_ONLY": {
+          "runs": 16,
+          "accepted_runs": 16,
+          "cases": 8,
+          "cases_accepted_every_repeat": 8,
+          "median_ms": 164.4864,
+          "p95_ms": 550.64045,
+          "fallback_runs": 0,
+          "water_qualification_by_run": {
+            "WET_EQUILIBRIUM": 14,
+            "DRY_EQUILIBRIUM": 2
+          }
+        },
+        "LNN_FIRST": {
+          "runs": 16,
+          "accepted_runs": 16,
+          "cases": 8,
+          "cases_accepted_every_repeat": 8,
+          "median_ms": 159.522,
+          "p95_ms": 545.48757575,
+          "fallback_runs": 0,
+          "water_qualification_by_run": {
+            "WET_EQUILIBRIUM": 14,
+            "DRY_EQUILIBRIUM": 2
+          }
+        }
+      }
+    }
+  },
+  "combined": {
+    "CURRENT_ONLY": {
+      "runs": 80,
+      "accepted_runs": 70,
+      "cases": 40,
+      "cases_accepted_every_repeat": 35,
+      "median_ms": 2746.68655,
+      "p95_ms": 5724.854861000001,
+      "fallback_runs": 0,
+      "water_qualification_by_run": {
+        "DRY_EQUILIBRIUM": 46,
+        "DRY_SUPERSATURATED": 24,
+        "FAILED": 10
+      }
+    },
+    "LNN_ONLY": {
+      "runs": 80,
+      "accepted_runs": 80,
+      "cases": 40,
+      "cases_accepted_every_repeat": 40,
+      "median_ms": 158.0206505,
+      "p95_ms": 389.50375994999996,
+      "fallback_runs": 0,
+      "water_qualification_by_run": {
+        "DRY_EQUILIBRIUM": 38,
+        "DRY_SUPERSATURATED": 28,
+        "WET_EQUILIBRIUM": 14
+      }
+    },
+    "LNN_FIRST": {
+      "runs": 80,
+      "accepted_runs": 80,
+      "cases": 40,
+      "cases_accepted_every_repeat": 40,
+      "median_ms": 156.3696,
+      "p95_ms": 386.4690499999999,
+      "fallback_runs": 0,
+      "water_qualification_by_run": {
+        "DRY_EQUILIBRIUM": 38,
+        "DRY_SUPERSATURATED": 28,
+        "WET_EQUILIBRIUM": 14
+      }
+    }
+  },
+  "paired_accepted_runs": 70,
+  "paired_stream_set_mismatches": 0,
+  "paired_maximum_product_differences": {
+    "temperature_K": 6.204667215570225e-07,
+    "flow_mol_s": 2.445499163172826e-07,
+    "mole_fraction": 5.742906945428909e-09
+  },
+  "qualification": "Fixed TJL20 geometry. Wet training samples are a coupled one-wet-tray boundary branch; no general wet-zone, new-chemistry or refinery-wide qualification. Runtime legacy dry-supersaturation advisories are explicitly classified.",
+  "cases": [
+    {
+      "domain": "operating",
+      "id": 192,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3892.7304,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 112.252499,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 114.054599,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 192,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4008.2111,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 110.2697,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 106.3982,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 193,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1030.7357,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 133.476,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 122.364499,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 193,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1040.1268,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 115.7887,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 114.0267,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 194,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1708.1801,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 355.809,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 371.2334,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 194,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1722.1249,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 352.4631,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 358.0926,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 195,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1103.373099,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 112.031999,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 112.8396,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 195,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1104.8756,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 120.6239,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 114.0136,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 196,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4094.338,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 388.5575,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 384.443301,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 196,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4084.8766,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 384.6507,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 385.1366,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 197,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1044.5941,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 112.692,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 114.679201,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 197,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1032.4449,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 112.718499,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 113.4964,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 198,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1538.5347,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 293.3321,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 288.8415,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 198,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1538.796401,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 287.643201,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 290.0542,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 199,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": false,
+        "ms": 5724.553501,
+        "waterQualification": null,
+        "wetTrayCount": null
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 75.4941,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 75.3537,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 199,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": false,
+        "ms": 5730.580701,
+        "waterQualification": null,
+        "wetTrayCount": null
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 75.4337,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 75.4687,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 200,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4025.0201,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 114.8346,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 113.2047,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 200,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4030.096901,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 112.8623,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 113.2541,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 201,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": false,
+        "ms": 4708.6219,
+        "waterQualification": null,
+        "wetTrayCount": null
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 284.377699,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 287.7669,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 201,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": false,
+        "ms": 4705.8311,
+        "waterQualification": null,
+        "wetTrayCount": null
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 286.072901,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 285.940899,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 202,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3558.1336,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 77.0798,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 75.7537,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 202,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3588.1179,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 76.1189,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 75.3958,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 203,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3453.596701,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 107.3103,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 107.0572,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 203,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3681.839499,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 105.7767,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 107.0336,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 204,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3928.668099,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 340.9793,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 338.331201,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 204,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3648.302499,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 320.575001,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 316.3618,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 205,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1084.361299,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 118.411099,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 117.0475,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 205,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1084.9526,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 128.494601,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 118.4118,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 206,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": false,
+        "ms": 5500.762599,
+        "waterQualification": null,
+        "wetTrayCount": null
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 119.6944,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 118.518,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 206,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": false,
+        "ms": 5684.194,
+        "waterQualification": null,
+        "wetTrayCount": null
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 117.8078,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 119.035699,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 207,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1309.5296,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 78.9599,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 73.8641,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 207,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1418.0988,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 71.899601,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 75.958601,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 208,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1786.532699,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 280.2414,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 250.230499,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 208,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1623.0017,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 238.8166,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 235.1339,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 209,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4402.982601,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 104.2301,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 101.2374,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 209,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4394.9717,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 101.0623,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 100.4724,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 210,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1081.807901,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 177.808599,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 177.2227,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 210,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1092.107899,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 176.7441,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 181.7801,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 211,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 2039.776399,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 198.218801,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 193.8018,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 211,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1923.146199,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 196.052901,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 199.838501,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 212,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1134.0321,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 102.9905,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 102.9116,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 212,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1114.798299,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 103.860601,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 102.7209,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 213,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1335.924599,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 314.9087,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 310.059801,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 213,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1340.1292,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 311.6837,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 312.9854,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 214,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": false,
+        "ms": 5235.893699,
+        "waterQualification": null,
+        "wetTrayCount": null
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 118.684999,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 117.5423,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 214,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": false,
+        "ms": 5196.0465,
+        "waterQualification": null,
+        "wetTrayCount": null
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 119.034599,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 117.288199,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 215,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1283.2769,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 308.4527,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 309.824499,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 215,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1451.1388,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 324.846801,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 308.4716,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 216,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4000.603001,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 348.1,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 342.3348,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 216,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3986.566699,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 354.4389,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 339.926,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 217,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": false,
+        "ms": 4937.3719,
+        "waterQualification": null,
+        "wetTrayCount": null
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 283.7931,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 289.039401,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 217,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": false,
+        "ms": 4948.7357,
+        "waterQualification": null,
+        "wetTrayCount": null
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 287.7363,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 286.796499,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 218,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4695.0987,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 133.973199,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 136.5902,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 218,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4652.2075,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 134.1021,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 134.108801,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 219,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4450.848299,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 134.378601,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 133.433699,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 219,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4403.858201,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 132.8662,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 138.5647,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 220,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1615.063701,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 291.881399,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 290.0911,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 220,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1587.338499,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 287.5885,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 289.327901,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 221,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3723.5836,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 108.3765,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 107.805899,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 221,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3704.411301,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 107.814,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 109.0385,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 222,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1288.560601,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 407.482699,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 411.7856,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 222,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1298.4036,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 411.7621,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 421.2873,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 223,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1347.433801,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 299.249799,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 292.2119,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "operating",
+      "id": 223,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1342.684901,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 291.380801,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 293.5443,
+        "waterQualification": "DRY_SUPERSATURATED",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 48,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4450.6452,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 169.578799,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 174.4532,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 48,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 4374.713,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 170.001,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 158.736,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 49,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1069.4359,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 546.2254,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 542.251201,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 49,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1079.182501,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 563.8856,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 555.1967,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 50,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 7030.6984,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 158.093201,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 151.303101,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 50,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 6935.350699,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 149.511201,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 150.7957,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 51,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3977.1758,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 169.6552,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 171.104,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 51,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 3946.0765,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 170.284099,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 168.4942,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 52,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1275.6965,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 152.751299,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 151.328301,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 52,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1282.135599,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 153.010099,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 151.3226,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 53,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1076.652301,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 157.9481,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 155.622699,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 53,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1083.1058,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 154.887799,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 155.4393,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 54,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 5228.342301,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 174.5297,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 173.2474,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 54,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 7634.082201,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 176.1097,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 178.4191,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 55,
+      "repeat": 0,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1259.9877,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 154.867601,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 157.116501,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    },
+    {
+      "domain": "wet_boundary",
+      "id": 55,
+      "repeat": 1,
+      "CURRENT_ONLY": {
+        "success": true,
+        "ms": 1287.5163,
+        "waterQualification": "DRY_EQUILIBRIUM",
+        "wetTrayCount": 0
+      },
+      "LNN_ONLY": {
+        "success": true,
+        "ms": 159.394001,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      },
+      "LNN_FIRST": {
+        "success": true,
+        "ms": 160.308,
+        "waterQualification": "WET_EQUILIBRIUM",
+        "wetTrayCount": 1
+      }
+    }
+  ]
+}

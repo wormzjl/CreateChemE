@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-26T05:18:52.150Z" hostname="WORMZ-PC" time="0.13">
+  <properties/>
+  <testcase name="aSettledClosedPairCertifiesWithALongHorizon()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.13">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;STEADY&gt; but was: &lt;REST&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;STEADY&gt; but was: &lt;REST&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at app//com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest.aSettledClosedPairCertifiesWithALongHorizon(IslandCertificateTest.java:176)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[REPLAYJOB solve retained=26d10f2e solver=10ad20cb hint=0.05 node0=1
+REPLAYTRACE begin solver=10ad20cb duration=5.0 start=1.0 transfers=0 pipes=1 workspaces=0 structures=0 previousFlows=0 previousModes=0 carriedFlows=false cold=true n1:P=41024f8000000000,T=4072a26666666666,n=404e447fcf3c9e9c,U=c1026425707eb731 n5:P=4102304000000000,T=4072a26666666666,n=404e10d232e5c4c2,U=c102449f4623a584
+REPLAYTRACE attempt t=0.0 step=1.0 stepBits=3ff0000000000000 ok=true change=0.003346317652934434 iterations=4 passes=1 preconditioned=false n1:P=41023feb24cf05ab,T=40729dde1d77f17b n5:P=41023fd4cf8640ee,T=4072a6f0e0de285f
+REPLAYTRACE attempt t=1.0 step=2.0 stepBits=4000000000000000 ok=true change=9.332761106016082E-6 iterations=4 passes=1 preconditioned=true n1:P=41023fdffb5a46b4,T=40729ddadc4f93bf n5:P=41023fdff8f714ac,T=4072a6f41fa1a7f1
+REPLAYTRACE attempt t=3.0 step=2.0 stepBits=4000000000000000 ok=true change=3.935920911464737E-9 iterations=2 passes=1 preconditioned=true n1:P=41023fdffa25c649,T=40729ddadbfc3b5c n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4
+REPLAYTRACE end accepted=3 rejected=0 next=8.0 n1:P=41023fdffa25c649,T=40729ddadbfc3b5c,n=404e320ea5eceec9,U=c102640f5da58d29 n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4,n=404e23435c357495,U=c10244b558fccf8c
+REPLAYJOB solve retained=26d10f2e solver=10ad20cb hint=8.0 node0=1
+REPLAYTRACE begin solver=10ad20cb duration=5.0 start=1.0 transfers=0 pipes=1 workspaces=2 structures=1 previousFlows=0 previousModes=1 carriedFlows=false cold=false n1:P=41023fdffa25c649,T=40729ddadbfc3b5c,n=404e320ea5eceec9,U=c102640f5da58d29 n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4,n=404e23435c357495,U=c10244b558fccf8c
+REPLAYTRACE attempt t=0.0 step=1.0 stepBits=3ff0000000000000 ok=true change=0.0 iterations=0 passes=1 preconditioned=false n1:P=41023fdffa25c649,T=40729ddadbfc3b5c n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4
+REPLAYTRACE attempt t=1.0 step=2.0 stepBits=4000000000000000 ok=true change=0.0 iterations=0 passes=1 preconditioned=false n1:P=41023fdffa25c649,T=40729ddadbfc3b5c n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4
+REPLAYTRACE attempt t=3.0 step=2.0 stepBits=4000000000000000 ok=true change=0.0 iterations=0 passes=1 preconditioned=false n1:P=41023fdffa25c649,T=40729ddadbfc3b5c n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4
+REPLAYTRACE end accepted=3 rejected=0 next=8.0 n1:P=41023fdffa25c649,T=40729ddadbfc3b5c,n=404e320ea5eceec9,U=c102640f5da58d29 n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4,n=404e23435c357495,U=c10244b558fccf8c
+REPLAYJOB solve retained=26d10f2e solver=10ad20cb hint=8.0 node0=1
+REPLAYTRACE begin solver=10ad20cb duration=5.0 start=1.0 transfers=0 pipes=1 workspaces=2 structures=1 previousFlows=0 previousModes=1 carriedFlows=false cold=false n1:P=41023fdffa25c649,T=40729ddadbfc3b5c,n=404e320ea5eceec9,U=c102640f5da58d29 n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4,n=404e23435c357495,U=c10244b558fccf8c
+REPLAYTRACE attempt t=0.0 step=1.0 stepBits=3ff0000000000000 ok=true change=0.0 iterations=0 passes=1 preconditioned=false n1:P=41023fdffa25c649,T=40729ddadbfc3b5c n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4
+REPLAYTRACE attempt t=1.0 step=2.0 stepBits=4000000000000000 ok=true change=0.0 iterations=0 passes=1 preconditioned=false n1:P=41023fdffa25c649,T=40729ddadbfc3b5c n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4
+REPLAYTRACE attempt t=3.0 step=2.0 stepBits=4000000000000000 ok=true change=0.0 iterations=0 passes=1 preconditioned=false n1:P=41023fdffa25c649,T=40729ddadbfc3b5c n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4
+REPLAYTRACE end accepted=3 rejected=0 next=8.0 n1:P=41023fdffa25c649,T=40729ddadbfc3b5c,n=404e320ea5eceec9,U=c102640f5da58d29 n5:P=41023fdffa2b8fd2,T=4072a6f41ff4afc4,n=404e23435c357495,U=c10244b558fccf8c
+closed pair: certified at tick 300 Optional[Certified[REST, since 300, base 300, horizon 9223372036854775807, largest flow 0.0]] refusal=null
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

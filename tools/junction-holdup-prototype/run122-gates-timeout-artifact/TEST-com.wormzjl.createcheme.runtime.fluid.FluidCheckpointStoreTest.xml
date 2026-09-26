@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-26T05:01:13.807Z" hostname="WORMZ-PC" time="1.187">
+  <properties/>
+  <testcase name="tenThousandIslandsSaveAndLoadThroughTheIndex()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest" time="0.455"/>
+  <testcase name="theFirstSaveAfterALoadEncodesNothingThatDidNotChange()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest" time="0.035"/>
+  <testcase name="aCrashBetweenAPackAndItsCoreRecordLeavesThePreviousCheckpointAndAnOrphanTheLoadDeletes()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest" time="0.076"/>
+  <testcase name="aHalfWrittenDamagedOrMissingPackRefusesTheWorldAndLeavesEveryFileAsItWas()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest" time="0.049"/>
+  <testcase name="aCommitWhosePredecessorFailedIsNotWrittenAndTheNextSaveWritesEverythingAfresh()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest" time="0.039"/>
+  <testcase name="clocksMaterialFencesPendingEventsModulesCertificatesAndHeldIslandsRoundTripThroughTheFiles()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest" time="0.025"/>
+  <testcase name="unitsOfRemovedOrReplacedIslandsAreDroppedAndTheirPacksCompactedAndDeleted()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest" time="0.427"/>
+  <testcase name="aSaveWritesOnlyTheUnitsOfIslandsThatChanged()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest" time="0.03"/>
+  <testcase name="aSaveLargerThanOnePackSpansSeveralAndReadsBack()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest" time="0.025"/>
+  <system-out><![CDATA[10000 islands: cold save capture 7.9 ms, encode 49.8 ms, write 45.9 ms (2430000 unit bytes, pack 2430479 bytes, core 1378100 bytes); warm save capture 6.8 ms, encode 39.4 ms, write 25.3 ms; load 77.5 ms; register 28.6 ms; first save after load capture 8.6 ms, encode 27.3 ms, write 26.8 ms; core file 401629 bytes, pack files 2430479 bytes
+[13:01:14] [junit-timeout-thread-82/ERROR] [co.wo.cr.CreateChemE/]: fluid_checkpoint status=WRITE_FAILED sequence=2 detail=the previous save stays in force; the next save writes every unit afresh
+java.io.IOException: injected: crash before the core record's rename
+	at com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest$Failing.writeCore(FluidCheckpointStoreTest.java:166) ~[test/:?] {}
+	at com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStore.write(FluidCheckpointStore.java:272) ~[main/:?] {}
+	at com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStore.commit(FluidCheckpointStore.java:252) ~[main/:?] {}
+	at com.wormzjl.createcheme.runtime.fluid.FluidSavedData.save(FluidSavedData.java:102) ~[main/:?] {}
+	at com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest.lambda$aCrashBetweenAPackAndItsCoreRecordLeavesThePreviousCheckpointAndAnOrphanTheLoadDeletes$14(FluidCheckpointStoreTest.java:280) ~[test/:?] {}
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:53) ~[junit-jupiter-api-5.11.4.jar:5.11.4] {}
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:39) ~[junit-jupiter-api-5.11.4.jar:5.11.4] {}
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3153) ~[junit-jupiter-api-5.11.4.jar:5.11.4] {}
+	at com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest.aCrashBetweenAPackAndItsCoreRecordLeavesThePreviousCheckpointAndAnOrphanTheLoadDeletes(FluidCheckpointStoreTest.java:280) ~[test/:?] {}
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[?:?] {}
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[?:?] {}
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:767) ~[junit-platform-commons-1.11.4.jar:1.11.4] {}
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.11.4.jar:5.11.4] {}
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.11.4.jar:5.11.4] {}
+	at org.junit.jupiter.api.AssertTimeoutPreemptively.lambda$submitTask$3(AssertTimeoutPreemptively.java:95) ~[junit-jupiter-api-5.11.4.jar:5.11.4] {}
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317) ~[?:?] {}
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[?:?] {}
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[?:?] {}
+	at java.base/java.lang.Thread.run(Thread.java:1583) [?:?] {}
+[13:01:14] [junit-timeout-thread-86/ERROR] [co.wo.cr.CreateChemE/]: fluid_checkpoint status=WRITE_FAILED sequence=2 detail=the previous save stays in force; the next save writes every unit afresh
+java.io.IOException: injected: the pack write failed
+	at com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest$Failing.writePack(FluidCheckpointStoreTest.java:165) ~[test/:?] {}
+	at com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStore.write(FluidCheckpointStore.java:271) ~[main/:?] {}
+	at com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStore.lambda$submit$3(FluidCheckpointStore.java:256) ~[main/:?] {}
+	at com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStoreTest.aCommitWhosePredecessorFailedIsNotWrittenAndTheNextSaveWritesEverythingAfresh(FluidCheckpointStoreTest.java:310) ~[test/:?] {}
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[?:?] {}
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[?:?] {}
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:767) ~[junit-platform-commons-1.11.4.jar:1.11.4] {}
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.11.4.jar:5.11.4] {}
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.11.4.jar:5.11.4] {}
+	at org.junit.jupiter.api.AssertTimeoutPreemptively.lambda$submitTask$3(AssertTimeoutPreemptively.java:95) ~[junit-jupiter-api-5.11.4.jar:5.11.4] {}
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317) ~[?:?] {}
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[?:?] {}
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[?:?] {}
+	at java.base/java.lang.Thread.run(Thread.java:1583) [?:?] {}
+[13:01:14] [junit-timeout-thread-86/ERROR] [co.wo.cr.CreateChemE/]: fluid_checkpoint status=NOT_WRITTEN sequence=3 detail=the save it builds on (2) was not written; the next save writes every unit afresh
+pack files on disk at most: 17
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

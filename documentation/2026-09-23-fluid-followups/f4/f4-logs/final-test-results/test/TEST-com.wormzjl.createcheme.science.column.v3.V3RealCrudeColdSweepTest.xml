@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3RealCrudeColdSweepTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:32.597Z" hostname="WORMZ-PC" time="0.365">
+  <properties/>
+  <testcase name="v1ScaleRealCrudeColdMatrixReportsInitialResidualsAndBoundedOutcomes()" classname="com.wormzjl.createcheme.science.column.v3.V3RealCrudeColdSweepTest" time="0.365"/>
+  <system-out><![CDATA[V3 real-crude cold matrix
+two_stage stages=2 initial(material=4.884013234939748E-16,equilibrium=16.7383805216678,energy=1.8461416126938013) SUCCESS iter=0 residual=1.7763568394002505E-14 elapsed_ms=6
+four_stage stages=4 initial(material=4.884013234939748E-16,equilibrium=18.110750268454538,energy=0.9269288509478639) SUCCESS iter=1 residual=1.0658141036401503E-14 elapsed_ms=15
+eight_stage stages=8 initial(material=4.884013234939748E-16,equilibrium=19.0190416153987,energy=0.6874377367202739) SUCCESS iter=1 residual=1.2434497875801753E-14 elapsed_ms=34
+fifteen_stage stages=15 initial(material=4.884013234939748E-16,equilibrium=19.98885682009825,energy=0.6388118390995629) SUCCESS iter=0 residual=1.4147431158819325E-14 elapsed_ms=84
+v1_default_thirty_stage stages=30 initial(material=4.884013234939748E-16,equilibrium=19.57982424130959,energy=0.6224148360006105) SUCCESS iter=0 residual=2.829486231763865E-14 elapsed_ms=204
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,5 @@
+This distribution includes EJML 0.44.0 (ejml-core, ejml-ddense, ejml-dsparse).
+EJML is distributed under the Apache License, Version 2.0.
+Project: https://github.com/lessthanoptimal/ejml
+License text: ejml-Apache-2.0.txt in this directory.
+No EJML source files have been modified.

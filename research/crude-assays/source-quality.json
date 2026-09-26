@@ -1,0 +1,1065 @@
+{
+  "schema_version": 1,
+  "units": "kg/kg of source cut or whole crude, as labeled",
+  "missing": "null means not reported; printed zeros retained as reported zeros, not detection limits",
+  "cut_start_celsius": [
+    null,
+    65,
+    100,
+    150,
+    200,
+    250,
+    300,
+    350,
+    370,
+    450,
+    500,
+    550
+  ],
+  "cut_end_celsius": [
+    65,
+    100,
+    150,
+    200,
+    250,
+    300,
+    350,
+    370,
+    450,
+    500,
+    550,
+    null
+  ],
+  "sources": [
+    {
+      "id": "wti_light",
+      "reference": "WTLEX26Y",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/wti_light.pdf",
+      "pdf_sha256": "96ea254f6666fb85b3b12d050ed34f04a6f74187dd5b7c1efc51990c11b65c9c",
+      "fields": {
+        "H": {
+          "whole_reported_mass_fraction": 0.14400000000000002,
+          "cuts_reported_mass_fraction": [
+            0.166,
+            0.152,
+            0.141,
+            0.14400000000000002,
+            0.14300000000000002,
+            0.141,
+            0.14,
+            0.138,
+            0.136,
+            0.136,
+            0.136,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "S": {
+          "whole_reported_mass_fraction": 0.0007000000000000001,
+          "cuts_reported_mass_fraction": [
+            3e-05,
+            3e-05,
+            7.000000000000001e-05,
+            0.00017999999999999998,
+            0.00019,
+            0.00027,
+            0.00096,
+            0.00145,
+            0.00134,
+            0.0016300000000000002,
+            0.00244,
+            0.00437
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.0022
+        },
+        "N": {
+          "whole_reported_mass_fraction": 0.000113,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            1e-06,
+            4e-06,
+            3.6e-05,
+            9.3e-05,
+            0.000186,
+            0.00035299999999999996,
+            0.00048499999999999997,
+            0.001199
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.000477
+        },
+        "Ni": {
+          "whole_reported_mass_fraction": 1e-07,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            1.6e-06
+          ],
+          "residue_370_plus_reported_mass_fraction": 3e-07
+        },
+        "V": {
+          "whole_reported_mass_fraction": 1e-07,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            2.4999999999999998e-06
+          ],
+          "residue_370_plus_reported_mass_fraction": 5e-07
+        },
+        "Fe": {
+          "whole_reported_mass_fraction": 1e-06,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            1.78e-05
+          ],
+          "residue_370_plus_reported_mass_fraction": 3.7e-06
+        },
+        "Na": {
+          "whole_reported_mass_fraction": 1e-07,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "Hg": {
+          "whole_reported_mass_fraction": 1e-09,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "As": {
+          "whole_reported_mass_fraction": 5e-09,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "c7_asphaltenes": {
+          "whole_reported_mass_fraction": 0.0,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            0.006999999999999999
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.001
+        },
+        "micro_carbon_residue": {
+          "whole_reported_mass_fraction": 0.001,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.001,
+            0.024
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.005
+        }
+      }
+    },
+    {
+      "id": "upper_zakum",
+      "reference": "UPZAK26B",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/upper_zakum.pdf",
+      "pdf_sha256": "bf6be49db1d61e5279e4b04ac3e40635d5b02190101b34270fa51d53142e71ea",
+      "fields": {
+        "H": {
+          "whole_reported_mass_fraction": 0.132,
+          "cuts_reported_mass_fraction": [
+            0.166,
+            0.157,
+            0.14300000000000002,
+            0.142,
+            0.139,
+            0.135,
+            0.131,
+            0.127,
+            0.12400000000000001,
+            0.121,
+            0.11800000000000001,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "S": {
+          "whole_reported_mass_fraction": 0.0209,
+          "cuts_reported_mass_fraction": [
+            0.00012,
+            0.00029,
+            0.00046,
+            0.00099,
+            0.00248,
+            0.0074,
+            0.0143,
+            0.018600000000000002,
+            0.022799999999999997,
+            0.029500000000000002,
+            0.0361,
+            0.0546
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.0394
+        },
+        "N": {
+          "whole_reported_mass_fraction": 0.000873,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            7e-06,
+            0.000107,
+            0.000306,
+            0.000652,
+            0.001119,
+            0.0014789999999999998,
+            0.0030039999999999997
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.001854
+        },
+        "Ni": {
+          "whole_reported_mass_fraction": 1.01e-05,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            5.09e-05
+          ],
+          "residue_370_plus_reported_mass_fraction": 2.2e-05
+        },
+        "V": {
+          "whole_reported_mass_fraction": 1.12e-05,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            5.61e-05
+          ],
+          "residue_370_plus_reported_mass_fraction": 2.43e-05
+        },
+        "Fe": {
+          "whole_reported_mass_fraction": 3e-07,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            1.4e-06
+          ],
+          "residue_370_plus_reported_mass_fraction": 6e-07
+        },
+        "Na": {
+          "whole_reported_mass_fraction": 8e-07,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "Hg": {
+          "whole_reported_mass_fraction": 1e-09,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "As": {
+          "whole_reported_mass_fraction": 5e-09,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "c7_asphaltenes": {
+          "whole_reported_mass_fraction": 0.017,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            0.086
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.037000000000000005
+        },
+        "micro_carbon_residue": {
+          "whole_reported_mass_fraction": 0.051,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.001,
+            0.016,
+            0.25
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.111
+        }
+      }
+    },
+    {
+      "id": "bonga",
+      "reference": "BONGA25Y",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2025/bonga.pdf",
+      "pdf_sha256": "0ee57146598b561ee885c67959173f6f3f630443a7bcc1dc0bab22b30dcdecd7",
+      "fields": {
+        "H": {
+          "whole_reported_mass_fraction": 0.126,
+          "cuts_reported_mass_fraction": [
+            0.165,
+            0.14800000000000002,
+            0.13699999999999998,
+            0.13699999999999998,
+            0.13,
+            0.129,
+            0.12400000000000001,
+            0.121,
+            0.11800000000000001,
+            0.115,
+            0.11800000000000001,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "S": {
+          "whole_reported_mass_fraction": 0.0026000000000000003,
+          "cuts_reported_mass_fraction": [
+            0.0,
+            2e-05,
+            0.00010999999999999999,
+            0.00037,
+            0.0008500000000000001,
+            0.00179,
+            0.0027900000000000004,
+            0.0032,
+            0.0032700000000000003,
+            0.00417,
+            0.005200000000000001,
+            0.0068000000000000005
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.00453
+        },
+        "N": {
+          "whole_reported_mass_fraction": 0.001462,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            2.1e-05,
+            6.9e-05,
+            0.000232,
+            0.00049,
+            0.0012699999999999999,
+            0.0028,
+            0.00417,
+            0.008532999999999999
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.003653
+        },
+        "Ni": {
+          "whole_reported_mass_fraction": 3.5e-06,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            3.9899999999999994e-05
+          ],
+          "residue_370_plus_reported_mass_fraction": 9.3e-06
+        },
+        "V": {
+          "whole_reported_mass_fraction": 3e-07,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            3.7999999999999996e-06
+          ],
+          "residue_370_plus_reported_mass_fraction": 9e-07
+        },
+        "Fe": {
+          "whole_reported_mass_fraction": 7.4e-06,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            8.359999999999999e-05
+          ],
+          "residue_370_plus_reported_mass_fraction": 1.95e-05
+        },
+        "Na": {
+          "whole_reported_mass_fraction": 4e-07,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "Hg": {
+          "whole_reported_mass_fraction": 1e-09,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "As": {
+          "whole_reported_mass_fraction": 2.1300000000000001e-07,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "c7_asphaltenes": {
+          "whole_reported_mass_fraction": 0.0,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.0
+        },
+        "micro_carbon_residue": {
+          "whole_reported_mass_fraction": 0.013999999999999999,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.001,
+            0.018000000000000002,
+            0.147
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.037000000000000005
+        }
+      }
+    },
+    {
+      "id": "dalia",
+      "reference": "DALIA26Y",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/dalia.pdf",
+      "pdf_sha256": "02553213cde6cbb7dd0b4fea42029250485781dba2e2d39d092c5e5d6f8dfabc",
+      "fields": {
+        "H": {
+          "whole_reported_mass_fraction": 0.126,
+          "cuts_reported_mass_fraction": [
+            0.165,
+            0.149,
+            0.142,
+            0.139,
+            0.131,
+            0.13,
+            0.127,
+            0.12300000000000001,
+            0.12300000000000001,
+            0.122,
+            0.122,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "S": {
+          "whole_reported_mass_fraction": 0.005200000000000001,
+          "cuts_reported_mass_fraction": [
+            6e-05,
+            0.00010999999999999999,
+            0.0002,
+            0.00039,
+            0.00074,
+            0.00152,
+            0.0032600000000000003,
+            0.00437,
+            0.00498,
+            0.0059,
+            0.0069,
+            0.0094
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.0072
+        },
+        "N": {
+          "whole_reported_mass_fraction": 0.002338,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            3e-06,
+            1.8e-05,
+            8.999999999999999e-05,
+            0.000233,
+            0.00079,
+            0.001713,
+            0.0025139999999999997,
+            0.007124999999999999
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.003806
+        },
+        "Ni": {
+          "whole_reported_mass_fraction": 2.03e-05,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            8.04e-05
+          ],
+          "residue_370_plus_reported_mass_fraction": 3.34e-05
+        },
+        "V": {
+          "whole_reported_mass_fraction": 8.4e-06,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            3.34e-05
+          ],
+          "residue_370_plus_reported_mass_fraction": 1.38e-05
+        },
+        "Fe": {
+          "whole_reported_mass_fraction": 6.3e-06,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            2.49e-05
+          ],
+          "residue_370_plus_reported_mass_fraction": 1.03e-05
+        },
+        "Na": {
+          "whole_reported_mass_fraction": 1e-06,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "Hg": {
+          "whole_reported_mass_fraction": 1e-09,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "As": {
+          "whole_reported_mass_fraction": 1.35e-07,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "c7_asphaltenes": {
+          "whole_reported_mass_fraction": 0.006999999999999999,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            0.027000000000000003
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.011000000000000001
+        },
+        "micro_carbon_residue": {
+          "whole_reported_mass_fraction": 0.048,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.003,
+            0.017,
+            0.18300000000000002
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.078
+        }
+      }
+    },
+    {
+      "id": "cold_lake_blend",
+      "reference": "CLKBL23B",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2024/cold_lake_blend.pdf",
+      "pdf_sha256": "b15cf7217f38cfde936d27cc3848133b43e602d2db65174f2cb672f14e7921f1",
+      "fields": {
+        "H": {
+          "whole_reported_mass_fraction": 0.121,
+          "cuts_reported_mass_fraction": [
+            0.166,
+            0.153,
+            0.138,
+            0.142,
+            0.133,
+            0.129,
+            0.122,
+            0.11599999999999999,
+            0.11599999999999999,
+            0.11599999999999999,
+            0.115,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "S": {
+          "whole_reported_mass_fraction": 0.038700000000000005,
+          "cuts_reported_mass_fraction": [
+            0.00024,
+            0.00026,
+            0.0008100000000000001,
+            0.00344,
+            0.0079,
+            0.0139,
+            0.021800000000000003,
+            0.0278,
+            0.031400000000000004,
+            0.0347,
+            0.041299999999999996,
+            0.0674
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.0526
+        },
+        "N": {
+          "whole_reported_mass_fraction": 0.003062,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            1.7e-05,
+            4.2e-05,
+            0.000127,
+            0.000309,
+            0.0010379999999999999,
+            0.002071,
+            0.0026379999999999997,
+            0.006918
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.0045579999999999996
+        },
+        "Ni": {
+          "whole_reported_mass_fraction": 5.5799999999999994e-05,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            0.0001538
+          ],
+          "residue_370_plus_reported_mass_fraction": 8.359999999999999e-05
+        },
+        "V": {
+          "whole_reported_mass_fraction": 0.00014519999999999998,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            0.0004006
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.00021769999999999998
+        },
+        "Fe": {
+          "whole_reported_mass_fraction": 8.8e-06,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            2.4399999999999997e-05
+          ],
+          "residue_370_plus_reported_mass_fraction": 1.33e-05
+        },
+        "Na": {
+          "whole_reported_mass_fraction": 4.8e-06,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "Hg": {
+          "whole_reported_mass_fraction": 9.800000000000002e-09,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "As": {
+          "whole_reported_mass_fraction": 1.34e-07,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "residue_370_plus_reported_mass_fraction": null
+        },
+        "c7_asphaltenes": {
+          "whole_reported_mass_fraction": 0.099,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.0,
+            0.0,
+            0.272
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.14800000000000002
+        },
+        "micro_carbon_residue": {
+          "whole_reported_mass_fraction": 0.107,
+          "cuts_reported_mass_fraction": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0.004,
+            0.028999999999999998,
+            0.287
+          ],
+          "residue_370_plus_reported_mass_fraction": 0.16
+        }
+      }
+    }
+  ]
+}

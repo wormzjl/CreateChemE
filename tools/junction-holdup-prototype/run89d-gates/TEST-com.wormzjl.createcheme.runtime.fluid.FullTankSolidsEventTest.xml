@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FullTankSolidsEventTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-25T15:50:10.378Z" hostname="WORMZ-PC" time="0.483">
+  <properties/>
+  <testcase name="theFilterCapturesOnceTheDrainedTankLetsTheLineFlow()" classname="com.wormzjl.createcheme.runtime.fluid.FullTankSolidsEventTest" time="0.483">
+    <failure message="org.opentest4j.AssertionFailedError: and reach its capacity ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: and reach its capacity ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.FullTankSolidsEventTest.theFilterCapturesOnceTheDrainedTankLetsTheLineFlow(FullTankSolidsEventTest.java:240)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=1.8055061828369783 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.9049409331845457 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.4536518828245044 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.22737603017840324 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.11390611651094236 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.05702758647218483 transitions=0
+BETRACE t=0.0 step=0.11307487170367686 ok=false change=0.02186441212118054 transitions=0
+BETRACE t=0.0 step=0.33994839229529944 ok=false change=0.031039030713487473 transitions=0
+BETRACE t=0.0 step=0.33967236899145486 ok=false change=0.02315724774862861 transitions=0
+BETRACE t=0.0 step=0.3970671754612084 ok=false change=0.023331733223050967 transitions=0
+BECOLD rate seed applied
+BECOLD rate seed applied
+BETRACE t=0.05 step=0.04893267120498765 ok=true change=0.016197578834114355 transitions=1 e2:PASSIVE->VELOCITY_LIMITED
+BETRACE t=3.8490274237865525 step=0.12649066408002257 ok=true change=0.015588511480693672 transitions=1 e2:VELOCITY_LIMITED->PASSIVE
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.25183955255675516 ok=true change=0.006274413518410599 transitions=3 e0:CLOSED->PASSIVE e1:CLOSED->PASSIVE e3:CLOSED->PASSIVE
+BETRACE t=1.6374878000363533 step=0.4483061469262655 ok=false change=0.020007811432786873 transitions=0
+BECOLD rate seed applied
+BETRACE t=0.0 step=5.0 ok=true change=0.0017556570205959892 transitions=3 e0:PASSIVE->CLOSED e1:PASSIVE->CLOSED e3:PASSIVE->CLOSED
+BETRACE t=2.5 step=2.5 ok=true change=2.5169554118694584E-9 transitions=1 e2:PASSIVE->CLOSED
+(iii) OK 40 intervals (tank drawn down through a void)
+  node[0] id=1 GENERATOR P=400000.0 mass=1071.4906085273121 solidKg=125.0 storedSolidKg=125.0
+  node[1] id=3 JUNCTION P=399543.2637536587 mass=1071.490603202038 solidKg=124.99999467472553 storedSolidKg=1.1410750933146612
+  node[2] id=5 RESERVOIR P=101324.99974406752 mass=510.59521101924435 solidKg=0.0 storedSolidKg=0.0
+  node[3] id=7 VOID P=101325.0 mass=1.145353086183201 solidKg=0.0 storedSolidKg=0.0
+  node[4] id=-3 JUNCTION P=101887.84012222747 mass=946.4906085273125 solidKg=0.0 storedSolidKg=0.0
+  pipe 0->1 plain
+  pipe 4->2 plain
+  pipe 2->3 plain
+  pipe 1->4 filter captured=24.999999999975003
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

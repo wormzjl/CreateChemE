@@ -1,0 +1,25 @@
+# Riva M., Stringari P. (2018). Experimental study of the influence of nitrogen and oxygen on the solubility of solid
+# carbon dioxide in liquid and vapor methane at low temperature. Ind. Eng. Chem. Res. 57(11), 4124-4131.
+# DOI 10.1021/acs.iecr.7b05224 (HAL cites the authors as Stringari, Riva; the manuscript byline is Riva, Stringari).
+# Source copy: HAL hal-01855741 (author manuscript, HAL deposit licence), raw/stringari-riva-2018-iecr-hal-01855741.pdf
+# (sha256 415ea160f575c418de8419af8d6f2f8cf17b4a819bbb8cc71943ebcfc0910599). Table 4, manuscript p.18 (PDF page 19);
+# global loads from Table 3, p.16-17: series 1 N2 0.4 / CH4 0.58 / CO2 0.02; series 2 0.19 / 0.79 / 0.02;
+# series 3 N2 0.31 / O2 0.09 / CH4 0.58 / CO2 0.02; series 4 0.15 / 0.04 / 0.79 / 0.02 (mol/mol).
+# SLVE (solid CO2 + liquid + vapour) of N2(1)-O2(2)-CH4(3)-CO2(4); N2 is not printed (by difference).
+# Units: T in K, p in MPa, x2, x3, y2, y3 mole fraction, x4 and y4 (CO2) in ppm (mol). U = expanded uncertainty,
+# coverage factor 2, as printed. Text p.10: U(T) = 0.2 K and U(p) = 0.003 MPa (k = 2). '-' = not applicable (no O2).
+# Digits verbatim, checked against a 150 dpi render of the page. Transcribed 2026-09-25 (batch
+# 2026-09-24-coolprop-low-temperature, P5/G5 holdout; ternary/quaternary, outside the pilot's binary CH4 + CO2 core).
+N	T_K	p_MPa	x2_O2	U_x2	x3_CH4	U_x3	x4_CO2_ppm	U_x4_ppm	y2_O2	U_y2	y3_CH4	U_y3	y4_CO2_ppm	U_y4_ppm
+1.1	145.9	2.04	-	-	0.763	0.008	6909	900	-	-	0.387	0.012	470	26
+1.2	132.1	1.36	-	-	0.734	0.010	1632	331	-	-	0.264	0.009	48	15
+1.3	124.9	0.77	-	-	0.705	0.010	749	59	-	-	0.205	0.008	16	8
+2.1	145.8	1.12	-	-	0.885	0.005	5722	736	-	-	0.558	0.011	572	22
+2.2	132.1	0.77	-	-	0.902	0.004	1185	148	-	-	0.470	0.012	51	12
+2.3	124.5	0.52	-	-	0.919	0.004	532	39	-	-	0.444	0.012	15	5
+3.1	146.1	2.11	0.070	0.004	0.743	0.005	6948	78	0.119	0.006	0.385	0.006	1542	28
+3.2	132.4	1.35	0.083	0.006	0.704	0.012	1709	48	0.129	0.004	0.268	0.004	209	4
+3.3	125	0.96	0.084	0.006	0.708	0.007	367	27	0.133	0.005	0.227	0.004	46	9
+4.1	146.5	1.39	0.027	0.006	0.891	0.007	6547	217	0.072	0.006	0.599	0.013	1392	41
+4.2	132.5	0.84	0.032	0.010	0.884	0.013	1544	90	0.088	0.004	0.468	0.006	185	5
+4.3	125.1	0.58	0.033	0.005	0.880	0.006	356	27	0.091	0.003	0.414	0.003	35	2

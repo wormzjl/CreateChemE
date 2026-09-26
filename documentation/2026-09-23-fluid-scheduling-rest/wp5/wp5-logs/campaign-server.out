@@ -1,0 +1,57 @@
+2026-09-23T12:45:54.403Z gate ok {"endfield":0,"freeMiB":25787} for srv-empty-base-r01
+2026-09-23T12:45:54.405Z start srv-empty-base-r01 (server base empty warmup 60 s window 60 s)
+2026-09-23T12:48:23.497Z end srv-empty-base-r01 status=0
+2026-09-23T12:48:23.704Z analyzed srv-empty-base-r01
+2026-09-23T12:48:24.181Z gate ok {"endfield":0,"freeMiB":25964} for srv-empty-wp5-r01
+2026-09-23T12:48:24.182Z start srv-empty-wp5-r01 (server wp5 empty warmup 60 s window 60 s)
+2026-09-23T12:50:52.233Z end srv-empty-wp5-r01 status=0
+2026-09-23T12:50:52.433Z analyzed srv-empty-wp5-r01
+2026-09-23T12:50:52.905Z gate ok {"endfield":0,"freeMiB":25932} for srv-rest100-wp5-r01
+2026-09-23T12:50:52.906Z start srv-rest100-wp5-r01 (server wp5 rest100 warmup 60 s window 60 s)
+2026-09-23T12:53:21.267Z end srv-rest100-wp5-r01 status=0
+2026-09-23T12:53:21.463Z analyzed srv-rest100-wp5-r01
+2026-09-23T12:53:21.935Z gate ok {"endfield":0,"freeMiB":25969} for srv-rest100-base-r01
+2026-09-23T12:53:21.936Z start srv-rest100-base-r01 (server base rest100 warmup 60 s window 60 s)
+2026-09-23T12:55:50.211Z end srv-rest100-base-r01 status=0
+2026-09-23T12:55:50.432Z analyzed srv-rest100-base-r01
+2026-09-23T12:55:50.914Z gate ok {"endfield":0,"freeMiB":26007} for srv-through100-base-r01
+2026-09-23T12:55:50.915Z start srv-through100-base-r01 (server base through100 warmup 60 s window 60 s)
+2026-09-23T12:58:18.836Z end srv-through100-base-r01 status=0
+2026-09-23T12:58:19.058Z analyzed srv-through100-base-r01
+2026-09-23T12:58:19.525Z gate ok {"endfield":0,"freeMiB":26140} for srv-through100-wp5-r01
+2026-09-23T12:58:19.525Z start srv-through100-wp5-r01 (server wp5 through100 warmup 60 s window 60 s)
+2026-09-23T13:00:47.769Z end srv-through100-wp5-r01 status=0
+2026-09-23T13:00:47.995Z analyzed srv-through100-wp5-r01
+2026-09-23T13:00:48.467Z gate ok {"endfield":0,"freeMiB":26132} for srv-fill100-wp5-r01
+2026-09-23T13:00:48.468Z start srv-fill100-wp5-r01 (server wp5 fill100 warmup 60 s window 60 s)
+2026-09-23T13:03:17.077Z end srv-fill100-wp5-r01 status=0
+2026-09-23T13:03:17.576Z analyzed srv-fill100-wp5-r01
+2026-09-23T13:03:18.020Z gate ok {"endfield":0,"freeMiB":26159} for srv-fill100-base-r01
+2026-09-23T13:03:18.020Z start srv-fill100-base-r01 (server base fill100 warmup 60 s window 60 s)
+2026-09-23T13:05:47.307Z end srv-fill100-base-r01 status=0
+2026-09-23T13:05:47.809Z analyzed srv-fill100-base-r01
+2026-09-23T13:05:48.250Z gate ok {"endfield":0,"freeMiB":26128} for srv-mixed100-base-r01
+2026-09-23T13:05:48.251Z start srv-mixed100-base-r01 (server base mixed100 warmup 60 s window 60 s)
+2026-09-23T13:08:17.525Z end srv-mixed100-base-r01 status=0
+2026-09-23T13:08:17.963Z analyzed srv-mixed100-base-r01
+2026-09-23T13:08:18.414Z gate ok {"endfield":0,"freeMiB":27019} for srv-mixed100-wp5-r01
+2026-09-23T13:08:18.415Z start srv-mixed100-wp5-r01 (server wp5 mixed100 warmup 60 s window 60 s)
+2026-09-23T13:10:47.172Z end srv-mixed100-wp5-r01 status=0
+2026-09-23T13:10:47.633Z analyzed srv-mixed100-wp5-r01
+2026-09-23T13:10:48.070Z gate ok {"endfield":0,"freeMiB":26964} for srv-rest1000-wp5-r01
+2026-09-23T13:10:48.071Z start srv-rest1000-wp5-r01 (server wp5 rest1000 warmup 60 s window 60 s)
+2026-09-23T13:14:14.889Z end srv-rest1000-wp5-r01 status=0
+2026-09-23T13:14:15.068Z analyzed srv-rest1000-wp5-r01
+2026-09-23T13:14:15.508Z gate ok {"endfield":0,"freeMiB":27002} for srv-rest1000-base-r01
+2026-09-23T13:14:15.508Z start srv-rest1000-base-r01 (server base rest1000 warmup 60 s window 60 s)
+2026-09-23T13:17:43.478Z end srv-rest1000-base-r01 status=0
+2026-09-23T13:17:43.696Z analyzed srv-rest1000-base-r01
+2026-09-23T13:17:44.137Z gate ok {"endfield":0,"freeMiB":27097} for srv-pure100-base-r01
+2026-09-23T13:17:44.138Z start srv-pure100-base-r01 (server base pure100 warmup 60 s window 60 s)
+2026-09-23T13:20:12.777Z end srv-pure100-base-r01 status=0
+2026-09-23T13:20:12.983Z analyzed srv-pure100-base-r01
+2026-09-23T13:20:13.420Z gate ok {"endfield":0,"freeMiB":27379} for srv-pure100-wp5-r01
+2026-09-23T13:20:13.421Z start srv-pure100-wp5-r01 (server wp5 pure100 warmup 60 s window 60 s)
+2026-09-23T13:22:42.010Z end srv-pure100-wp5-r01 status=0
+2026-09-23T13:22:42.204Z analyzed srv-pure100-wp5-r01
+2026-09-23T13:22:42.204Z campaign done

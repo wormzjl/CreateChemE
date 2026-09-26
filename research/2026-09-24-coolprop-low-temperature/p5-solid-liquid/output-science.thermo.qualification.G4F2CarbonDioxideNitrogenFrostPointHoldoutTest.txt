@@ -1,0 +1,148 @@
+===== science.thermo.qualification.G4F2CarbonDioxideNitrogenFrostPointHoldoutTest.xml tests="1" skipped="0" failures="0" errors="0"
+dataset | T K | P kPa | y_CO2 | origin | onset T K | onset - measured K | partial-pressure T - measured K
+Sonntag 1960 | 140 | 506.6 | 0.00042 |  | 139.642 | -0.358 | +0.625
+Sonntag 1960 | 140 | 1013.3 | 0.00024 |  | 139.430 | -0.570 | +1.464
+Sonntag 1960 | 140 | 2026.5 | 0.00018 |  | 139.690 | -0.310 | +4.075
+Sonntag 1960 | 140 | 3039.8 | 0.00019 |  | 139.944 | -0.056 | +7.159
+Sonntag 1960 | 140 | 4053.0 | 0.00025 |  | 140.332 | +0.332 | +11.126
+Sonntag 1960 | 140 | 5066.3 | 0.00043 |  | 141.991 | +1.991 | +16.902
+Sonntag 1960 | 140 | 6079.5 | 0.00078 |  | 144.924 | +4.924 | +23.268 | dense carrier (SINGLE_FLUID, ESTIMATED_DECLARED_ERROR)
+Sonntag 1960 | 140 | 7092.8 | 0.00112 |  | 145.900 | +5.900 | +27.799 | dense carrier (SINGLE_FLUID, RESEARCH_ONLY)
+Sonntag 1960 | 140 | 8106.0 | 0.00139 |  | 145.829 | +5.829 | +31.021 | dense carrier (SINGLE_FLUID, RESEARCH_ONLY)
+Sonntag 1960 | 140 | 9119.3 | 0.00158 |  | 145.334 | +5.334 | +33.367 | dense carrier (SINGLE_FLUID, RESEARCH_ONLY)
+Sonntag 1960 | 150 | 506.6 | 0.00192 |  | 149.865 | -0.135 | +0.830
+Sonntag 1960 | 150 | 1013.3 | 0.00107 |  | 149.636 | -0.364 | +1.618
+Sonntag 1960 | 150 | 2026.5 | 0.00069 |  | 149.302 | -0.698 | +3.501
+Sonntag 1960 | 150 | 3039.8 | 0.00064 |  | 149.305 | -0.695 | +6.019
+Sonntag 1960 | 150 | 4053.0 | 0.00071 |  | 149.519 | -0.481 | +9.119
+Sonntag 1960 | 150 | 5066.3 | 0.00094 |  | 150.522 | +0.522 | +13.304
+Sonntag 1960 | 150 | 6079.5 | 0.00128 |  | 151.445 | +1.445 | +17.613
+Sonntag 1960 | 150 | 7092.8 | 0.00172 |  | 152.294 | +2.294 | +21.772 | dense carrier (SINGLE_FLUID, ESTIMATED_DECLARED_ERROR)
+Sonntag 1960 | 150 | 8106.0 | 0.00222 | avg of 2 runs (footnote **) | 153.074 | +3.074 | +25.546 | dense carrier (SINGLE_FLUID, ESTIMATED_DECLARED_ERROR)
+Sonntag 1960 | 150 | 9119.3 | 0.00270 |  | 153.551 | +3.551 | +28.719 | dense carrier (SINGLE_FLUID, ESTIMATED_DECLARED_ERROR)
+Sonntag 1960 | 150 | 10132.5 | 0.00304 |  | out of domain (above 10 MPa)
+Sonntag 1960 | 160 | 506.6 | 0.00699 |  | 159.868 | -0.132 | +0.816
+Sonntag 1960 | 160 | 1013.3 | 0.00395 |  | 159.897 | -0.103 | +1.834
+Sonntag 1960 | 160 | 2026.5 | 0.00251 |  | 159.824 | -0.176 | +3.869
+Sonntag 1960 | 160 | 3039.8 | 0.00217 |  | 159.789 | -0.211 | +6.136
+Sonntag 1960 | 160 | 4053.0 | 0.00217 |  | 159.860 | -0.140 | +8.724
+Sonntag 1960 | 160 | 5066.3 | 0.00243 |  | 160.289 | +0.289 | +11.859
+Sonntag 1960 | 160 | 6079.5 | 0.00280 |  | 160.543 | +0.543 | +14.996
+Sonntag 1960 | 160 | 7092.8 | 0.00332 | avg of 2 runs (footnote *) | 160.870 | +0.870 | +18.260
+Sonntag 1960 | 160 | 8106.0 | 0.00393 |  | 161.152 | +1.152 | +21.416 | dense carrier (SINGLE_FLUID, ESTIMATED_DECLARED_ERROR)
+Sonntag 1960 | 160 | 9119.3 | 0.00461 |  | 161.469 | +1.469 | +24.415 | dense carrier (SINGLE_FLUID, ESTIMATED_DECLARED_ERROR)
+Sonntag 1960 | 160 | 10132.5 | 0.00536 |  | out of domain (above 10 MPa)
+Sonntag 1960 | 170 | 506.6 | 0.02200 |  | 169.993 | -0.007 | +0.919
+Sonntag 1960 | 170 | 1013.3 | 0.01210 |  | 169.926 | -0.074 | +1.819
+Sonntag 1960 | 170 | 2026.5 | 0.00735 |  | 169.764 | -0.236 | +3.689
+Sonntag 1960 | 170 | 3039.8 | 0.00608 |  | 169.718 | -0.282 | +5.812
+Sonntag 1960 | 170 | 4053.0 | 0.00572 |  | 169.697 | -0.303 | +8.100
+Sonntag 1960 | 170 | 5066.3 | 0.00580 |  | 169.711 | -0.289 | +10.561
+Sonntag 1960 | 170 | 6079.5 | 0.00618 |  | 169.781 | -0.219 | +13.188
+Sonntag 1960 | 170 | 7092.8 | 0.00685 |  | 170.013 | +0.013 | +16.020
+Sonntag 1960 | 170 | 8106.0 | 0.00760 |  | 170.095 | +0.095 | +18.716
+Sonntag 1960 | 170 | 9119.3 | 0.00860 |  | 170.414 | +0.414 | +21.539 | dense carrier (SINGLE_FLUID, ESTIMATED_DECLARED_ERROR)
+Sonntag 1960 | 170 | 10132.5 | 0.00968 |  | out of domain (above 10 MPa)
+Sonntag 1960 | 180 | 506.6 | 0.05950 |  | 179.937 | -0.063 | +0.830
+Sonntag 1960 | 180 | 1013.3 | 0.03250 |  | 179.927 | -0.073 | +1.769
+Sonntag 1960 | 180 | 2026.5 | 0.01900 |  | 179.639 | -0.361 | +3.454
+Sonntag 1960 | 180 | 3039.8 | 0.01510 |  | 179.497 | -0.503 | +5.386
+Sonntag 1960 | 180 | 4053.0 | 0.01370 |  | 179.466 | -0.534 | +7.527
+Sonntag 1960 | 180 | 5066.3 | 0.01330 |  | 179.428 | -0.572 | +9.754
+Sonntag 1960 | 180 | 6079.5 | 0.01350 |  | 179.413 | -0.587 | +12.080
+Sonntag 1960 | 180 | 7092.8 | 0.01410 |  | 179.411 | -0.589 | +14.468
+Sonntag 1960 | 180 | 8106.0 | 0.01500 |  | 179.429 | -0.571 | +16.886
+Sonntag 1960 | 180 | 9119.3 | 0.01610 |  | 179.446 | -0.554 | +19.274
+Sonntag 1960 | 180 | 10132.5 | 0.01760 |  | out of domain (above 10 MPa)
+Sonntag 1960 | 190 | 1013.3 | 0.07780 |  | 189.833 | -0.167 | +1.600
+Sonntag 1960 | 190 | 2026.5 | 0.04550 |  | 189.789 | -0.211 | +3.479
+Sonntag 1960 | 190 | 3039.8 | 0.03540 |  | 189.677 | -0.323 | +5.367
+Sonntag 1960 | 190 | 4053.0 | 0.03110 |  | 189.574 | -0.426 | +7.338
+Sonntag 1960 | 190 | 5066.3 | 0.02930 |  | 189.512 | -0.488 | +9.415
+Sonntag 1960 | 190 | 6079.5 | 0.02900 |  | 189.552 | -0.448 | +11.645
+Sonntag 1960 | 190 | 7092.8 | 0.02930 |  | 189.496 | -0.504 | +13.819
+Sonntag 1960 | 190 | 8106.0 | 0.03030 |  | 189.508 | -0.492 | +16.072
+Sonntag 1960 | 190 | 9119.3 | 0.03200 |  | 189.662 | -0.338 | +18.441
+Sonntag 1960 | 190 | 10132.5 | 0.03400 |  | out of domain (above 10 MPa)
+Smith 1963 | 140 | 8106.0 | 0.00132 | smith | 144.996 | +4.996 | +30.537 | dense carrier (SINGLE_FLUID, RESEARCH_ONLY)
+Smith 1963 | 140 | 9119.3 | 0.00148 | smith | 144.337 | +4.337 | +32.737 | dense carrier (SINGLE_FLUID, RESEARCH_ONLY)
+Smith 1963 | 140 | 10132.5 | 0.00162 | smith | out of domain (above 10 MPa)
+Smith 1963 | 140 | 11145.8 | 0.00173 | smith | out of domain (above 10 MPa)
+Smith 1963 | 140 | 12159.0 | 0.00183 | smith | out of domain (above 10 MPa)
+Smith 1963 | 140 | 13172.3 | 0.00192 | smith | out of domain (above 10 MPa)
+Smith 1963 | 140 | 14185.5 | 0.00200 | smith | out of domain (above 10 MPa)
+Smith 1963 | 140 | 15198.8 | 0.00208 | smith | out of domain (above 10 MPa)
+Smith 1963 | 140 | 16212.0 | 0.00215 | smith | out of domain (above 10 MPa)
+Smith 1963 | 140 | 17225.3 | 0.00221 | smith | out of domain (above 10 MPa)
+Smith 1963 | 140 | 18238.5 | 0.00227 | smith | out of domain (above 10 MPa)
+Smith 1963 | 140 | 19251.8 | 0.00232 | smith | out of domain (above 10 MPa)
+Smith 1963 | 140 | 20265.0 | 0.00236 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 8106.0 | 0.00219 | smith | 152.873 | +2.873 | +25.411 | dense carrier (SINGLE_FLUID, ESTIMATED_DECLARED_ERROR)
+Smith 1963 | 150 | 9119.3 | 0.00259 | smith | 152.920 | +2.920 | +28.291 | dense carrier (SINGLE_FLUID, ESTIMATED_DECLARED_ERROR)
+Smith 1963 | 150 | 10132.5 | 0.00295 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 11145.8 | 0.00325 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 12159.0 | 0.00348 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 13172.3 | 0.00370 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 14185.5 | 0.00388 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 15198.8 | 0.00405 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 16212.0 | 0.00420 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 17225.3 | 0.00434 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 18238.5 | 0.00447 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 19251.8 | 0.00458 | smith | out of domain (above 10 MPa)
+Smith 1963 | 150 | 20265.0 | 0.00468 | smith | out of domain (above 10 MPa)
+Smith 1963 | 160 | 11145.8 | 0.00595 | smith | out of domain (above 10 MPa)
+Smith 1963 | 160 | 12159.0 | 0.00650 | smith | out of domain (above 10 MPa)
+Smith 1963 | 160 | 13172.3 | 0.00698 | smith | out of domain (above 10 MPa)
+Smith 1963 | 160 | 14185.5 | 0.00741 | smith | out of domain (above 10 MPa)
+Smith 1963 | 160 | 15198.8 | 0.00784 | smith | out of domain (above 10 MPa)
+Smith 1963 | 160 | 16212.0 | 0.00821 | smith | out of domain (above 10 MPa)
+Smith 1963 | 160 | 17225.3 | 0.00856 | smith | out of domain (above 10 MPa)
+Smith 1963 | 160 | 18238.5 | 0.00885 | smith | out of domain (above 10 MPa)
+Smith 1963 | 160 | 19251.8 | 0.00912 | smith | out of domain (above 10 MPa)
+Smith 1963 | 160 | 20265.0 | 0.00937 | smith | out of domain (above 10 MPa)
+Smith 1963 | 170 | 11145.8 | 0.01060 | smith | out of domain (above 10 MPa)
+Smith 1963 | 170 | 12159.0 | 0.01150 | smith | out of domain (above 10 MPa)
+Smith 1963 | 170 | 13172.3 | 0.01230 | smith | out of domain (above 10 MPa)
+Smith 1963 | 170 | 14185.5 | 0.01310 | smith | out of domain (above 10 MPa)
+Smith 1963 | 170 | 15198.8 | 0.01380 | smith | out of domain (above 10 MPa)
+Smith 1963 | 170 | 16212.0 | 0.01460 | smith | out of domain (above 10 MPa)
+Smith 1963 | 170 | 17225.3 | 0.01520 | smith | out of domain (above 10 MPa)
+Smith 1963 | 170 | 18238.5 | 0.01580 | smith | out of domain (above 10 MPa)
+Smith 1963 | 170 | 19251.8 | 0.01630 | smith | out of domain (above 10 MPa)
+Smith 1963 | 170 | 20265.0 | 0.01680 | smith | out of domain (above 10 MPa)
+Smith 1963 | 180 | 11145.8 | 0.01900 | smith | out of domain (above 10 MPa)
+Smith 1963 | 180 | 12159.0 | 0.02050 | smith | out of domain (above 10 MPa)
+Smith 1963 | 180 | 13172.3 | 0.02210 | smith | out of domain (above 10 MPa)
+Smith 1963 | 180 | 14185.5 | 0.02360 | smith | out of domain (above 10 MPa)
+Smith 1963 | 180 | 15198.8 | 0.02510 | smith | out of domain (above 10 MPa)
+Smith 1963 | 180 | 16212.0 | 0.02670 | smith | out of domain (above 10 MPa)
+Smith 1963 | 180 | 17225.3 | 0.02820 | smith | out of domain (above 10 MPa)
+Smith 1963 | 180 | 18238.5 | 0.02950 | smith | out of domain (above 10 MPa)
+Smith 1963 | 180 | 19251.8 | 0.03060 | smith_avg | out of domain (above 10 MPa)
+Smith 1963 | 180 | 20265.0 | 0.03150 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 6079.5 | 0.02850 | smith | 189.312 | -0.688 | +11.417
+Smith 1963 | 190 | 8106.0 | 0.02930 | smith_avg | 189.015 | -0.985 | +15.616
+Smith 1963 | 190 | 10132.5 | 0.03240 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 11145.8 | 0.03470 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 12159.0 | 0.03750 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 13172.3 | 0.04000 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 14185.5 | 0.04250 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 15198.8 | 0.04480 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 16212.0 | 0.04700 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 17225.3 | 0.04900 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 18238.5 | 0.05100 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 19251.8 | 0.05300 | smith | out of domain (above 10 MPa)
+Smith 1963 | 190 | 20265.0 | 0.05480 | smith | out of domain (above 10 MPa)
+dataset | scored | holds | above 10 MPa | failures | MAD K | bias K | max K | P0 target K | partial-pressure MAD K | max K
+Sonntag 1960 | 49 | 0 | 5 | 0 | 0.403 | -0.154 | 1.991 | 1.5 | 8.516 | 19.274
+  Sonntag 1960 isotherm 140 K: 6 points, MAD 0.603 K, bias +0.171 K
+  Sonntag 1960 isotherm 150 K: 7 points, MAD 0.620 K, bias -0.058 K
+  Sonntag 1960 isotherm 160 K: 8 points, MAD 0.308 K, bias +0.117 K
+  Sonntag 1960 isotherm 170 K: 9 points, MAD 0.169 K, bias -0.145 K
+  Sonntag 1960 isotherm 180 K: 10 points, MAD 0.441 K, bias -0.441 K
+  Sonntag 1960 isotherm 190 K: 9 points, MAD 0.377 K, bias -0.377 K
+Smith 1963 | 2 | 0 | 63 | 0 | 0.836 | -0.836 | 0.985 | 1.5 | 13.517 | 15.616
+  Smith 1963 isotherm 190 K: 2 points, MAD 0.836 K, bias -0.836 K
+CO2 + N2 pooled: 51 scored, 0 holds, 68 above 10 MPa, 0 failures; MAD 0.420 K, bias -0.181 K, max 1.991 K (P0 target 1.5 K); partial-pressure MAD 8.712 K, max 19.274 K
+dense carrier (P5, P4's holds): 14 points, MAD 3.505 K, bias +3.505 K, max 5.900 K; all 65 scored points: MAD 1.084 K
+

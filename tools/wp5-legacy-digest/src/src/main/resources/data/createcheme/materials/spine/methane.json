@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:spine_methane",
+  "component": "Methane",
+  "revision": "spine-methane-r1",
+  "source": "P2 reference spine (batch 2026-09-24-coolprop-low-temperature, decision D6): CoolProp alpha0 from the triple point to 375 K (join at the smallest Cp step on a 25 K grid, 0.0021 %), NASA CEA above; ATcT 1.220 formation enthalpy; CEA standard entropy. Built by tools/spine-join-measurement/build-spine-records.mjs.",
+  "molar_mass_kg_per_mol": 0.0160428,
+  "formation_enthalpy": {
+    "value_j_per_mol": -74513,
+    "uncertainty_j_per_mol": 43,
+    "temperature_kelvin": 298.15,
+    "source": "ATcT 1.220 (74-82-8*0) as carried in CoolProp master 9b35f538 INFO.STANDARD_STATE"
+  },
+  "standard_entropy": {
+    "value_j_per_mol_kelvin": 186.3702,
+    "pressure_pascal": 100000,
+    "source": "NASA CEA thermo.inp CH4 (g 8/99) polynomial at 298.15 K and 1e5 Pa with R = 8.314472; CEA states no uncertainty, the uncertainty given is |CEA - JANAF| with JANAF C-067 S(298.15) = 186.251 (Chase 1998), a disagreement estimate",
+    "uncertainty_j_per_mol_kelvin": 0.1192
+  },
+  "ideal_gas": {
+    "maximum_cp_step_fraction": 0.005,
+    "segments": [
+      {
+        "type": "helmholtz_ideal_terms",
+        "temperature_min_kelvin": 90.6941,
+        "temperature_max_kelvin": 375,
+        "source": "CoolProp Methane.json EOS[0].alpha0 (revision ae81610e, MIT; Setzmann-JPCRD-1991); lead and enthalpy-entropy offset terms omitted (constants only)",
+        "revision": "coolprop-ae81610e-methane-alpha0",
+        "gas_constant_j_per_mol_kelvin": 8.31451,
+        "reducing_temperature_kelvin": 190.564,
+        "terms": [
+          {
+            "type": "log_tau",
+            "a": 3.0016
+          },
+          {
+            "type": "planck_einstein_function_t",
+            "n": [
+              0.008449,
+              4.6942,
+              3.4865,
+              1.6572,
+              1.4115
+            ],
+            "v": [
+              648,
+              1957,
+              3895,
+              5705,
+              15080
+            ],
+            "critical_temperature_kelvin": 190.564
+          }
+        ]
+      },
+      {
+        "type": "nasa9",
+        "temperature_min_kelvin": 375,
+        "temperature_max_kelvin": 1000,
+        "source": "NASA CEA thermo.inp (github.com/nasa/cea 3f4441d2, Apache-2.0; McBride, Zehe and Gordon 2002, NASA/TP-2002-211556), CH4 record g 8/99 (Gurvich,1991 pt1 p44 pt2 p36.), interval 200..1000 K; coefficients a1..a7, b1, b2 as printed, b1 and b2 not used",
+        "revision": "cea-3f4441d2-methane-200-1000",
+        "gas_constant_j_per_mol_kelvin": 8.314472,
+        "coefficients": [
+          -176685.0998,
+          2786.18102,
+          -12.0257785,
+          0.0391761929,
+          -0.0000361905443,
+          2.026853043e-8,
+          -4.97670549e-12,
+          -23313.1436,
+          89.0432275
+        ]
+      },
+      {
+        "type": "nasa9",
+        "temperature_min_kelvin": 1000,
+        "temperature_max_kelvin": 6000,
+        "source": "NASA CEA thermo.inp (github.com/nasa/cea 3f4441d2, Apache-2.0; McBride, Zehe and Gordon 2002, NASA/TP-2002-211556), CH4 record g 8/99 (Gurvich,1991 pt1 p44 pt2 p36.), interval 1000..6000 K; coefficients a1..a7, b1, b2 as printed, b1 and b2 not used",
+        "revision": "cea-3f4441d2-methane-1000-6000",
+        "gas_constant_j_per_mol_kelvin": 8.314472,
+        "coefficients": [
+          3730042.76,
+          -13835.01485,
+          20.49107091,
+          -0.001961974759,
+          4.72731304e-7,
+          -3.72881469e-11,
+          1.623737207e-15,
+          75320.6691,
+          -121.9124889
+        ]
+      }
+    ]
+  },
+  "groups": {
+    "scheme": "eppr78-2022",
+    "counts": {
+      "CH4": 1
+    }
+  },
+  "coverage": {
+    "grade": "estimated_declared_error",
+    "evidence": "P2 ReferenceSpineTest: CoolProp segment equal to the Java Helmholtz oracle (Setzmann and Wagner 1991 alpha0) to 1e-9; CEA (Gurvich 1991) is 2.6 to 3.5 % above JANAF C-067 at 1000 to 1200 K, the open methane reference disagreement of P0 section 2.4 (declared error, not the D7 0.2 % target)"
+  }
+}

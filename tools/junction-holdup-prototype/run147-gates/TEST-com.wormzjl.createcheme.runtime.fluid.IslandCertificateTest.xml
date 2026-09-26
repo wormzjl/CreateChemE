@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-26T08:20:06.575Z" hostname="WORMZ-PC" time="0.318">
+  <properties/>
+  <testcase name="aCertifiedIslandReplaysItsJunctionHoldupsExactly()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.318">
+    <failure message="org.opentest4j.AssertionFailedError: junction 4 moles: base + f * delta, bit for bit ==&gt; array contents differ at index [0], expected: &lt;0.2974844358796288&gt; but was: &lt;0.29748137807410596&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: junction 4 moles: base + f * delta, bit for bit ==&gt; array contents differ at index [0], expected: &lt;0.2974844358796288&gt; but was: &lt;0.29748137807410596&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertArrayEquals.failArraysNotEqual(AssertArrayEquals.java:440)
+	at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:323)
+	at app//org.junit.jupiter.api.AssertArrayEquals.assertArrayEquals(AssertArrayEquals.java:147)
+	at app//org.junit.jupiter.api.Assertions.assertArrayEquals(Assertions.java:1432)
+	at app//com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest.aCertifiedIslandReplaysItsJunctionHoldupsExactly(IslandCertificateTest.java:370)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[junction replay: certified at tick 10700 Certified[drift 4.462869572243965E-6, since 10700, base 10700, horizon 11200, largest flow 0.20318609563324733], 1 junctions, largest junction component change 1.2231222091263483E-6 mol per interval
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

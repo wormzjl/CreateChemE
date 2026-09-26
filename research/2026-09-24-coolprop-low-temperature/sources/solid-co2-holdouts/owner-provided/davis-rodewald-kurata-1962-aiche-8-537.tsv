@@ -1,0 +1,89 @@
+# Davis J.A., Rodewald N., Kurata F. (1962). Solid-Liquid-Vapor Phase Behavior of the Methane-Carbon Dioxide System.
+# AIChE J. 8(4), 537-539. doi:10.1002/aic.690080423. Wiley copyright, owner-provided.
+# Local copy: davis-rodewald-kurata-1962-aiche-8-537.pdf (sha256 31bc668615e9bb6855087810655d6222283ec7658366ae460d7ed11b53afab30).
+# Table 1 (p. 537) read from a 200 dpi render; Tables 2 and 3 (p. 538) and 4 (p. 539) from the text layer, checked
+# against a 110 dpi page render.
+# System: CH4 + CO2 along the solid-liquid-vapour (SLV) locus; solid = CO2 ("the solid is essentially pure carbon dioxide":
+# melting point of the solid equals that of pure CO2, per Donnelly and Katz, quoted p. 539).
+# Units as printed: T in deg F, p in lb/sq in abs (psia), compositions in mole % CO2. T_K and p_MPa are derived here
+# (T_K = (F - 32)/1.8 + 273.15; p_MPa = psia x 0.00689476), not printed.
+# block SLV_PT  = Table 1, "Pressure-temperature relationship, solid-liquid-vapor locus", 31 points, -78.6 to -284.1 F
+#                 (211.7 to 97.5 K), 470 psia with a maximum of 706 psia at -90.3 F, down to 4.1 psia. No compositions.
+# block SLV_N2  = Table 2, "S-L-V loci ... compared with ... 0.56 mole % nitrogen in methane": value = S-L-V pressure with N2,
+#                 extra = S-L-V pressure for CH4-CO2 (smoothed), both psia; 8 temperatures. Not binary data for the N2 column.
+# block SLV_Y   = Table 3, "Composition of vapor phase along solid-liquid-vapor locus": mole % CO2 in the vapour at 8
+#                 temperatures (-206.0 to -89.4 F), gas-density analysis above 1 % CO2 (2 to 4 samples), mass spectrometer below.
+#                 Pressure not printed: take it from SLV_PT at the same T.
+# block SLV_X   = Table 4, "Composition of liquid phase along solid-liquid-vapor locus": crystal points (first solid on
+#                 cooling a liquid of known composition) of 11 mixtures, 0.16 to 20.50 mole % CO2, -226.3 to -97.4 F.
+#                 Pressure not printed (bubble-point liquid on the SLV locus: take it from SLV_PT at the same T).
+# Uncertainty (p. 538): bath controlled within 0.02 C, platinum thermometer precision 0.01 C; Bourdon gauge within 1 psi;
+# SLV pressure "accurate to +-2 lb./sq. in." at a given temperature (N2 impurity; CH4 99.72 % with 0.28 % N2, CO2 99.9 %,
+# partly distilled off). Crystal points: upper and lower temperatures agreed within 0.1 to 0.3 C (0.4 to 0.8 C below
+# 0.5 % CO2); initial supercooling about 1 C.
+# The compilations' counts (42 in Riva 2016, 48 in Campestrini 2023) do not match 31 + 8 + 11 = 50 printed values;
+# the paper prints no other table.
+# Sanity check: SLV_PT pressure rises from 470 psia to a 706 psia maximum near -90 F and falls monotonically to 4.1 psia at
+# -284 F (0.028 MPa, near the pure-CH4 vapour pressure at 97.5 K); SLV_Y and SLV_X increase monotonically with T.
+# Digits as printed, one sanity check, not re-verified (owner: not looking for 100 % correct data).
+# Role: G5 anchor (three-phase line, binary liquid and vapour compositions). Transcribed 2026-09-25,
+# batch 2026-09-24-coolprop-low-temperature.
+block	T_F	T_K	value	unit	extra	extra_meaning	p_MPa_derived
+SLV_PT	-78.6	211.71	470	psia			3.2405
+SLV_PT	-85.1	208.09	655	psia			4.5161
+SLV_PT	-90.3	205.21	706	psia			4.8677
+SLV_PT	-97.4	201.26	699	psia			4.8194
+SLV_PT	-104.1	197.54	669	psia			4.6126
+SLV_PT	-108.6	195.04	630	psia			4.3437
+SLV_PT	-111.1	193.65	627	psia			4.3230
+SLV_PT	-120.5	188.43	562	psia			3.8749
+SLV_PT	-127.9	184.32	506	psia			3.4887
+SLV_PT	-135.1	180.32	454	psia			3.1302
+SLV_PT	-138.8	178.26	425	psia			2.9303
+SLV_PT	-140.9	177.09	413	psia			2.8475
+SLV_PT	-148.0	173.15	365	psia			2.5166
+SLV_PT	-152.3	170.76	338	psia			2.3304
+SLV_PT	-154.1	169.76	324	psia			2.2339
+SLV_PT	-160.3	166.32	290	psia			1.9995
+SLV_PT	-164.7	163.87	264	psia			1.8202
+SLV_PT	-169.6	161.15	236	psia			1.6272
+SLV_PT	-172.7	159.43	224	psia			1.5444
+SLV_PT	-186.3	151.87	165	psia			1.1376
+SLV_PT	-192.2	148.59	142	psia			0.9791
+SLV_PT	-200.6	143.93	115	psia			0.7929
+SLV_PT	-208.4	139.59	93	psia			0.6412
+SLV_PT	-221.4	132.37	63	psia			0.4344
+SLV_PT	-226.5	129.54	52	psia			0.3585
+SLV_PT	-232.8	126.04	44	psia			0.3034
+SLV_PT	-242.2	120.82	31	psia			0.2137
+SLV_PT	-249.9	116.54	22.5	psia			0.1551
+SLV_PT	-259.2	111.37	14.9	psia			0.1027
+SLV_PT	-269.8	105.48	8.9	psia			0.0614
+SLV_PT	-284.1	97.54	4.1	psia			0.0283
+SLV_N2	-95.0	202.59	709	psia	705	psia_CH4-CO2_smoothed	4.8884
+SLV_N2	-115.3	191.32	600	psia	593	psia_CH4-CO2_smoothed	4.1369
+SLV_N2	-130.9	182.65	485	psia	476	psia_CH4-CO2_smoothed	3.3440
+SLV_N2	-144.6	175.04	389	psia	384	psia_CH4-CO2_smoothed	2.6821
+SLV_N2	-158.3	167.43	305	psia	298	psia_CH4-CO2_smoothed	2.1029
+SLV_N2	-175.4	157.93	214	psia	209	psia_CH4-CO2_smoothed	1.4755
+SLV_N2	-203.7	142.21	109	psia	105	psia_CH4-CO2_smoothed	0.7515
+SLV_N2	-226.5	129.54	56	psia	52	psia_CH4-CO2_smoothed	0.3861
+SLV_Y	-206.0	140.93	0.12	mol%_CO2_vapour			
+SLV_Y	-161.6	165.59	0.63	mol%_CO2_vapour			
+SLV_Y	-143.1	175.87	1.08	mol%_CO2_vapour			
+SLV_Y	-140.0	177.59	1.72	mol%_CO2_vapour			
+SLV_Y	-128.5	183.98	2.79	mol%_CO2_vapour			
+SLV_Y	-120.0	188.71	3.67	mol%_CO2_vapour			
+SLV_Y	-111.1	193.65	5.65	mol%_CO2_vapour			
+SLV_Y	-89.4	205.71	11.73	mol%_CO2_vapour			
+SLV_X	-226.3	129.65	0.16	mol%_CO2_liquid			
+SLV_X	-216.3	135.21	0.25	mol%_CO2_liquid			
+SLV_X	-208.7	139.43	0.37	mol%_CO2_liquid			
+SLV_X	-199.5	144.54	0.58	mol%_CO2_liquid			
+SLV_X	-189.0	150.37	0.93	mol%_CO2_liquid			
+SLV_X	-168.0	162.04	1.83	mol%_CO2_liquid			
+SLV_X	-153.9	169.87	2.94	mol%_CO2_liquid			
+SLV_X	-131.8	182.15	5.85	mol%_CO2_liquid			
+SLV_X	-119.0	189.26	10.08	mol%_CO2_liquid			
+SLV_X	-105.2	196.93	15.39	mol%_CO2_liquid			
+SLV_X	-97.4	201.26	20.50	mol%_CO2_liquid			

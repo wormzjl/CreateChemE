@@ -1,0 +1,26 @@
+[
+  {
+    "component": "n-butane",
+    "translationCubicMetresPerMole": 4.930102583346991E-6,
+    "referenceCompressibility": 3.0531787347447567E-9,
+    "predictedCompressibility": 4.202929267692881E-9,
+    "relativeCompressionError": 0.37657491841670465,
+    "worstDensityRelativeError": 1.1549641556884982E-4
+  },
+  {
+    "component": "n-pentane",
+    "translationCubicMetresPerMole": 3.62658134493711E-6,
+    "referenceCompressibility": 2.132215287824303E-9,
+    "predictedCompressibility": 2.737193298182681E-9,
+    "relativeCompressionError": 0.28373214178371864,
+    "worstDensityRelativeError": 6.0749576975216435E-5
+  },
+  {
+    "component": "n-decane",
+    "translationCubicMetresPerMole": -1.602936674551165E-5,
+    "referenceCompressibility": 1.120848508585238E-9,
+    "predictedCompressibility": 1.2384736686325199E-9,
+    "relativeCompressionError": 0.10494295986149926,
+    "worstDensityRelativeError": 1.1849496998284081E-5
+  }
+]

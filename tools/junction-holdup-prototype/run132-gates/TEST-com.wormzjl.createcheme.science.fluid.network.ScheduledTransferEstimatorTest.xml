@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest" tests="2" skipped="0" failures="1" errors="0" timestamp="2026-09-26T07:45:00.617Z" hostname="WORMZ-PC" time="0.09">
+  <properties/>
+  <testcase name="changingGasCompositionAndWithdrawnEnergyMatchTighterStepDoubling()" classname="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest" time="0.027">
+    <failure message="org.opentest4j.AssertionFailedError: Boundary -2 component/energy 0 ==&gt; expected: &lt;-0.11970231114961034&gt; but was: &lt;-0.15990279295698018&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Boundary -2 component/energy 0 ==&gt; expected: &lt;-0.11970231114961034&gt; but was: &lt;-0.15990279295698018&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+	at app//com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest.compare(ScheduledTransferEstimatorTest.java:37)
+	at app//com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest.changingGasCompositionAndWithdrawnEnergyMatchTighterStepDoubling(ScheduledTransferEstimatorTest.java:16)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="wetCrudePipeAndSimultaneousModuleBoundariesMatchTighterStepDoubling()" classname="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferEstimatorTest" time="0.056"/>
+  <system-out><![CDATA[WP1MEASURE sched node 0 p=1.9267883371609784E-4 t=0.013056780871124829 m=1.9984014443252818E-15
+WP1MEASURE sched boundary -1 c=0 ref=5.0 act=5.0
+WP1MEASURE sched boundary -1 c=1 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=2 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=3 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=4 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=5 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=6 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=7 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=8 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=9 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=10 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=11 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=12 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=13 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=14 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=15 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=16 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=17 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=18 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=19 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=20 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=21 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=22 ref=3699.1087997117975 act=3699.1087997117825
+WP1MEASURE sched boundary -2 c=0 ref=-0.11970231114961034 act=-0.15990279295698018
+WP1MEASURE sched boundary -2 c=1 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=2 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=3 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=4 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=5 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=6 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=7 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=8 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=9 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=10 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=11 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=12 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=13 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=14 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=15 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=16 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=17 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=18 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=19 ref=-5.286028820589053 act=-5.263006685127466
+WP1MEASURE sched boundary -2 c=20 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=21 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=22 ref=-3318.9973311052186 act=-3319.8333649881224
+WP1MEASURE sched node 0 p=1.3136189980222923E-7 t=1.9981761738563364E-6 m=1.1338184424669606E-7
+WP1MEASURE sched node 1 p=1.273410953350762E-7 t=1.8016585840996413E-6 m=1.1356533669015789E-7
+WP1MEASURE sched boundary -1 c=0 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=1 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=2 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=3 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=4 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=5 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=6 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=7 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=8 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=9 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=10 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=11 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=12 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=13 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=14 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=15 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=16 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=17 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=18 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=19 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=20 ref=2.7754217530896006 act=2.7754217530895993
+WP1MEASURE sched boundary -1 c=21 ref=0.0 act=0.0
+WP1MEASURE sched boundary -1 c=22 ref=-112871.79818436728 act=-112871.79818436701
+WP1MEASURE sched boundary -2 c=0 ref=-0.0013507317718500845 act=-0.0013507313081363363
+WP1MEASURE sched boundary -2 c=1 ref=-3.217171720974637E-4 act=-3.21717061650165E-4
+WP1MEASURE sched boundary -2 c=2 ref=-0.002861368061932196 act=-0.0028613670796085876
+WP1MEASURE sched boundary -2 c=3 ref=-0.0017589177042217003 act=-0.0017589171003754428
+WP1MEASURE sched boundary -2 c=4 ref=-0.006013255878327743 act=-0.006013253813943476
+WP1MEASURE sched boundary -2 c=5 ref=-0.004493010488791409 act=-0.004493008946315852
+WP1MEASURE sched boundary -2 c=6 ref=-0.006633528816076531 act=-0.0066335265387491
+WP1MEASURE sched boundary -2 c=7 ref=-0.04492361727804004 act=-0.0449236018555117
+WP1MEASURE sched boundary -2 c=8 ref=-0.033268111566196606 act=-0.03326810014506841
+WP1MEASURE sched boundary -2 c=9 ref=-0.031809483527250694 act=-0.03180947260687763
+WP1MEASURE sched boundary -2 c=10 ref=-0.028281900657524377 act=-0.02828189094819015
+WP1MEASURE sched boundary -2 c=11 ref=-0.02350721519865519 act=-0.023507207128497132
+WP1MEASURE sched boundary -2 c=12 ref=-0.019819166602146526 act=-0.019819159798116118
+WP1MEASURE sched boundary -2 c=13 ref=-0.016625303995027114 act=-0.01662529828746753
+WP1MEASURE sched boundary -2 c=14 ref=-0.016362771229996253 act=-0.01636276561256566
+WP1MEASURE sched boundary -2 c=15 ref=-0.01784982728817214 act=-0.01784982116022689
+WP1MEASURE sched boundary -2 c=16 ref=-0.008016947701981286 act=-0.008016944949718434
+WP1MEASURE sched boundary -2 c=17 ref=-0.004052557960687743 act=-0.0040525565694220006
+WP1MEASURE sched boundary -2 c=18 ref=-0.0021969214710419863 act=-0.0021969207168265935
+WP1MEASURE sched boundary -2 c=19 ref=-0.02701463543700175 act=-0.02701462616272672
+WP1MEASURE sched boundary -2 c=20 ref=-0.054029999912783545 act=-0.05403112474529363
+WP1MEASURE sched boundary -2 c=21 ref=0.0 act=0.0
+WP1MEASURE sched boundary -2 c=22 ref=12384.953305015279 act=12385.015754117587
+WP1MEASURE sched flow 0 ref=0.009777657533348003 act=0.009778531482235111 steps=3/103
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-23T05:01:26.835Z" hostname="WORMZ-PC" time="1.404">
+  <properties/>
+  <testcase name="deadlineDrivenAdvanceMatchesThePolledHostAcrossABufferRemoval()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.208"/>
+  <testcase name="restartWithPartialFeedOrPendingProductsContinuesTheSamePhysicalTrajectory()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.461"/>
+  <testcase name="removedProductRetainsPendingMaterialOrModuleHoldupAndReleasesOtherIslands()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.051"/>
+  <testcase name="emptyCycleWithDifferentCadencesBootstrapsWithoutCircularProductionWait()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.028"/>
+  <testcase name="deadlineDrivenAdvanceReproducesThePolledCycleSequence()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.399"/>
+  <testcase name="removingAnUnusedZeroFractionOutletDoesNotStrandTheActiveProduct()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.038"/>
+  <testcase name="coupledHydraulicsAndFifteenSecondModulePreserveAllOwnersAtEveryCommit()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.091"/>
+  <testcase name="twoBufferedModulesRecycleActuallyOwnedMaterialWithoutSchedulingDeadlock()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.078"/>
+  <system-out><![CDATA[coupled: 27 publications, module scans 964 polled, 31 deadline-driven
+empty-cycle: 18 publications, module scans 946 polled, 28 deadline-driven
+recycle: 18 publications, module scans 946 polled, 28 deadline-driven
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

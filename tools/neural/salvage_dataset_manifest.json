@@ -1,0 +1,33 @@
+{
+  "N": 805,
+  "Nplus1": 906,
+  "archive": {
+    "bytes": 106762904,
+    "path": ".neural-cache/salvage-nplus1-v1/certified-campaign.zip",
+    "sha256": "e41c02d5f85b2cf4140d2d21bc9465e027905c57cea78a1c91192ade1207fa5b"
+  },
+  "certifiedDatasetManifest": {
+    "bytes": 3420,
+    "path": "build/neural-salvage/nplus1-v1/certified-dataset-manifest.json",
+    "sha256": "0f4cef8a593f2315e400f2d82faa1f80824b4c4faac5eb8f09ddbd364e63d61b"
+  },
+  "newTrain": 101,
+  "plan": {
+    "bytes": 41876,
+    "path": "build/neural-salvage/nplus1-v1/plan.json",
+    "sha256": "7e6cac9cc6128253d9495b7a007a9910ae1ef9bf495afa222b15d04f432e61bf"
+  },
+  "revision": "salvage-nplus1-certified-provenance-v1",
+  "trainingFiles": {
+    "N": {
+      "bytes": 47784788,
+      "path": "build/neural-salvage/nplus1-v1/N-cases.jsonl",
+      "sha256": "85c668f6162e2af819bda5110750fa5bb71a3769b4b813070cfe140e3eabbe62"
+    },
+    "Nplus1": {
+      "bytes": 52440890,
+      "path": "build/neural-salvage/nplus1-v1/Nplus1-certified-cases.jsonl",
+      "sha256": "1dc86a2590ad5da7f37d1735dc08abd3b38077b64628229cb014147d1a536a06"
+    }
+  }
+}

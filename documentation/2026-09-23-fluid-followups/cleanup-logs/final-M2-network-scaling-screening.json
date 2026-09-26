@@ -1,0 +1,65 @@
+[
+  {
+    "reservoirs": 2,
+    "compiledEdges": 1,
+    "components": 21,
+    "equations": 91,
+    "profile": "Unpaced 5 simulated seconds; wet TJL20 + nitrogen; 350 K; P\u003d150000+1000*cos(0.7*i) Pa; 100 m pipe runs",
+    "status": "CONVERGED",
+    "acceptedSubsteps": 30,
+    "rejectedSubsteps": 9,
+    "rejectionReasons": {
+      "Embedded pipe error #": 9
+    },
+    "integrator": "TR-BDF2 with filtered embedded 2(3) estimator; valve intervals use step doubling",
+    "firstCallMilliseconds": 143.0003,
+    "warmRepeatedMilliseconds": [
+      45.1331,
+      37.0233
+    ],
+    "wallMilliseconds": 225.1678,
+    "propertyRevision": "f5e0178e5b8b45b3a00139e25bc0b7b58a259f25eff86dd040eca08263bcdf10:fluid-shared-k-v1:fluid-domain-data-v1:cp-segments-v1:catalog-volume-reference-v1:k\u003d0x1.12e0be826d695p-30"
+  },
+  {
+    "reservoirs": 10,
+    "compiledEdges": 9,
+    "components": 21,
+    "equations": 459,
+    "profile": "Unpaced 5 simulated seconds; wet TJL20 + nitrogen; 350 K; P\u003d150000+1000*cos(0.7*i) Pa; 100 m pipe runs",
+    "status": "CONVERGED",
+    "acceptedSubsteps": 19,
+    "rejectedSubsteps": 14,
+    "rejectionReasons": {
+      "Embedded pipe error #": 14
+    },
+    "integrator": "TR-BDF2 with filtered embedded 2(3) estimator; valve intervals use step doubling",
+    "firstCallMilliseconds": 108.2493,
+    "warmRepeatedMilliseconds": [
+      80.759701,
+      65.5288
+    ],
+    "wallMilliseconds": 254.5417,
+    "propertyRevision": "f5e0178e5b8b45b3a00139e25bc0b7b58a259f25eff86dd040eca08263bcdf10:fluid-shared-k-v1:fluid-domain-data-v1:cp-segments-v1:catalog-volume-reference-v1:k\u003d0x1.12e0be826d695p-30"
+  },
+  {
+    "reservoirs": 100,
+    "compiledEdges": 99,
+    "components": 21,
+    "equations": 4599,
+    "profile": "Unpaced 5 simulated seconds; wet TJL20 + nitrogen; 350 K; P\u003d150000+1000*cos(0.7*i) Pa; 100 m pipe runs",
+    "status": "CONVERGED",
+    "acceptedSubsteps": 37,
+    "rejectedSubsteps": 3,
+    "rejectionReasons": {
+      "Embedded pipe error #": 3
+    },
+    "integrator": "TR-BDF2 with filtered embedded 2(3) estimator; valve intervals use step doubling",
+    "firstCallMilliseconds": 1042.713901,
+    "warmRepeatedMilliseconds": [
+      936.683301,
+      875.2514
+    ],
+    "wallMilliseconds": 2854.652001,
+    "propertyRevision": "f5e0178e5b8b45b3a00139e25bc0b7b58a259f25eff86dd040eca08263bcdf10:fluid-shared-k-v1:fluid-domain-data-v1:cp-segments-v1:catalog-volume-reference-v1:k\u003d0x1.12e0be826d695p-30"
+  }
+]

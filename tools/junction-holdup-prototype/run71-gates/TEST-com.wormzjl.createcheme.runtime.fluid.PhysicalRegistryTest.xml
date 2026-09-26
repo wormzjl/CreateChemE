@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-25T06:34:22.627Z" hostname="WORMZ-PC" time="0.669">
+  <properties/>
+  <testcase name="certifiedIslandsUntouchedByAnEventStayCertified()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" time="0.089"/>
+  <testcase name="mergesAndSplitsProduceTheRightIslandsAndRevisions()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" time="0.006"/>
+  <testcase name="placementCostIsFlatInWorldSize()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" time="0.446"/>
+  <testcase name="aTicksEventsApplyOnceInOrderAsOneBatch()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" time="0.036"/>
+  <testcase name="aHeldEventKeepsItsTickAndOrdersTheEventsThatDependOnIt()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" time="0.012"/>
+  <testcase name="removalAndEditFollowTheSamePath()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" time="0.016"/>
+  <testcase name="anEventTouchingOneIslandCompilesAndReplacesOnlyThatIsland()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" time="0.025"/>
+  <testcase name="anEventReachesAnIslandThroughAnOwnerlessBranch()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" time="0.006"/>
+  <system-out><![CDATA[one placement, median ms by world size: {500=0.0919, 2000=0.071, 5000=0.0511}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

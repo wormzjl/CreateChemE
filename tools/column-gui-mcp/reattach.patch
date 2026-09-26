@@ -1,0 +1,93 @@
+diff --git b/build.gradle a/build.gradle
+index dbd8b97..9a16d69 100644
+--- b/build.gradle
++++ a/build.gradle
+@@ -135,7 +135,7 @@ neoForge {
+             client()
+             sourceSet = sourceSets.mcpCompat
+             gameDirectory = layout.projectDirectory.dir('run/mcp-client')
+-            programArguments.addAll('--username', 'FluidMcpTester', '--width', '854', '--height', '480')
++            programArguments.addAll('--username', 'FluidMcpTester', '--width', '2560', '--height', '1440')
+             systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+         }
+ 
+diff --git b/src/mcpCompat/java/com/wormzjl/createcheme/mcpcompat/mixin/DragInputMixin.java a/src/mcpCompat/java/com/wormzjl/createcheme/mcpcompat/mixin/DragInputMixin.java
+new file mode 100644
+index 0000000..42bf1ac
+--- /dev/null
++++ a/src/mcpCompat/java/com/wormzjl/createcheme/mcpcompat/mixin/DragInputMixin.java
+@@ -0,0 +1,32 @@
++package com.wormzjl.createcheme.mcpcompat.mixin;
++
++import net.minecraft.client.Minecraft;
++import org.spongepowered.asm.mixin.Mixin;
++import org.spongepowered.asm.mixin.Pseudo;
++import org.spongepowered.asm.mixin.injection.At;
++import org.spongepowered.asm.mixin.injection.Inject;
++import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
++
++/** MCP 0.3.0 blocks the render thread during drags, preventing Minecraft's per-frame drag dispatch. */
++@Pseudo
++@Mixin(targets="xyz.langyo.minecraft.mcp.common.InputInjectionHelper",remap=false)
++public abstract class DragInputMixin {
++    @Inject(method="sendMouseDrag",at=@At("HEAD"),cancellable=true,remap=false)
++    private static void drag(long handle,int startX,int startY,int endX,int endY,int button,int steps,CallbackInfo result){
++        var client=Minecraft.getInstance();var screen=client.screen;
++        if(screen==null)return;
++        var window=client.getWindow();
++        double scaleX=(double)window.getGuiScaledWidth()/window.getWidth();
++        double scaleY=(double)window.getGuiScaledHeight()/window.getHeight();
++        double x=startX*scaleX,y=startY*scaleY;
++        screen.mouseClicked(x,y,button);
++        int count=Math.clamp(steps,1,256);
++        for(int i=1;i<=count;i++){
++            double nextX=(startX+(endX-startX)*(double)i/count)*scaleX;
++            double nextY=(startY+(endY-startY)*(double)i/count)*scaleY;
++            screen.mouseMoved(nextX,nextY);screen.mouseDragged(nextX,nextY,button,nextX-x,nextY-y);
++            x=nextX;y=nextY;
++        }
++        screen.mouseReleased(x,y,button);result.cancel();
++    }
++}
+diff --git b/src/mcpCompat/java/com/wormzjl/createcheme/mcpcompat/mixin/ScreenshotMixin.java a/src/mcpCompat/java/com/wormzjl/createcheme/mcpcompat/mixin/ScreenshotMixin.java
+new file mode 100644
+index 0000000..6368ef0
+--- /dev/null
++++ a/src/mcpCompat/java/com/wormzjl/createcheme/mcpcompat/mixin/ScreenshotMixin.java
+@@ -0,0 +1,24 @@
++package com.wormzjl.createcheme.mcpcompat.mixin;
++
++import net.minecraft.client.Minecraft;
++import net.minecraft.client.Screenshot;
++import org.spongepowered.asm.mixin.Mixin;
++import org.spongepowered.asm.mixin.Pseudo;
++import org.spongepowered.asm.mixin.injection.At;
++import org.spongepowered.asm.mixin.injection.Inject;
++import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
++import java.io.IOException;
++import java.io.UncheckedIOException;
++
++/** Captures the real framebuffer instead of MCP 0.3.0's cached 854 x 480 crop. */
++@Pseudo
++@Mixin(targets="xyz.langyo.minecraft.mcp.common.ScreenshotHelper",remap=false)
++public abstract class ScreenshotMixin {
++    @Inject(method="takeScreenshot",at=@At("HEAD"),cancellable=true,remap=false)
++    private static void capture(Object instance,int width,int height,CallbackInfoReturnable<byte[]> result){
++        if(!(instance instanceof Minecraft client))return;
++        try(var image=Screenshot.takeScreenshot(client.getMainRenderTarget())){
++            result.setReturnValue(image.asByteArray());
++        }catch(IOException e){throw new UncheckedIOException("Cannot encode MCP framebuffer",e);}
++    }
++}
+diff --git b/src/mcpCompat/resources/createcheme_mcp_compat.mixins.json a/src/mcpCompat/resources/createcheme_mcp_compat.mixins.json
+index 60850ff..1914044 100644
+--- b/src/mcpCompat/resources/createcheme_mcp_compat.mixins.json
++++ a/src/mcpCompat/resources/createcheme_mcp_compat.mixins.json
+@@ -3,6 +3,6 @@
+   "minVersion": "0.8",
+   "package": "com.wormzjl.createcheme.mcpcompat.mixin",
+   "compatibilityLevel": "JAVA_21",
+-  "client": ["ScreenInputMixin", "HotkeyMixin", "MinecraftInputInvoker"],
++  "client": ["ScreenInputMixin", "DragInputMixin", "ScreenshotMixin", "HotkeyMixin", "MinecraftInputInvoker"],
+   "injectors": {"defaultRequire": 1}
+ }

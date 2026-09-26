@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.MixedGasJunctionStaticTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-26T08:20:30.870Z" hostname="WORMZ-PC" time="0.537">
+  <properties/>
+  <testcase name="everyColdJunctionCaseConvergesAndClosesItsBalance()" classname="com.wormzjl.createcheme.runtime.fluid.MixedGasJunctionStaticTest" time="0.537"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

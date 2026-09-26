@@ -1,0 +1,1763 @@
+==== PAGE 1 ====
+Equation of State for Solid Phase I of Carbon Dioxide Valid for Temperatures
+up to 800 K and Pressures up to 12 GPa
+J. P . Martin Truslera)
+Department of Chemical Engineering, Imperial College London, South Kensington Campus, London SW7 2AZ, United Kingdom
+(Received 23 September 2011; accepted 8 November 2011; published online 30 December 2011)
+The available thermodynamic-property data for solid phase I of carbon dioxide (“dry
+ice”) are reviewed and used to determine the parameters of a new fundamental equation
+of state constructed in the form of a Helmholtz energy function with temperature and
+molar volume as the independent variables. The experimental data considered include the
+pressure, molar volume, and isobaric heat capacity along the sublimation curve, the
+melting-pressure curve, and molar volume in the compressed solid at temperatures
+from 295 to 764 K and pressures up to 12 GPa. The equation of state is based on
+the quasi-harmonic approximation, incorporating a Debye oscillator distribution for the
+vibrons, two discrete modes for the librons and a further three distinct modes for the
+internal vibrations of the CO2 molecule. A small anharmonic correction term is included,
+which is signiﬁcant mainly in the region of the triple point. The estimated relative
+uncertainty of molar volume at speciﬁed temperature and pressure calculated from the
+equation of state is 0.02% on the sublimation curve and 1.5% in the compressed solid;
+for isobaric heat capacity on the sublimation curve, the uncertainty varies from 5.0% to
+0.5% between 2 and 195 K. Auxiliary equations for the pressure and molar volume on
+the sublimation and melting curves are given. The equation of state is valid at tempera-
+tures from 0 to 800 K and at pressures from the solid–ﬂuid phase boundary to 12
+GPa. VC 2011 American Institute of Physics . [doi:10.1063/1.3664915]
+Key words: CO 2; compressibility; density; equation of state; expansivity; heat capacity; Helmholtz energy;
+melting curve; molar volume; solid carbon dioxide; sublimation curve.
+CONTENTS
+1. Introduction................................ 2
+2. Phase Diagram ............................. 2
+3. Previous Thermodynamic Models ............. 3
+4. Available Experimental Data . . ............... 3
+4.1. Data on the sublimation curve . . . ........ 3
+4.2. High-pressure data. . . ................... 5
+4.3. Adjustment and weighting of the data . . . . . 5
+4.4. Fluid equation of state . . . ............... 6
+5. Thermodynamic Modeling Basis .............. 8
+5.1. The quasi-harmonic approximation . . . . . . . 8
+5.2. Debye–Einstein approximation . . . ........ 8
+5.3. Gru¨neisen parameters ................... 9
+5.4. The cold curve ......................... 9
+5.5. External modes ........................ 9
+5.6. Internal modes ......................... 10
+5.7. Anharmonic corrections . . ............... 10
+6. Parameter Optimization. . . ................... 11
+6.1. Pre-fitting ............................. 11
+6.2. Global fit ............................. 12
+7. Comparison with Primary and Secondary Data . . . 12
+8. Uncertainty of the Equation of State . . . . . . . . . . 16
+9. Auxiliary Equations for the Melting and
+Sublimation Curves . . . . . .................... 16
+9.1. Melting and sublimation pressure . . . . . . . . . 16
+9.2. Molar volume on the melting and
+sublimation curves. . .................... 17
+10. Discussion . . . . . . . . . . . ..................... 17
+11. Conclusions. . . . . . . . . . ..................... 18
+Acknowledgments . . . . . .................... 19
+12. References. . . . . . . . . . . ..................... 19
+List of Tables
+1. Summary of single-phase data on the
+sublimation curve. . . . . . . .................... 4
+2. Summary of phase-change data on the
+sublimation curve. . . . . . . .................... 4
+3. Summary of high-pressure single-phase data. . . . 5
+4. Summary of phase-change data on the melting
+curve . . . . . . . . . . . . . . . . ..................... 6
+5. Parameters required for calculation of the
+statistical entropy of the perfect gas . . . . . . . . . . . 7
+6. Parameters of the new equation of state. . . . . . . . 10
+a)Electronic mail: m.trusler@imperial.ac.uk..
+VC 2011 American Institute of Physics.
+0047-2689/2011/40(4)/043105/19/$47.00 J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011043105-1
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 2 ====
+1. Introduction
+Carbon dioxide is a very common and well-studied sub-
+stance. On earth, it is found in the atmosphere, oceans, upper
+mantle, and crust, and has profound effects in each. CO 2 is
+also found in the atmosphere or, as solid, on the surfaces
+of some planets. Interests in the solid phases of CO 2 in
+the ﬁelds of earth and planetary sciences divide between the
+high-temperature high-pressure properties, relevant in the
+upper mantle, 1 and low-temperature behavior, relevant to
+surface deposits of CO2 on cold planets and their satellites.2,3
+Carbon dioxide is also of major technological importance
+and the demands of large-scale CO 2 capture, transport, and
+storage call for an understanding of all the phases of this sub-
+stance.4 In particular, the solid is likely to form in the event
+of rupture of or leakage from high-pressure transmission
+lines operating with CO 2, and knowledge of the thermody-
+namic properties is required to model such events and to de-
+velop safety cases. The normal solid (“dry ice”) is
+scientiﬁcally interesting as the classical example of an orien-
+tationally ordered molecular crystal, and there is also much
+interest in the other phases of solid CO 2, which are observed
+under extreme compression.
+As a molecule, CO 2 is exceptionally stable and character-
+ized by a rigid linear structure having a substantial electric
+quadrupole moment. The intermolecular forces between
+pairs of CO 2 molecules are dictated largely by short-range
+repulsions, dispersion forces, and the quadrupole–quadrupole
+interaction, all of which are anisotropic in nature. The quad-
+rupole moment is thought to be responsible for the relatively
+high triple-point and critical pressures of CO 2 (0.517 MPa
+and 7.38 MPa, respectively), and the interplay of the differ-
+ent intermolecular forces gives rise to polymorphism in the
+solid phase. The thermodynamic properties of the ﬂuid
+phases have been extensively studied and are represented at
+temperatures up to 1100 K and pressures up to 800 MPa by a
+reference-quality equation of state. 5 Many properties of dry
+ice have been measured, but there exists no comprehensive
+thermodynamic model that reconciles all of the available
+data. This can be regarded as a gap in present scientiﬁc
+knowledge of the nature of solid CO 2 I and also as a handi-
+cap in engineering calculations related to processes in which
+solid CO 2 is formed intentionally or accidentally. Thus the
+main purpose of the present work was to provide a soundly
+based thermodynamic model from which the properties of
+solid CO 2 I may be obtained over the full temperature and
+pressure ranges of its existence.
+2. Phase Diagram
+Determination of the thermodynamic phase diagram of
+CO2 is complicated by metastability and kinetic barriers to
+solid–solid phase transitions, but a reasonably clear picture
+of the gross features has emerged and is depicted in Fig. 1.6,7
+At temperatures below about 800 K, application of pressure
+causes the ﬂuid to crystallize into the low-pressure dry-ice
+form of CO 2, designated as phase I, which is a simple
+7. Absolute average relative deviations DAAD and
+average relative deviations (bias) DBias of the
+primary data from the new equation of state. . . . 13
+List of Figures
+1. Phase diagram of CO 2 from Refs. 5–7........ 3
+2. Wavenumbers mi of the internal vibrational
+modes of solid CO 2 at T ¼ 298 K as functions
+of molar volume ........................... 10
+3. Molar volume Vm of solid CO 2 as a function
+of (T=/C18D)4 with /C18D ¼ 151.5 K, for T /C20 30 K . . . 11
+4. Fractional deviations DVm=Vm of the molar
+volume of solid CO 2 from the new equation of
+state as a function of pressure p at various
+temperatures T ............................ 13
+5. Fractional deviations DVm=Vm of the molar
+volume of solid CO 2 from the new equation of
+state on the sublimation curve as a function of
+temperature T. ............................. 13
+6. Change in molar volume DVm on melting. . . . . 14
+7. Fractional deviations DCp,m=Cp,m of isobaric
+molar heat capacity of solid CO 2 as a function
+of temperature T along the sublimation curve. . 14
+8. Molar enthalpy of sublimation of CO 2 as a
+function of temperature T................... 14
+9. Deviations Dp of experimental sublimation
+pressures of CO 2 at T > 150 K from the new
+equation of state for solid CO 2 with Ref. 5 for
+the vapor ................................. 14
+10. Fractional deviations Dp=p of experimental
+sublimation pressures of CO 2 at T /C20 150 K
+from the new equation of state for solid CO 2
+with Ref. 5 for the vapor ................... 15
+11. Fractional deviationsDp=p of experimental
+melting pressures of CO2 from the new equation
+of state for solid CO2 with Ref.5 for the liquid . . 15
+12. Isobaric expansivity of solid CO 2 as a function
+of temperature T along the sublimation curve. . 15
+13. Isentropic compressibility of solid CO 2 as a
+function of temperature T along the
+sublimation curve .......................... 15
+14. Isentropic bulk modulus KS of solid CO 2 as a
+function of pressure p at T ¼ 3 0 0K.......... 16
+15. Extrapolation behavior of the equation of state . . . 16
+16. (a) Melting pressure p of solid CO 2 and (b)
+relative deviations dp=p of melting pressures
+from the auxiliary equation . . ............... 17
+17. Thermal properties of solid phase I computed
+from the equation of state: (a)p-Vm isotherms;
+(b) isothermal compressibility/C20T; (c) isobaric
+expansivity/C11; (d) thermal pressure coefficient/C12 . 17
+18. Molar heat capacities Cm as functions of
+temperature along the sublimation curve
+(T /C20 Tt) and melting curve ( T > Tt)........... 18
+19. Thermal Gru¨neisen parameter /C13th computed
+from the equation of state. . . . ............... 18
+043105-2 J. P . MARTIN TRUSLER
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 3 ====
+orientation-ordered soft molecular crystal with the cubic Pa3
+structure.6 This phase is stable for T /C20 800 K at pressures up
+to around 10 to 13 GPa, above which it transforms into other
+crystalline structures, designated II, III, IV, and VII, in which
+the CO 2 molecule persists as an entity. Phase III is most
+probably metastable with respect to phases II and IV, but the
+precise details of the phase boundaries between phases I, II,
+III, IV, and VII are subject to considerable uncertainty. From
+the melting-curve data, 8,9 it is inferred that a triple point
+exists at T /C25 800 K and p /C25 11 GPa at which ﬂuid and solid
+phases I coexist with either phase IV or VII. At higher pres-
+sures, the molecular-crystalline phases undergo transitions to
+non-molecular forms in which CO 2 units are no longer the
+building block. These phases include the quartz-like phase V
+and amorphous solids. Eventually, dissociation into diamond
+and molecular oxygen is thought to occur at T > 1500 K and
+p > 30 to 80 GPa.1,6
+3. Previous Thermodynamic Models
+No fundamental equation ﬁtted to a wide range of experi-
+mental data has yet been published. A number of modeling
+studies using intermolecular potentials of increasing complex-
+ity have been reported10–16 involving consideration of thermo-
+dynamic properties, lattice vibrations, and phase transitions of
+solid CO2. It is quite possible that an intermolecular potential
+model could be sufﬁciently reﬁned to describe all of these
+properties to within experimental error. However, such an
+approach would not be easy to apply, as stochastic techniques
+are required to obtain the observable properties of the system.
+Giordano et al. 17 derived a closed-form thermal equation of
+state on the basis of experimental pressure–volume–temperature
+data. Their equation provides an excellent description of the
+high-pressure compression data at T /C21295 K and a good
+description of the molar volume along the sublimation curve.
+However, caloric properties were not considered and so, as it
+stands, the equation of state cannot be used to calculate heat
+capacity or other related properties. Span and Wagner5 devel-
+oped a correlation for the sublimation pressure that was ﬁtted
+to critically assessed data atT /C21154 K and is characterized by
+uncertainties of /C20 250 Pa. A correlation of the melting curve
+for T /C20 266 K was also presented. In 2006, Giordano et al. 8
+reported a correlation of the melting curve, based on new
+measurements, valid for temperatures up to 800 K.
+The objective of the present work was to represent all of
+the available experimental data, ideally to within the experi-
+mental uncertainty, by means of a fundamental equation of
+state from which all thermodynamic properties of solid phase
+I could be computed. When coupled with an equation of state
+for the ﬂuid phases, such a model would also permit calcula-
+tion of the solid–ﬂuid phase boundaries.
+4. Available Experimental Data
+Many thermodynamic properties of solid phase I of carbon
+dioxide have been studied experimentally to some extent.
+However, the amount of available data is limited, and the
+distribution of states investigated is not as wide as might be
+desired. Accordingly, it is necessary to consider all the avail-
+able data carefully and to include even some rather old work
+in order to have sufﬁcient information to derive a wide-
+ranging equation of state. Ideally, experiments would be per-
+formed on single crystals, free of defects, but many of the
+reported data relate to polycrystalline samples and this may
+be responsible for some of the discrepancies that exist
+between some data sources.
+The collected data have been assigned to one of three
+groups. Group 1 contains data tabulated in peer-reviewed
+sources that either include an assessment of the experimental
+uncertainties or provide sufﬁcient information to support rea-
+sonable estimates thereof. Group 1 data were used in the opti-
+mization of the parameters in the equation of state. Data in
+group 2 were read from graphs; or lack a reliable estimate of
+uncertainty; or pertain to the same property and range of states
+as a group 1 dataset having lower uncertainty; or require for
+their interpretation other thermodynamic properties that may
+not be known with commensurate accuracy. Nevertheless,
+data from group 2 are useful as a means of veriﬁcation. A few
+of the datasets found were thought to be unreliable; these
+were assigned to group 3 and not considered further.
+4.1. Data on the sublimation curve
+The properties of solid carbon dioxide have been well
+studied along the sublimation curve from temperatures as
+low as 2 K up to the triple point. The available single-phase
+data are summarized in Table 118–30 and the phase-change
+data are summarized in Table 2.24,31–38 The most accurate
+measurements of the molar volume Vm are the x-ray diffrac-
+tion data of Krupskii et al. ,29 which extend from 6 K up to
+200 K and have a relative uncertainty of 0.01%. These
+authors also derived the isobaric expansivity a by differentia-
+tion and provided extrapolated values of Vm and a extending
+up to the triple-point temperature. The extrapolation was
+based on the principle of corresponding states with solid ar-
+gon as the reference substance. Much earlier, Keesom and
+Kohler22,23 used x-ray diffraction to determine Vm along the
+sublimation curve. Their original results have been corrected
+FIG. 1. (Color online) Phase diagram of CO 2 from Refs. 5–7. Circles
+highlight triple points and the gas–liquid critical point.
+043105-3EQUATION OF STATE FOR SOLID CO2
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 4 ====
+for a small error in the x-ray wavelength as detailed by Cur-
+zon.27 The isobaric molar heat capacity Cp,m has been meas-
+ured by Giauque and Egan 24 from 15 K to the normal
+sublimation temperature, and by Manzhelii et al.26 from 2 to
+39 K; both sources were included in group 1. Other pub-
+lished data for Cp,m
+18–20 were assigned to group 2. Manzhelii
+et al. 26 measured the isobaric expansivity from 13 to 139 K
+by pycnometry and derived the isentropic compressibility jS
+at temperatures between (88 and 190) K from measurements
+of the longitudinal and transverse speeds of sound in a poly-
+crystalline sample of solid CO 2. The 1% relative uncertainty
+of the speeds of sound claimed by these authors corresponds
+to a relative uncertainty of 4% in jS. Manzhelii et al. extrap-
+olated their sound speeds down to zero temperature, assum-
+ing a quadratic dependence upon T, and thereby obtained
+estimates of jS in this low-temperature region also. The
+Debye temperature obtained from the extrapolated longitudi-
+nal and transverse sound speeds in the limit T ! 0K ,
+hD ¼ 153 K, agrees with that obtained from their low-
+temperature heat-capacity data. Yamashita and Kato also
+report values of the ultrasonic speeds in a similar tempera-
+ture range. 30 Unfortunately, the data are presented only
+graphically and, from the scatter, the derived values of jS
+must have a relative uncertainty of about 6%. Furthermore,
+the results are systematically lower than those of Manzhelii
+et al.26 by between 8 and 13% between 90 and 190 K. Yama-
+shita and Kato argue that their lower values of jS must be
+more reliable, as the presence of cracks, voids, and other
+imperfections in polycrystalline samples serve to increase
+the compressibility. However, Yamashita and Kato’s meas-
+urements for solid methane also imply smaller values of jS
+than reported in other literature. 39 As the discrepancies
+between these two data sources cannot be resolved from the
+published details, both were assigned to group 2. Two other
+sources are known from which jS may be determined: the
+elastic constants of a single crystal of solid CO 2 were
+obtained at T ¼ 95 K by Powell et al. 28 from inelastic neu-
+tron scattering data with an uncertainty of 8%; and the
+TABLE 1. Summary of single-phase data on the sublimation curve
+Property Source Year T=K ur
+a Group
+Vm Maass and Barnes19 1926 90 to 192 0.2% 2
+Vm Heuse21 1930 20 0.2% 2
+Vm Keesom and Kohler22,23,27 1934 20 to 114 0.1% b 2
+Vm Krupskii et al.29 1982 6 to 216 0.01% 1
+a Krupskii et al.29 1982 6 to 216 5% to 10% 2
+a Manzhelii et al.26 1971 13 to 139 2% to 10% 1
+Cp,m Eucken18 1916 20 to 45 2
+Cp,m Maass and Barnes19 1926 109 to 183 0.2% 2
+Cp,m Eucken and Hauck20 1928 80 to 210 2
+Cp,m Giauque and Egan24 1937 15 to 195 0.2% to 3% 1
+Cp,m Manzhelii et al.26 1971 2.1 to 38 1% to 5% 1
+jS Hovi and Ma¨ntyalo25 1959 195 3
+jS Manzhelii et al.26 1971 88 to 190 4% 2
+jS Powell et al.28 1972 95 8% 2
+jS Yamashita and Kato30c 1997 77 to 195 6% b 2
+aur denotes relative standard uncertainty.
+bEstimated.
+cData reported graphically only.
+TABLE 2. Summary of phase-change data on the sublimation curve
+Property Source Year T=K u(T)a=K u(p)a=Pa ur
+a Group
+psub Meyers and Van Dusen32 1933 194 to 216 0.02% 2
+psub Giauque and Egan24 1937 195 0.02 3 2
+psub Tickner and Lossing33 1951 106 to 154 0.3 2
+psub Ambrose34 1956 178 to 198 0.003 40 1
+psub Baughman et al.35 1974 202 to 212 0.01 200 2
+psub Bryson et al.36 1974 67 to 111 3% 2
+psub Bilkadi et al.37 1975 154 to 216 0.02 10 1
+psub Fernandez-Fassnecht and del Rio38 1984 194 to 216 0.001 100 1
+Dg
+s Hm Maass and Barnes19 1926 195 2
+Dg
+s Hm Eucken and Donath31 1926 140 to 170 0.2% 2
+Dg
+s Hm Giauque and Egan24 1937 195 0.08% 1
+au(T) and u(p) denote the standard uncertainties of T and p; ur denotes the relative standard uncertainty of the property.
+043105-4 J. P . MARTIN TRUSLER
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 5 ====
+longitudinal and transverse sound speeds were measured at
+the normal sublimation temperature by Hovi and Ma ¨n-
+tyalo.25 The densities required to obtain jS from the ultra-
+sonic data were obtained from Krupskii et al. 29 with
+negligible additional uncertainty.
+The sublimation pressure of CO 2 has been measured by
+numerous workers and the data sources considered in this
+work are summarized in Table 2. Other pre-1950 sources,
+all of them designated as group 3, have been listed by Span
+and Wagner. 5 The recommendations of Span and Wagner
+have been followed in selecting three datasets for group
+1.34,37,38 These extend over the range from 154 K to the tri-
+ple point. The enthalpy of sublimation Dg
+s Hm was measured
+at the normal sublimation point by Giauque and Egan, with
+a relative uncertainty of 0.08%, and by Eucken and
+Donath31 at T ¼ 140 and 170 K with a relative uncertainty
+of 0.2%; both sources were assigned to group 1. Maass and
+Barnes19 also reported a value of Dg
+s Hm at the normal subli-
+mation temperature, but this lacks an uncertainty estimate
+and was assigned to group 2. The enthalpy of melting,
+Dl
+sHm, at the triple point is reported in three publica-
+tions19,20,40 and the results, which span a range of 65%
+about the mean, were assigned to group 2.
+4.2. High-pressure data
+Properties of solid CO 2 at elevated pressures have been
+measured at temperatures between 77 and 764 K. The avail-
+able single-phase data are summarized in Table 3,17,41–46
+while phase-change data on the melting curve are summar-
+ized in Table 4.8,19,20,40,47–52 Four sets of molar volume data
+at 295 /C20 T/K /C20 300 have been reported at pressures of up to
+12 GPa; 17,43,44,46 all were obtained by x-ray diffraction
+measurements on samples of solid CO 2 conﬁned within a di-
+amond anvil cell. The study of Liu extends to 50 GPa, 44 but
+only the data at p /C20 11 GPa were used in the ﬁtting.
+Shimizu et al. 45 obtained the isentropic bulk modulus
+KS ¼ 1/jS by means of Brillouin scattering measurements on
+a single crystal of solid CO 2 grown within a diamond anvil
+cell. The interpretation of these data is complicated slightly
+by the high frequencies of 5 to 10 GHz associated with the
+Brillouin scattering measurements. Given the long relaxation
+time of the internal vibrational modes of CO 2 at T ¼ 300 K,
+the effective heat capacity of the solids at high frequencies
+must be that associated with the lattice modes only. Thus,
+when comparing with the equation of state, the isentropic
+bulk modulus was computed from the isothermal bulk modu-
+lus KT according to the relation,
+KS ¼ð Cp;m /C0 CintÞKT =ðCV;m /C0 CintÞ; (1)
+where Cint is the contribution of the internal vibrational
+modes of CO2 to the molar heat capacity of the solid.
+Unfortunately, as discussed by Olinger, 43 the low-
+temperature compression data of Stevenson42 appear to be in
+error, and the “rough” compression data of Bridgman at
+T ¼ 194 K are too imprecise to use,41 leaving the study of Gior-
+dano et al.17 as the only one in the single-phase region extend-
+ing to temperatures outside the narrow range 295 to 300 K.
+The only melting-pressure data included in group 1 are
+those of Clusius et al. ,49 which are conﬁned to pressures
+below 25 MPa. Other high-quality data sets exist and these
+extend to much higher pressures. However, plausible
+uncertainties in the equation of state of the ﬂuid phase
+signiﬁcantly exceed the experimental uncertainty of these
+high-pressure melting-curve data so that, if used in parameter
+optimization, systematic errors would propagate from the
+ﬂuid-phase equation.
+4.3. Adjustment and weighting of the data
+As far as possible, the International Temperature Scale of
+1990 (ITS-90)53,54 has been used in this work. Accordingly,
+where feasible, the temperatures given in the work published
+prior to 1990 have been converted from the scale on which
+they were measured to ITS-90. Temperatures reported on the
+International Practical Temperature Scale of 1968 (IPTS-68)
+were converted to ITS-90 according to the procedure
+described by Rusby.55 Temperatures reported on the Interna-
+tional Practical Temperature Scales of 1948 (IPTS-48) and
+1927 (ITS-27), which are identical above 90 K, were ﬁrst
+converted to IPTS-68 using the algorithm described by Bed-
+ford and Kirby 56 then thence to ITS-90. These corrections
+are only signiﬁcant in relation to sublimation pressure and
+melting-pressure data, as other properties vary sufﬁciently
+TABLE 3. Summary of high-pressure single-phase data
+Property Source Year T=K pmax=MPa ur
+a Group
+KS Shimizu et al.45c 1993 300 6060 5% b 2
+Vm Olinger43 1982 296 10 110 1% b 1
+Vm Liu44 1984 296 10 900 0.6% 1
+Vm Giordano et al.17 2010 295 to 764 12 550 0.6% 1
+Vm Scott et al.46 2010 300 9200 0.7% b 2
+Vm Stevenson42c 1957 77 to 185 1000 3
+Vm Bridgman41 1938 194 3431 3
+aur denotes relative standard uncertainty.
+bEstimated.
+cData reported graphically only.
+043105-5EQUATION OF STATE FOR SOLID CO2
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 6 ====
+slowly with temperature for small differences between prac-
+tical thermometry scales to be unimportant.
+Amongst the group 1 data, there are several cases in which
+a straightforward scale conversion could not be made. Man-
+zhelii et al.26 give no information relating to the temperature
+scale used between 2 and 190 K and no corrections were
+made. Giauque and Egan 24 used a “thermodynamic scale”
+between 15 and 190 K, the deﬁning point of which they took
+to be T ¼ 273.10 K at the ice point. Accordingly, their tem-
+perature values were scaled by the factor 273.15/273.10. The
+melting temperatures of Michels et al.48 and Clusius et al.49
+were both measured with thermometers calibrated at the tem-
+perature of the triple point of CO 2 making use of values for
+that temperature that are not in agreement with the present
+value. Therefore, the procedure adopted by Span and Wag-
+ner5 was followed whereby the temperatures reported by
+Michels et al. 48 were corrected by subtracting 0.04 K after
+conversion to ITS-90; similarly those of Clusius et al.49 were
+lowered by 0.05 K after conversion. In group 2, the melting-
+curve data of Bridgman 47 pre-date any agreed international
+scale. However, Bridgman reported temperatures in degree
+Celsius and, as all were within the range 0 to 100 /C14C, these
+Celsius temperatures were simply multiplied by 0.99974, to
+account for the steam point being 99.974 /C14C on ITS-90,
+before conversion to Kelvin. This correction is of marginal
+signiﬁcance.
+Calorimetric data reported in calories were converted to
+SI units by assuming that 1 cal ¼ 4.184 J, except in one
+case24 where the authors gave a deﬁnition of their “15 /C14calo-
+rie” as 4.185 J.
+The ﬁtted parameters in the equation of state model were
+found by minimization of the objective function,
+v2 ¼
+PN
+i¼1
+wi Xi /C0 Xi;fit
+/C0/C1
+=uðXiÞ
+/C2/C3 2
+PN
+i¼1
+wi
+: (2)
+Here, X is any thermodynamic property, Xi is the ith experi-
+mental datum, u(Xi) is the standard uncertainty of Xi, Xi,ﬁt is
+the value of property X at state point i computed from the
+equation of state, wi is a weighting factor, and N is the total
+number of data points considered. This dimensionless statis-
+tic is deﬁned such that v2 ! 1 for a “good” ﬁt.
+The primary weighting of the experimental data was pro-
+vided by the standard uncertainties u(Xi), which were known
+or estimated for all ﬁtted data, and hence normally wi ¼ 1.
+However, in order to compensate for the uneven distribution
+of the data in terms of both number and property, a few data
+were assigned weights other than unity. These cases are
+detailed speciﬁcally in Sec. 6.2.
+All types of primary data were included simultaneously in
+the ﬁt. In the case of sublimation- and melting-pressure data,
+the ﬁtted quantity was the molar Gibbs energy Gm. This
+quantity was computed for the ﬂuid phases from the equation
+of state of Span and Wagner. 5 The standard uncertainty
+u(Gm) ascribed to these data was computed from the stand-
+ard uncertainties in temperature and pressure according to
+the equation:
+uðGmÞ½/C138 2¼ SmuðTÞ½/C138 2þ VmuðpÞ½/C138 2; (3)
+where Sm and Vm are the molar entropy and the molar vol-
+ume of the ﬂuid phase.
+4.4. Fluid equation of state
+In order to carry out solid–ﬂuid phase-equilibrium calcula-
+tions, the difference between the molar Gibbs energies of the
+solid and ﬂuid phases is required as a function of temperature
+and pressure; phase equilibrium states being those in which
+this difference vanishes. The reference equation of state for
+ﬂuid CO 2, that of Span and Wagner, 5 has an arbitrarily
+assigned reference state in which the entropy and enthalpy of
+the hypothetical perfect gas are set to zero. Since only differ-
+ences in enthalpy or entropy between equilibrium states can
+TABLE 4. Summary of phase-change data on the melting curve
+Property Source Year T=K u(T)a=K u(p)a=MPa ur
+a Group
+Dl
+sVm Bridgman47 1914 268 to 367 5% b 2
+Dl
+sHm Kuenen and Robson40 1902 216.6 2
+Dl
+sHm Maass and Barnes19 1926 216.6 2
+Dg
+s Hm Eucken and Hauck20 1928 216.6 2
+pmelt Bridgman47 1914 268 to 367 0.1 0.1% 2
+pmelt Michels et al.48 1942 217 to 266 0.02 0.1% 2
+pmelt Clusius et al.49 1960 217 to 222 0.02 0.1% 1
+pmelt Grace and Kennedy50c 1967 217 to 425 3 50 3
+pmelt Iota and Yoo51 2001 640 5 1000 3
+pmelt Giordano et al.8c,d 2006 297 to 811 5 20 to 100 e 2
+pmelt Abramson and Brown52 2007 295 to 620 1 20 to 40 e 2% 2
+au(T) and u(p) denote the standard uncertainties of T and p; ur denotes the relative standard uncertainty of the property.
+bEstimated.
+cData reported graphically only.
+dNumerical data provided by the original authors.
+eIncreases linearly over the temperature range.
+043105-6 J. P . MARTIN TRUSLER
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 7 ====
+be observed experimentally, the reference state and the val-
+ues assigned for the enthalpy and entropy may be changed
+without affecting any observable property. When the solid
+phase is included, it is of course essential that the choice of
+reference state and reference values of enthalpy and entropy
+for the ﬂuid are consistent with the equation of state for the
+solid. In this work, the molar Gibbs energies of the solid and
+ﬂuid phases were made exactly equal at the triple-point tem-
+perature and pressure, given by Span and Wagner as
+Tt ¼ 216.592 K and pt ¼ 0.51795 MPa. This is achieved by
+making the triple point the reference state for the ﬂuid equa-
+tion of state and choosing appropriate reference values for
+the molar entropy and molar enthalpy of the gas phase in
+that state.
+The reference value for the molar entropy of the gas phase
+at the triple point Smðg; Tt; ptÞ was separated into a perfect-gas
+part, which was evaluated from statistical mechanics, and a
+residual part, which was obtained from the Span–Wagner
+equation of state. 5 The statistical entropy of the perfect gas
+was evaluated as follows:
+Spg
+m ðT; pÞ¼ StrðT; pÞþ SrrðTÞþ SintðTÞ: (4)
+Here, Str is the contribution of the translational modes
+given by
+StrðT; pÞ¼ R ln 2 pmkBT=h2/C0/C1 3=2
+kBT=pðÞ e5=2
+hi
+; (5)
+where m is the mass of one molecule, kB is Boltzmann’s con-
+stant, and h is Planck’s constant. The term Srr is the rigid-
+rotor approximation for the rotational molar entropy,
+SrrðTÞ¼ R ln e T=ðrhrotÞfg ; (6)
+in which r ¼ 2 is the symmetry number, hrot ¼ hcB0=kB is the
+rotational characteristic temperature, and B0 is the rotational
+constant of the molecule in the ground vibrational state. The
+ﬁnal term, Sint, combines the molar entropy associated with
+internal vibrations (including all anharmonic effects) with the
+corrections required to account for vibration–rotation interac-
+tion and centrifugal distortion. This term was calculated from
+the model of Span and Wagner as follows:5
+SintðTÞ¼ R
+X5
+i¼1
+Ci ðuisÞ expðuisÞ/C0 1fg /C0 1
+h
+/C0 ln 1 /C0 expð/C0 uisÞfg /C138 ; (7)
+where s ¼ Tc /T, Tc ¼ 304.1282 K is the critical temperature
+of CO2 and the coefﬁcients Ci and ui are given in Table 5.
+Natural carbon dioxide is a mixture of isotopes and, in
+principle, one should include both the entropy of mixing and
+the effects of nuclear-spin statistics. However, this has not
+been done in the present case as the solid-phase equation of
+state also neglects these terms. To obtain the relevant mean
+molecular constants required to compute Spg
+m for the natural
+isotopic mixture, we consider the ﬁve most abundant isotopic
+species each having mass mi and ground-state rotational con-
+stants B0,i in terms of which
+ln m ¼
+X
+i
+Ai ln mi; (8)
+and
+ln B0 ¼
+X
+i
+Ai ln B0;i: (9)
+The atomic masses were taken from Wieser and Berglund, 57
+the abundances from Rosman and Taylor, 58 and the rota-
+tional constants from Chedin. 59 Equations (8) and (9) eval-
+uated to give m ¼ 7.30790 /C2 10/C0 26 kg, B0 ¼ 0.39012 cm /C0 1
+and hence hrot ¼ 0.56129 K. With these values of the molec-
+ular constants, the perfect-gas statistical molar entropy of
+CO2 at its triple point was found to be 22.7200 R. The calcu-
+lation method was compared with the results of Woolley 60 at
+a nearby state point ( T ¼ 220 K, p ¼ 0.101325 MPa), and the
+present method was found to provide a value in agreement to
+within 0.0001 R. From the Span–Wagner equation of state,
+the residual entropy of the gas phase at the triple point is
+/C0 0.1959R, so that the ﬁnal calculated value of the “absolute”
+molar entropy of the gas in the reference state is
+Smðg; Tt; ptÞ=R ¼ 22:5242: (10)
+The molar enthalpy of the gas in the reference state,
+Hmðg; Tt; ptÞ, was adjusted such that Hmðg; Tt; ptÞ/C0
+TSmðg; Tt; ptÞ was exactly equal to the value of the molar Gibbs
+energy of the solid at the same temperature and pressure
+obtained from the new equation of state. This led ﬁnally to
+Hmðg; Tt; ptÞ=RTt ¼ 17:9287: (11)
+The equation of state of Span and Wagner is valid for
+p /C20 800 MPa.5 In comparing group 2 phase-change data for
+TABLE 5. Parameters required for calculation of the statistical entropy of the perfect gas
+Species Ai Mi=(kg mol/C0 1) B0,i=cm/C0 1 iC i ui
+12C16O2 0.984 53 0.043 990 0.390 22 1 1.994 270 42 3.151 63
+12C16O17O 0.000 75 0.044 994 0.378 62 2 0.621 052 48 6.111 90
+12C16O18O 0.004 03 0.045 994 0.368 19 3 0.411 952 93 6.777 08
+13C16O2 0.010 65 0.044 993 0.390 24 4 1.040 289 22 11.323 84
+13C16O18O 0.000 04 0.046 997 0.368 18 5 0.083 276 78 27.087 92
+043105-7EQUATION OF STATE FOR SOLID CO2
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 8 ====
+solid CO2 with the new equation of state at pressures above
+800 MPa, calculations involving extrapolation of the Span–
+Wagner model have been considered. Clearly, the results
+need to be treated with caution. A new equation of state for
+ﬂuid CO 2 at p /C21250 MPa and 300 /C20 T/K /C20 700 was pro-
+posed by Giordano et al.8 This model was developed by ther-
+modynamic integration of sound-speed data obtained from
+Brillouin scattering experiments, starting from initial values
+of density and heat capacity computed from the Span–
+Wagner equation on the isobar p ¼ 250 MPa. The results
+were ﬁtted to a 12-parameter function expressing the density
+as a function of T and p. This model has also been used for
+comparisons with group 2 data that call for thermodynamic
+properties of the ﬂuid. When using the Giordano equation of
+state in this work, the entropy and enthalpy were matched to
+those given by the Span–Wagner equation at the temperature
+in question and at p ¼ 800 MPa; changes in these quantities
+with pressure were obtained by isothermal numerical integra-
+tion of the appropriate derivatives of the Giordano equation.
+5. Thermodynamic Modeling Basis
+Given the sparse data set available, a theoretically based
+equation of state was favored containing a relatively small
+number of parameters, most of which have a physical inter-
+pretation and hence some range of expected values. The
+quasi-harmonic approximation has been widely used to
+obtain the equation of state of inorganic crystalline solids
+and has been applied previously to solid CO2.17 This approx-
+imation was felt to be a useful basis for establishing the ther-
+modynamic model in this work.
+5.1. The quasi-harmonic approximation
+The essence of the quasi-harmonic approximation (QHA)
+is to represent the lattice vibrations of a crystalline solid by
+means of a set of independent harmonic oscillators, the fre-
+quencies of which are functions of the lattice volume only.
+In this approximation, the conﬁgurational Helmholtz energy
+A for a crystal of volume V containing N molecules at tem-
+perature T is given by
+AðN; V; TÞ¼
+X
+i<j
+uijðV=NÞþ 1
+2
+X
+k;l
+/C22hxlðk; V=NÞ
+þ kBT
+X
+k;l
+ln½1 /C0 expf/C0 /C22hxlðk; V=NÞ=kBTg/C138;
+(12)
+where xl(k,V/N) is the angular frequency of the lth harmonic
+lattice mode for phonons of wavevector k, and uij(V/N) is the
+effective pair-potential-energy function for the system
+which, for a given crystal structure, is a function of V/N.
+It is usual to combine the zero-point lattice vibrational
+energy and the intermolecular potential energy in a single
+term, U0(N,V), that gives the total conﬁgurational internal
+energy of the system at zero temperature. The sum over the
+external lattice vibrations, the third term in Eq. (12), is then
+expressed in terms of the density of state G(x,V/N) deﬁned
+such that
+AðN; V; TÞ¼ U0ðN; VÞþ NkBTðm=nÞ
+/C2
+ð1
+0
+Gðx; V=NÞ ln½1 /C0 expf/C0 /C22hx=kBTg/C138dx:
+(13)
+Here, m is the number of external degrees of freedom per
+unit cell, n is the number of molecules in the unit cell, and
+G(x,V/N) is normalized such that
+ð1
+0
+Gðx; V= NÞdx ¼ 1: (14)
+For solid phase I of CO 2, there are 4 molecules per unit cell
+and 20 external degrees of freedom, of which 12 correspond
+to pseudo-translational vibrations and the remaining 8 corre-
+spond to pseudo-rotational librations. 61 Thus, m ¼ 20 and
+n ¼ 4. Each molecule possesses a further 4 internal vibra-
+tional modes, so the total number of internal and external
+degrees of freedom per unit cell is 36.
+The 20 external degrees of freedom comprise 3 acoustic
+modes and 17 optical modes. The frequencies of these opti-
+cal modes at zero wavevector are known from a combination
+of infrared and Raman spectroscopy 59,62–68 and inelastic
+neutron scattering. 28 However, the only information avail-
+able for the acoustic modes and for the optical modes at
+non-zero wavevector come from a single study by inelastic
+neutron scattering. 28 That study was restricted to just two
+high-symmetry planes in the CO 2 crystal, and the informa-
+tion is insufﬁcient to construct the full density of states; thus
+some further simpliﬁcation is essential.
+5.2. Debye–Einstein approximation
+In order to proceed to a convenient equation of state, a
+Debye–Einstein approximation is adopted in which the den-
+sity of states is represented by the combination of a Debye
+distribution, accounting for 3/5 of the total weight, and a
+sum of discrete harmonic terms, accounting for the remain-
+ing 2/5 of the total weight. The former represent the vibrons,
+while the latter represent the librons. The expression for G is
+G ¼ 9x2
+5x3
+D
+HðxD /C0 xÞþ
+Xm
+i¼1
+aidðxi /C0 xÞ; (15)
+where xD is the angular cut-off frequency for the Debye dis-
+tribution, H( x) is the unit step function, b) d(x) is the Dirac
+delta function, m is the number of discrete harmonic modes,
+xi is the angular frequency (and ai the weight) of the ith dis-
+crete harmonic term, and Rm
+i¼1ai ¼ 2=5. It follows that the
+total molar Helmholtz energy Am(T,Vm) at temperature T and
+molar volume Vm is
+b)H(x) = 0 forx < 0 and H(x) = 1 forx /C210.
+043105-8 J. P . MARTIN TRUSLER
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 9 ====
+AmðT; VmÞ¼ A0ðVmÞþ ADðT; VmÞ
+þ
+Xm
+i¼1
+aiAiðT; VmÞþ AintðTÞ: (16)
+The terms represented here arise as follows: A0 from the
+intermolecular and zero-point lattice energy of the crystal at
+T ¼ 0K ; AD from the Debye distribution of lattice vibrations;
+Ai from the ith discrete harmonic component of the lattice
+librations; and Aint from the internal molecular vibrations.
+All of the thermodynamic properties may be derived from
+this Helmholtz energy function by differentiation.
+5.3. Gru¨ neisen parameters
+In the following, it is convenient to introduce the charac-
+teristic temperatures hD ¼ (/C22hxD/kB) and hi ¼ (/C22hxi/kB) which,
+like xD and xi, are functions of the molar volume of the
+crystal. This dependency is expressed in terms of the Gru ¨-
+neisen parameters cD and ci, which are deﬁned by the follow-
+ing relations:
+cD ¼/C0 ð dl nhD=dl nVmÞ
+ci ¼/C0 ð dl nhi=dl nVmÞ
+/C27
+: (17)
+Experimentally, Gru¨neisen parameters are found to vary
+somewhat with expansion or compression of the crystal, and
+this may be represented empirically by means of the follow-
+ing model:
+cD ¼ cD;0ðVm=V00ÞqD
+ci ¼ ci;0ðVm=V00Þqi
+)
+: (18)
+Here V00 is the molar volume of the crystal at zero tempera-
+ture and pressure, cD,0 and ci,0 are the Gru¨neisen parameters
+in that state, and qD, qi are exponents to be adjusted for each
+mode. For non-zero exponent values, this model leads to the
+following explicit expressions for the characteristic tempera-
+tures at molar volume Vm,
+hD ¼ hD;0 exp ðcD;0=qDÞf1 /C0ð Vm=V00ÞqD g
+/C2/C3
+hi ¼ hi;0 exp ðci;0=qiÞf1 /C0ð Vm=V00Þqi g
+/C2/C3
+)
+: (19)
+If qi ¼ 0, then hi ¼ hi;0ðVm=V00Þ/C0 ci .
+5.4. The cold curve
+Numerous equations of state have been proposed to repre-
+sent the cold compression and expansion behavior of atomic
+and molecular crystals. Many of these are based on model
+intermolecular potential-energy functions or on consideration
+of generalized stress–strain relations. In the present work, the
+fourth-order logarithmic equation of state 69 was adopted
+because of its simple form and proven ability to represent
+extreme compression behavior with high accuracy. The molar
+Helmholtz energy for this model may be expressed in terms of
+the reduced densityz ¼ (V00/Vm)a sf o l l o w s :
+A0 ¼ V00
+1
+2c1 ln2 z þ 1
+3c2 ln3 z þ 1
+4c3 ln4 z
+/C20/C21
+; (20)
+where c1, c2, and c3 are parameters related to the bulk modu-
+lus of the cold crystal and its ﬁrst two derivatives with
+respect to pressure. 70 The contribution of this term to the
+pressure and its ﬁrst derivative, are obtained by differentia-
+tion of A0 with respect to Vm with the following result:
+p0 ¼ c1z ln z þ c2z ln2 z þ c3z ln3 z; (21)
+ðdp0=dVmÞ¼/C0 ð z=VmÞ½c1ð1 þ ln zÞþ c2ð2 þ ln zÞ ln z
+þ c3ð3 þ ln zÞ ln2 z/C138: (22)
+5.5. External modes
+The molar Helmholtz energy for the Debye distribution of
+harmonic oscillators is given by
+AD ¼ RT½3l nf1 /C0 expð/C0 hD=TÞg /C0 D3ðhD=TÞ/C138; (23)
+where D3(z) is the Debye function,
+D3ðzÞ¼ð 3=z3Þ
+ðz
+0
+x3dx
+ex /C0 1: (24)
+Differentiation of Eq. (23) leads to the contributions to the
+molar entropy Sm, molar internal energy Um, isochoric molar
+heat capacity CV,m, pressure p and derivatives as follows:
+SD ¼ R½4D3ðhD=TÞ/C0 3l nf1 /C0 expð/C0 hD=TÞg/C138; (25)
+UD ¼ 3RTD3ðhD=TÞ; (26)
+CV;D ¼ 3R½D3ðhD=TÞ/C0ð hD=TÞD0
+3ðhD=TÞ/C138; (27)
+pD ¼ð cD=VmÞUD; (28)
+ð@pD=@VmÞT ¼ð c0
+D /C0 cD=VmÞðp=cDÞ
+/C0 RhDðcD=VmÞ2D0
+3ðhD=TÞ; (29)
+ð@pD=@TÞV ¼ð cD=VmÞCV;D: (30)
+Here, D 0
+3ðzÞ is the ﬁrst derivative of D 3(z),c) and the prime
+denotes differentiation with respect to Vm. The subscript “D”
+indicates that Eqs. (23) and (25) to (30) represent the contri-
+bution of the Debye term to Am, Sm, Um, CV,m, p, and its
+derivatives, respectively. Equation (23) is normalized such
+that the Debye contribution to the isochoric molar heat
+capacity, CV,D, approaches 3R as T !1 .
+Numerical evaluation of the Debye function D 3(z) may be
+accomplished to machine accuracy either by numerical quad-
+rature or by means of the efﬁcient expansion in Chebyshev
+polynomials described by Macleod.71
+c)This is given by D0
+3ðzÞ¼/C0 ð 3=zÞD3ðzÞþ 3=ðez /C0 1Þ.
+043105-9EQUATION OF STATE FOR SOLID CO2
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 10 ====
+For the discrete harmonic modes, the molar Helmholtz
+energy term Ai is given by
+Ai ¼ RT lnf1 /C0 expð/C0 hi=TÞg: (31)
+Each such term is associated with the following contribu-
+tions to Sm, Um, CV,m, p and its derivatives:
+Si ¼ R½ðhi=TÞ=fexpðhi=TÞ/C0 1g/C0 lnf1 /C0 expð/C0 hi=TÞg/C138;
+(32)
+Ui ¼ Rh=fexpðhi=TÞ/C0 1g; (33)
+CV;i ¼ Rðhi=TÞ2 expðhi=TÞ=fexpðhi=TÞ/C0 1g2; (34)
+pi ¼ð ci=VmÞUi; (35)
+ð@pi=@VmÞT ¼ð pici=VmÞð Vmc0
+i /C0 ciÞ=c2
+i
+/C2
+þð hi=TÞ expðhi=TÞ=fexpðhi=TÞ/C0 1g/C0 1/C138;
+(36)
+ð@pi=@TÞVm ¼ð ci=VmÞCV;i: (37)
+Equation(31)is normalized such that the derived isochoric molar
+heat capacity, CV,i, of each mode approaches R as T !1 .
+However, the weightsai w h i c ha p p e a ri nE q .(15) multiply each
+Ai and all of the contributions to other thermodynamic properties
+derived therefrom.
+5.6. Internal modes
+In this work, the internal vibrations of carbon dioxide mol-
+ecules in the solid phase are also represented by quasi-
+harmonic terms, and so Eq. (31) provides the basis for mod-
+eling each internal mode. Isolated CO 2 molecules possess
+three distinct fundamental modes: the singly degenerate
+symmetric and asymmetric stretching modes and the doubly
+degenerate bending mode. These same modes have been
+identiﬁed in the infrared and Raman spectrum of solid phase
+I, but with frequencies that are shifted slightly from the val-
+ues observed in the gas phase. The most complete study is
+that of Hanson and Jones,65 in which the fundamental modes
+were determined as a function of pressure up to 12 GPa at
+T ¼ 298 K. In order to determine the values of the corre-
+sponding characteristic temperatures at Vm ¼ V00 and the
+associated Gru¨neisen parameters, the experimental wave-
+numbers /C23i were analyzed as functions of the molar volume
+Vm calculated from the isothermal equation of state meas-
+ured by Giordano et al.17 at almost the same temperature, to-
+gether with value V00 ¼ 25.80 cm 3 mol/C0 1 obtained from
+Krupskii.29 As shown in Fig. 2, a linear dependence of ln( /C23i)
+upon ln( Vm/V00) was found for each mode from which the
+Gru¨neisen parameters and the values of hi,0 have been deter-
+mined. These values are given below in Table 6.T h e
+Gru¨neisen parameters for the internal modes are much smaller
+than those of the external modes, and so the variation of the
+characteristic temperatures with volume is slight. In this work,
+it was assumed that this small dependence can be represented
+at all temperatures with sufﬁcient accuracy using the values of
+ci determined at T ¼ 298 K; thus qi ¼ 0 for these modes.
+5.7. Anharmonic corrections
+Solid CO2 is known to be an orientationally ordered solid
+with no low-pressure order–disorder phase transition such as
+that exhibited by nitrogen. Nevertheless, various deviations
+from the QHA are expected to be important especially near
+the triple point, where the crystal is at its most expanded,
+FIG.2 .W a v e n u m b e r svi of the internal vibrational modes of solid CO 2 at
+T ¼ 298 K as functions of molar volume: G, experimental data of Hanson and
+Jones;65
+ , linear regression. The modes are designated herei ¼ 3f o rt h e
+symmetric stretch, i ¼ 4 for the bending modes, and i ¼ 5f o rt h ea s y m m e t r i c
+stretch.
+TABLE 6. Parameters of the new equation of state
+Parameter Value Parameter Value
+V00/(cm3 mol/C0 1) 25.800 b1 1.15
+c1/MPa 9000 b2 55.428
+c2/MPa 32 315 b3 8.8
+c3/MPa 941 hD/K 148.9
+h1/K 92.3 a1 0.5
+h2/K 179.4 a2 1.5
+h3/K 1945.9 a3 1
+h4/K 942.7 a4 2
+h5/K 3379.2 a5 1
+cD 2.6163 qD /C0 0.21
+c1 4.0463 q1 /C0 0.21
+c2 1.1259 q2 /C0 0.21
+c3 0.0633 q3 0
+c4 /C0 0.0521 q4 0
+c5 0.0515 q5 0
+043105-10 J. P . MARTIN TRUSLER
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 11 ====
+and at high temperatures. Manzhelii et al.26 attributed part of
+the temperature dependence of the heat capacity along the
+sublimation curve to the creation of point defects in which
+isolated molecules lose their orientation. They presented a
+model speciﬁcally for this type of anharmonicity. Landau
+and Lifshitz 72 developed a high-temperature perturbation
+expansion to account for small deviations from harmonic
+behavior and showed that the leading term in the Helmholtz
+energy varies like the product of T2 and some function of
+molar volume to be determined. Unfortunately, this simple
+relation is restricted to high temperatures as the resulting
+contribution to Cp,m, being linear in T, is unphysical as T ! 0.
+Wu and Wentzcovitch 73 applied a renormalization approach
+to correct the QHA for anharmonic effects and showed that a
+single temperature- and volume-independent parameter was
+sufﬁcient to account for the observed anharmonicity in sim-
+ple crystalline metal oxides. That work conﬁrmed that the
+effect of anharmonicity on the Helmholtz energy varies like
+T2 at high temperatures but, unlike the perturbation expan-
+sion, it rolls over to the correct T4 behavior at low tempera-
+tures. The results presented by Wu and Wentzcovitch show a
+very simple exponential increase with molar volume and the
+entire variation of the anharmonic correction AA to the QHA
+molar Helmholtz energy can be represented by the following
+simple expression:
+AA ¼ b1R½ðT=hD;0Þ4=f1 þ b2ðT=hD;0Þ2g/C138
+exp½b3fðVm /C0 V00Þ=V00g/C138: (38)
+Although this involves three parameters ( b1, b2, b3) rather
+than one, it was preferred in this work as it is more direct to
+apply than the renormalization approach which results in a
+temperature- and pressure-dependent volume translation.
+Fortunately, as described below, only two of the parameters
+in Eq. (38) needed to be optimized in the ﬁt to experimental
+data.
+The inclusion of the anharmonic term implies a departure
+from the Dulong–Petit limit for the lattice heat capacity at
+high temperatures. For positive (negative) b1, the departure
+is negative (positive).
+6. Parameter Optimization
+6.1. Pre-fitting
+Having ﬁxed on the general structure of the QHA equation
+of state, the ﬁrst question to be addressed was the number of
+harmonic terms necessary to represent adequately the effect
+of the librational modes. This was studied by ﬁrst consider-
+ing the isochoric molar heat capacity of the crystal along the
+sublimation curve. For this purpose, CV,m was obtained from
+the experimental Cp,m data24,26 as follows:
+CV;m ¼ Cp;m 1 þ Ta2Vm=ðCp;mjSÞ
+/C2/C3 /C0 1
+: (39)
+For this calculation, a and Vm were obtained from Krupskii
+et al. 29 and jS from Manzhelii et al .26 The low-temperature
+data constrain the Debye temperature hD,0 to values close to
+151 K, and it was found that all of the data could be repre-
+sented within a few percent with the addition of just two har-
+monic terms of equal weight. In this calculation, the
+characteristic temperatures were held constant, independent
+of Vm, and so this was a simple harmonic model. Additional
+terms, variable weights, and non-zero Gru¨neisen parameters
+did not signiﬁcantly improve the ﬁt to CV,m. Of course these
+initial calculations are subject to the effects of uncertainties
+in the other quantities appearing in Eq. (39), especially those
+in a and jS. Nevertheless, the results were used to constrain
+the number of terms used for the librational modes.
+As T ! 0 K along the sublimation curve, the thermal Gru¨-
+neisen parameter, deﬁned by
+cth ¼ aVmKT =CV;m (40)
+is expected to approach a constant value which, in the pres-
+ent Debye–Einstein approximation, equals the Gru¨neisen pa-
+rameter of the Debye distribution evaluated at Vm ¼ V00.
+Furthermore, as T ! 0 K along the sublimation curve, the
+isothermal bulk modulus KT approaches the value of parame-
+ter c1 in the equation for the cold compression curve, and
+CV,m approaches the Debye limit,
+CV;m ¼ð 12p4R=5ÞðT=hDÞ3: (41)
+It follows that aVm should vary like T3 in the approach to
+that limit, so that
+Vm ¼ V00 þ bðT=hDÞ4 (42)
+and
+cD;0 ¼ 20ðb=hDÞc1=ð12p4RÞ: (43)
+Figure 3 shows the low-temperature variation of Vm, which
+does indeed conform to Eq. (42) and yields b ¼ (21.4 6 0.7)
+cm3 mol/C0 1 with hD ¼ 151.5 K.
+The pre-ﬁtting described in this section was used only to
+determine: (a) that two quasi-harmonic modes were required
+FIG. 3. Molar volume Vm of solid CO 2 as a function of ( T=hD)4 with
+hD ¼ 151.5 K, for T /C20 30 K: G, experimental data from Krupskii et al. ;29
+, linear regression line.
+043105-11EQUATION OF STATE FOR SOLID CO2
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 12 ====
+for the librational modes and (b) that (cD,0/c1) should be con-
+strained to the value (2.91 6 0.03) /C2 10/C0 4 MPa/C0 1 implied by
+Eq. (43). In the main ﬁtting, the effects of relaxing either or
+both of these constraints were checked.
+6.2. Global fit
+The equation of state as ﬁnally implemented is given by
+AmðT; VmÞ¼ A0ðVmÞþ ADðT; VmÞþ
+X5
+i¼1
+aiAiðT; VmÞ
+þ AAðT; VmÞ; (44)
+where A0 is given by Eq. (20), AD by Eq. (23), Ai by Eq. (31),
+and AA by Eq. (38). The sum over harmonic terms extends to
+i ¼ 5 to include two librational modes and three internal
+modes. The characteristic temperatureshD and hi are given by
+Eq. (19) (or by the appropriate limit whenqi !0). There were
+thus a total of 30 parameters in the model. However, the num-
+ber of parameters to be adjusted in the optimization was im-
+mediately reduced by independent data and by constraints to a
+maximum of 16. There were 12 independently ﬁxed parame-
+ters, being the values of ai, hi, ci,a n dqi for the internal modes
+i ¼ 3( s y m m e t r i cs t r e t c h ) ,i ¼ 4 (bending modes), and i ¼ 5
+(asymmetric stretch). In addition, there were two further con-
+straints: a1 þ a2 ¼ 2 and the use of Eq.(43) for cD,0.
+Initial values of the remaining parameters were
+hD ¼ 151.5 K, h1 ¼ 100 K, h2 ¼ 200 K, a1 ¼ a2 ¼ 1( a l le s t i -
+mated from pre-ﬁtting the heat capacity data),
+cD ¼ c1 ¼ c2 ¼ 2.1 from Manzhelii et al. ,26 qD ¼ q1 ¼ q2 ¼ 0,
+and b1 ¼ 0 (so that the anharmonic term was absent). Fitting
+all 13 free parameters that remained after eliminating the
+anharmonic term proved to be difﬁcult in the sense that
+some parameters were highly cor related and, in particular,
+unconstrained minimization of v2 tended to push the expo-
+nents qD, q1, q2 to extreme values. However, it was found
+that including the additional constraints qD ¼ q1 ¼ q2
+resulted in a much more robust model. It was also found that
+the optimization drove a1 to a value very close to 0.5;
+accordingly, it was constrained to exactly that value in sub-
+sequent analysis. These constraints reduced the number of
+free parameters to 10 and, upon optimization, resulted in
+values that were not affected by plausible changes in the ini-
+tial values. Nevertheless, the resulting model was somewhat
+imperfect as systematic deviations remained in both the iso-
+baric heat capacity near the normal sublimation tempera-
+ture24 and in the high-temperature molar volumes of
+Giordano et al .17 The molar volume along the sublimation
+curve was very well ﬁtted in all cases, but those data
+received very high weighting due to their low relative stand-
+ard uncertainty of 0.01%. It was possible to accommodate
+either the Cp,m data or the high-temperature Vm data by
+increasing the weight on one data set or the other, but it was
+not possible to ﬁt them both within the claimed experimen-
+tal uncertainties. The high-temperature Vm data favored a
+larger value of c1, in the region of 10 000 MPa, whereas
+good ﬁts without those data implied c1 of about 8500 MPa.
+The latter is more compatible with the value of the isother-
+mal bulk modulus on the sublimation curve at T ! 0K ,
+equal to c1 in the model, deduced from the ultrasonic data of
+Manzhelii et al.26 but not included in the ﬁt.
+The marginal failure of the quasi-harmonic model alone to
+reconcile all of the primary data, and especially the devia-
+tions of Cp,m on the sublimation curve in the approach to the
+triple point, suggested that anharmonic terms may be signiﬁ-
+cant. Accordingly, the term given by Eq. (38) was included
+in the analysis. It was found that the parameter b2 had very
+little inﬂuence on the quality of the ﬁt, and so this was con-
+strained to the value ( hD,0/20 K)2 so that the transition to T4
+behavior of AA occurred for temperatures near 20 K where
+CV,m is approaching the Debye limit. In the optimization,
+now involving 12 free parameters, the weighting on the heat
+capacity data at T /C21100 K and on the molar volume data of
+Giordano et al. was increased by setting wi ¼ 5 for all these
+points. The quality of the resulting ﬁt was good, as judged by
+both statistical measures and by the absence of systematic
+deviations for any property. Finally, with negligible change
+in v2, the parameters were rounded to an appropriate number
+of signiﬁcant ﬁgures to give the values presented in Table 6.
+7. Comparison with Primary and
+Secondary Data
+The ﬁt as a whole is characterized by v2 ¼ 3.4, indicating
+that the data are, on average, ﬁt largely within the associated
+uncertainties. The quality of the ﬁt for the individual primary
+data sets is detailed in Table 7 in terms of v2 (calculated for
+each data set alone), the absolute average relative deviation
+DAAD and the average relative deviation, or bias, DBias. The
+latter two statistical measures are deﬁned as follows:
+DAAD ¼ N/C0 1
+X
+XNX
+i¼1
+jXi=Xi;fit /C0 1j (45)
+and
+DBias ¼ N/C0 1
+X
+XNX
+i¼1
+ðXi=Xi;fit /C0 1Þ; (46)
+where Xi denotes the value of an experimental property, Xi,ﬁt
+is the value of the property determined from the equation of
+state at the same state point, and NX is the number of points
+in the data set for property X under consideration.
+Figure 4 shows deviations of the high-pressure molar vol-
+umes from the new equation of state. The primary data sets
+of Giordano et al. ,17 Olinger,43 and Liu 44 are each repre-
+sented with v2 /C25 1, indicating that the model is in excellent
+agreement with the data. DAAD ¼ 0.7% for the three data sets
+combined. Figure 4 shows that the secondary data of Scott 46
+are also represented essentially within their uncertainty. The
+data for molar volume along the sublimation curve are
+shown in Fig. 5. The deviations for the primary data of Krup-
+skii et al.29 vary from /C0 0.017% to þ0.015%, with zero bias,
+v2 ¼ 0.8, and DAAD ¼ 0.008%. The secondary data of Maass
+and Barnes, 19 Heuse,21 and Keesom and Kohler, 22,23 and
+043105-12 J. P . MARTIN TRUSLER
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 13 ====
+Curzon27 are also shown in Fig. 5. Although the deviations
+are larger, the agreement is also satisfactory in the light of
+the probable experimental uncertainties. Thus, for molar vol-
+ume, there is good agreement with the experimental data at
+temperatures from 6 K to 764 K.
+Figure 6 compares the change in molar volume on melting
+with the predictions obtained from the new equation of state
+for the solid together with the equation of Span and Wagner 5
+for the ﬂuid phase, the latter extrapolated for pressures above
+800 MPa. The experimental value at the triple point is
+derived from the solid-phase data of Krupslii et al.29 and the
+ﬂuid-state equation of state; a value at 295 K is similarly
+derived from the solid-phase data of Giordano et al.17 extrap-
+olated to the melting pressure. The remaining data are the
+directly measured values of Bridgman. 47 There is good
+agreement with the combined solid and ﬂuid models at all
+pressures, although the model values are systematically
+slightly higher. This does not necessarily indicate an error in
+the solid-phase model. Indeed, an alternative calculation
+using the ﬂuid-phase equation of state of Giordano et al. 8
+in place of that of Span and Wagner 5 gives almost perfect
+agreement with experiment at p /C21500 MPa.
+Figure 7 shows the deviations of the experimental isobaric
+molar heat capacity24,26 from the predictions of the equation
+of state. The quality of the ﬁt to the data of Giauque and
+Egan24 is good and there is an absence of systematic trends.
+The worst deviations are found near T ¼ 25 K, where several
+points deviate by more than twice the uncertainty of the data.
+This may indicate some weakness in the Debye approxima-
+tion which, at this temperature, dominates the rapidly chang-
+ing heat capacity. The data of Manzhelii et al. 26 are also
+represented without systematic trends, but there is more scat-
+ter. It seems that the uncertainties claimed by these authors
+are too optimistic, as v2 ¼ 7.5 for these data yet the devia-
+tions appear random.
+The available data for the enthalpy of sublimation are com-
+pared with the present model in Fig. 8. The primary data of
+Giauque and Egan24 and Eucken and Donath,31 and the second-
+ary data of Maass and Barnes19 are all represented within the
+experimental uncertainties. For the enthalpy of fusion, the
+equations of state of the solid and liquid phases yield a value of
+8870 J mol/C0 1, while the three reported experimental values are
+(8050, 8340, and 7950) J mol/C0 1.19,20,40 The mean discrepancy
+of about 760 J mol/C0 1 cannot easily be ascribed to errors in the
+TABLE 7. Absolute average relative deviations DAAD and average relative deviations (bias) DBias of the primary data
+from the new equation of state
+Property T=K p=MPa v2 DAAD DBias Data set
+Vm 295 to 764 < 12 300 1.4 0.6% 0.1% Giordano et al.17
+Vm 296 < 10 100 0.9 0.7% 0.1% Olinger 43
+Vm 296 < 10 900 0.6 0.6% 0.0% Liu 44
+Vm 6 to 216 < 0.52 0.8 0.008% 0.000% Krupskii et al.29
+Cp,m 2t o3 8 /C25 0 7.5 2.1% 0.0% Manzhelii et al.26
+Cp,m 15 to 195 /C20 0.1 2.1 0.4% 0.2% Giauque and Egan 24
+a 13 to 139 /C20 0.1 6.1 11.7% /C0 9.9% Manzhelii et al.26
+Dg
+s Hm 195 0.1 0.6 0.05% /C0 0.05% Giauque and Egan 24
+Dg
+s Hm 140 to 170 /C20 0.1 0.6 0.12% 0.12% Eucken and Donath 31
+psub 178 to 198 /C20 0.13 6.6 0.18% /C0 0.18% Ambrose 34
+psub 194 to 216 /C20 0.52 3.3 0.06% 0.00% Fernandez-Fassnacht and del Rio 38
+psub 154 to 216 /C20 0.52 4.3 0.14% 0.09% Bilkadi et al.37
+pmelt 217 to 222 /C20 24 1.0 0.7% /C0 1.2% Clusius et al.49
+FIG. 4. (Color online) Fractional deviations DVm=Vm of the molar volume of
+solid CO2 from the new equation of state as a function of pressure p at vari-
+ous temperatures T: G, Giordano et al. ;17 h, Olinger;43 ~, Liu;44 ^, Scott
+et al.;46 – – –, uncertainty band for the equation of state.
+FIG. 5. Fractional deviations DVm=Vm of the molar volume of solid CO2 from
+the new equation of state on the sublimation curve as a function of tempera-
+ture T. ^,M a a s sa n dB a r n e s ;19 ~, Heuse;21 h, Keesom and Kohler; 22,23,27
+*,K r u p s k i iet al.;29 – – –, uncertainty band for the equation of state.
+043105-13EQUATION OF STATE FOR SOLID CO2
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 14 ====
+new equation of state for the solid. Indeed, there is strong evi-
+dence to support the predicted enthalpy of the solid: the close
+agreement with experiment for Dg
+s Hm at the normal sublima-
+tion point, and for the molar volume and the vapor pressures
+between the sublimation- and triple-point temperatures all point
+to errors below 100 J mol/C0 1 for the enthalpy of the solid at the
+triple point. It also seems unlikely that the enthalpy of the gas
+phase at the triple point could be in signiﬁcant error. Thus, ei-
+ther the three experimental values ofDl
+sHm share a similar sys-
+tematic error or the enthalpy of vaporization at the triple point,
+w h i c hi s1 5 . 4k Jm o l/C0 1 according to the ﬂuid-phase equation of
+state, is in error by about 5%.
+Figures 9 and 10 compare the primary and secondary
+sublimation-pressure data with the predictions of the new
+equation of state. All primary data are ﬁtted to within a
+remarkably small band of 6350 Pa. There is evidence of sys-
+tematic differences between the results of different authors
+which, although small, exceed the estimated uncertainties,
+resulting in v2 values signiﬁcantly above unity for these data
+sets. In the light of these differences, the small deviations
+compared with the model seen in Fig. 9 are entirely reasona-
+ble. The secondary data of Meyers and Van Dusen 32 and
+Baughman et al. 35 also show rather small deviations, with
+DAAD of 0.05% and 0.12%, respectively, while those of Giau-
+que and Egan 24 deviate slightly more with DAAD ¼ 0.36%
+and DBias ¼/C0 0.30%. Figure 10 shows that the model is in fair
+agreement with the secondary data at temperatures below
+150 K. The vapor pressures of Tickner and Lossing33 are sys-
+tematically lower than the predictions of the model by approx-
+imately twice the claimed experimental uncertainty with
+average deviations corresponding to a temperature error of
+approximately 0.6 K. Below 100 K, the data of Brysonet al.36
+scatter about the predicted curve as the sublimation pressure
+falls to 1.3/C2 10/C0 8 Pa at 70 K.
+Figure 11 shows deviations of the primary and secondary
+melting-pressure data at pressures below 1.2 GPa. The pri-
+mary data of Clusius et al. 49 are ﬁtted to 61.2%, which is
+within the experimental uncertainty, while the secondary
+data47,48 are predicted to within 62%. Taken together, the
+experimental data suggest that the model systematically
+overestimates the melting pressure by approximately 1% at
+pressures between about 5 and 1200 MPa. However, it is not
+FIG. 6. Change in molar volume DVm on melting: *, Krupskii et al.29 with
+Ref. 5 for the liquid; G, Giordano et al. 17 with Ref. 5 for the liquid; /C2 ,
+Bridgman;47 ———, solid equation of state with Ref. 5 for the liquid; – – –,
+solid equation of state with Ref. 8 for the liquid. Insert: predicted behavior
+at high pressures.
+FIG. 7. Fractional deviations DCp,m=Cp,m of isobaric molar heat capacity of
+solid CO 2 as a function of temperature T along the sublimation curve: h,
+Manzhelii et al. ;26 ~, Giauque and Egan; 24 ^, Eucken;18 *, Eucken and
+Heuck;20 /C2 , Maass and Barnes;19 – – –, uncertainty band from Ref. 24.
+FIG. 8. Molar enthalpy of sublimation Dg
+s Hm of CO2 as a function of temper-
+ature T: ~, Giauque and Egan; 24 h, Eucken and Donath; 31 ^, Maass and
+Barnes;19 ———, equation of state.
+FIG. 9. Deviations Dp of experimental sublimation pressures of CO 2 at
+T > 150 K from the new equation of state for solid CO 2 with Ref. 5 for the
+vapor. *, Fernandez-Fassnacht and del Rio; 38 h, Ambrose; 34 ^, Bilkadi
+et al. ;37 ~, Giauque and Egan; 24 /C2 , Meyers and Van Dusen; 32 þ, Baugh-
+man et al.;35 ———, Eq. (48).
+043105-14 J. P . MARTIN TRUSLER
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 15 ====
+possible to attribute the deviations speciﬁcally to the new
+equation of state for the solid phase, as the calculated melt-
+ing pressures are equally strongly dependent on the ﬂuid-
+state equation of state.
+Figures 12 to 14 compare experimental values of deriva-
+tive properties with the predictions of the model. The ther-
+mal expansivity along the sublimation curve is shown in
+Fig. 12, and the agreement is mostly within the experimental
+uncertainties except for the results of Manzhelli et al. ,26 the
+only primary data considered for derivative properties, at
+very low temperatures and between 120 and 139 K. The sec-
+ondary data of Krupskii et al. 29 are represented extremely
+well, even at very low temperatures. The isentropic compres-
+sibility along the sublimation curve is shown in Fig. 13. The
+disagreement between the different literature sources is clear
+here; the model tends to favor Manzhelli et al. 26 at higher
+temperatures and Yamashita and Kato 30 at lower tempera-
+tures. Finally, in Fig. 14, the isentropic bulk modulus meas-
+urements of Shimizu et al.45 at T ¼ 300 K are compared with
+the model. The experimental isotherm is essentially a linear
+function of pressure, while the predictions of the model ex-
+hibit some curvature. For these data, DAAD ¼ 9%, which is
+about twice the estimated experimental uncertainty.
+Consideration was given to eliminating the most discrep-
+ant primary data sets. The isobaric heat-capacity data of
+Manzhelli et al. 26 has the largest v2 and it appears that the
+uncertainty stated by the authors does not encompass the
+scatter of their raw data; however, it may be reasonable for a
+smooth curve drawn through them. These data are in fact
+vital in determining the Debye temperature and so were
+retained. Their deviations appear random and the bias is
+zero. The three data sets for sublimation pressure have v2
+values signiﬁcantly above unity as a consequence of small
+systematic differences amongst them and the very small
+uncertainties assigned to these data. Eliminating any one
+data set might bias the ﬁt and so retaining all three was felt
+to be best. The expansivity data of Manzhelli et al. 26 also
+have a quite large v2, but eliminating these was found to
+have no signiﬁcant inﬂuence on the ﬁnal equation of state
+and so they too were retained.
+Finally, in Fig. 15, the extrapolation behavior of the equa-
+tion of state is considered in two further comparisons. The
+ﬁrst is with the molar volumes reported by Liu44 at T ¼ 296 K
+and pressures between 11 and 51 GPa, which have a standard
+relative uncertainty of 0.6%. Liu did not observe a phase
+transition anywhere between 3 and 51 GPa, although it has
+been reported that the transition to phase III involves
+FIG. 10. Fractional deviations Dp=p of experimental sublimation pressures
+of CO 2 at T /C20 150 K from the new equation of state for solid CO 2 with
+Ref. 5 for the vapor: h, Tickner and Lossing; 33 *, Bryson et al.;36 ———,
+equation of state.
+FIG. 11. Fractional deviations Dp=p of experimental melting pressures of
+CO2 from the new equation of state for solid CO 2 with Ref. 5 for the liquid:
+*, Clusius et al.;49 h, Michels et al.;48 /C2 , Bridgman.47
+FIG. 12. Isobaric expansivity of solid CO 2 as a function of temperature T
+along the sublimation curve: *, Kruspkii et al. ;29 h, Manzhelii et al. ;26
+———, equation of state. The insert shows a as a function of T3 for T /C20 31 K.
+FIG. 13. Isentropic compressibility of solid CO 2 as a function of temperature
+T along the sublimation curve: h, Manzhelii et al. ;26 ~, Yamashita and
+Kato;30 *, Powell et al.;28 ———, equation of state.
+043105-15EQUATION OF STATE FOR SOLID CO2
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 16 ====
+negligible change in molar volume. 6 Thus, these high-
+pressure data might relate to metastable states of either phase
+I or phase III. In any event, the experimental data agree with
+the present equation of state to within 61.2% at pressures
+up to 25 GPa and only deviate by /C0 3.6% at 51 GPa. The sec-
+ond comparison is with the Hugoniot data of Zubarev and
+Telegin,74 which have a relative uncertainty of approxi-
+mately 2% in Vm(p). The results presented in the original pa-
+per require recalculation to correct for an error in the initial
+value of the density of the solid specimen at the normal sub-
+limation point. With the correct value of 1.57 g cm /C0 3, the
+results shown in Fig. 15 are obtained. The computed curve is
+the isentrope passing through the initial state. The experi-
+mental data are in good agreement with the present model up
+to a pressure of about 20 GPa, after which increasing devia-
+tions are found, reaching 12% in the molar volume at p ¼ 68
+GPa. The calculated temperatures along the Hugoniot curve
+reach 960 K at the highest pressure attained experimentally.
+8. Uncertainty of the Equation of State
+Based on the comparison with experimental data presented
+in Figs. 4 and 5, the estimated relative uncertainty of the equa-
+tion of state for molar volume is 0.02% on the sublimation
+curve, increasing to 1.5% in the compressed solid. For iso-
+baric heat capacity on the sublimation curve, the estimated
+relative uncertainties are: 5% for T < 10 K; 3% for 10 /C20 T/K
+/C20 35; and 0.5% for T > 35 K. It is not possible to provide a
+substantiated uncertainty estimate for the heat capacity of the
+compressed solid, as there are no experimental data with
+which to compare. However, in the limits of high temperature
+and high density, the lattice heat capacity is expected to
+approach the Dulong–Petit limit of 5R and the quasi-harmonic
+part of the equation of state conforms to this exactly. The
+anharmonic correction term in the equation of state lowers the
+lattice heat capacity only slightly, e.g., by about 0.5% at
+T ¼ 750 K and p ¼ 10 GPa. It is also noticeable that the contri-
+bution of the internal modes is very close to that found in the
+gas phase. Thus there is a reasonable expectation that the pre-
+dicted constant-volume heat capacity should behave reason-
+ably in the compressed solid at high temperatures.
+9. Auxiliary Equations for the Melting
+and Sublimation Curves
+9.1. Melting and sublimation pressure
+The melting pressure of solid CO 2 cannot be reliably
+obtained by solving for equality of molar Gibbs energy
+between the new fundamental equation for the solid and the
+ﬂuid equation of state of Span at Wagner 5 at pressures above
+800 MPa, which is the limit of validity of the latter. Ideally,
+a new and extended ﬂuid-phase equation would be devel-
+oped to address this issue but, in any event, it is useful to
+have an auxiliary equation from which the melting pressure
+may be obtained as a function of temperature. Span and
+Wagner used a simple quadratic polynomial in ( T/Tt /C0 1) to
+ﬁt the melting curve at pressures up to 287 MPa. Abramson
+and Brown52 found that extending this to a cubic polynomial
+was sufﬁcient to also ﬁt the data at much higher pressures
+and the same conclusion is reached here. Accordingly, the
+equation for the melting pressure is
+p ¼ pt 1 þ d1ðT=Tt /C0 1Þþ d2ðT=Tt /C0 1Þ2 þ d3ðT=Tt /C0 1Þ3
+hi
+:
+(47)
+A weighted ﬁt to the primary and secondary melting-pressure
+data8,48,49,52 gave d1 ¼ 2010.04, d2 ¼ 1704.40, d3 ¼ 171.695,
+and DAAD ¼ 2.5%. The melting-curve data and their relative
+deviations from Eq. (47) are shown in Fig. 16, along with the
+predictions of the fundamental equations for the solid and
+ﬂuid phases at pressures up to twice the nominal maximum
+pressures for the ﬂuid-phase equation. The auxiliary equation
+is not as accurate as the fundamental equations at pressures
+below 300 MPa but, at higher pressures, it appears to do as
+well as could be expected given the scatter of the data and the
+systematic differences between the high-pressure data of Gior-
+dano et al. 8 and Abramson and Brown. 52 Also shown in
+Fig. 16 is the result of solving the new fundamental equation
+with the ﬂuid-phase equation of state of Giordano et al.8 with
+FIG. 14. Isentropic bulk modulus KS of solid CO2 as a function of pressure p
+at T ¼ 300 K: *, Shimizu et al.;45 ———, equation of state.
+FIG. 15. Extrapolation behavior of the equation of state: h, Liu ( T ¼ 296
+K);44 *, Hugoniot data of Zubarev and Telegin; 74 ———, calculated for
+T ¼ 296 K; – – –, calculated Hugoniot curve.
+043105-16 J. P . MARTIN TRUSLER
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 17 ====
+Gm matched to that given by the Span–Wagner equation at
+p ¼ 800 MPa. Large deviations are found at temperatures
+above about 400 K. In part, the large errors reﬂect the rather
+small value of the change in molar volume upon melting
+found at high pressures (see Fig.6).
+In the case of the sublimation curve, the fundamental
+equations can be solved with conﬁdence for equality of
+molar Gibbs energy to obtain the equilibrium pressure. Val-
+ues computed in this way at temperatures between 150 and
+216 K were ﬁtted by an equation similar (but not identical)
+to that proposed by Span and Wagner,5
+lnðp=ptÞ¼ð Tt=TÞ d4ð1 /C0 T=TtÞþ d5ð1 /C0 T=TtÞ1:5
+h
+þ d6ð1 /C0 T=TtÞ2:5
+i
+: (48)
+The coefﬁcients obtained were d4 ¼/C0 14.97366,
+d5 ¼ 1.805904, and d6 ¼/C0 2.834695. Equation (48) repre-
+sents the sublimation pressures computed from the solid and
+ﬂuid equations of state to within 0.04%, and it also provides
+a good representation of the experimental data, as can be
+seen in Fig. 9.
+Equations (47) and (48) are both constrained by their func-
+tional forms to pass through the triple point.
+9.2. Molar volume on the melting and sublimation
+curves
+It is also convenient to have auxiliary equations for the
+molar volume along the melting and sublimation curves, e.g.,
+to provide initial estimates for solving the equation of state on
+the phase boundaries. For this purpose, the molar volume was
+computed from the fundamental equation at a large number of
+temperatures between 0 and 800 K at the pressures given by
+the auxiliary equations for the melting and sublimation pres-
+sures. The results were then ﬁtted to separate closed-form
+equations above and below the triple point.
+On the melting curve, the molar volume was correlated by
+the simple polynomial function,
+Vm ¼ Vm;t 1 þ d7ðT=Tt /C0 1Þþ d8ðT=Tt /C0 1Þ2
+h
+þ d9ðT=Tt /C0 1Þ3
+i
+; (49)
+where Vm,t ¼ 28.5589 cm3 mol/C0 1 is the molar volume of the
+solid at the triple-point temperature, d7 ¼ 0.160433,
+d8 ¼/C0 0.018643, and d9 ¼ 0.001582. This represents the val-
+ues computed from the equation of state to within 60.07%.
+In the case of the molar volume along the sublimation
+curve, the following equation represents Vm within 60.02%:
+Vm ¼ V00 1 þ d10 þ d11ðT=T0Þþ d12ðT=T0Þ2 þ d13ðT=T0Þ3
+expðT0=TÞ/C0 1
+"#
+:
+(50)
+Here, V00 is the molar volume at T ! 0 K (given in
+Table 6), T0 ¼ 68.347 K, d10 ¼ 0.00306956, d11 ¼ 0.0243269,
+d12 ¼/C0 0.00901163, and d13 ¼ 0.00157151.
+Equation (49) is constrained by its functional form to
+agree with the equation of state at the triple point. Although
+Eq. (50) is not so constructed, the same constraint was
+imposed numerically when the parameters were optimized.
+10. Discussion
+It is interesting to examine the thermodynamic surface
+represented by the equation of state. Figure 17 shows the
+thermal properties: pressure, isothermal compressibility, iso-
+baric expansivity, and thermal pressure coefﬁcient,
+b ¼ð @p=@TÞV; all computed along isotherms and on the
+FIG. 16. (Color online) (a) Melting pressure p of solid CO2 and (b) relative
+deviations dp=p of melting pressures from the auxiliary equation: *, Gior-
+dano et al. ;8 h, Michels et al. ;48 /C2 , Clusius et al. ;49 ^, Abramson and
+Brown;52 ~, Bridgman; ———, new equation of state for solid CO 2 solved
+with Ref. 5 for the liquid phase; – – –, new equation of state for solid CO 2
+solved with Ref. 8 for the liquid phase.
+FIG. 17. (Color online) Thermal properties of solid phase I computed from
+the equation of state: (a) p-Vm isotherms; (b) isothermal compressibility jT;
+(c) isobaric expansivity a; (d) thermal pressure coefﬁcient b.
+043105-17EQUATION OF STATE FOR SOLID CO2
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 18 ====
+phase boundaries over the full domain in which the equation
+of state is valid. The pressure isotherms appear approxi-
+mately parallel, especially at high pressures. The isothermal
+compressibility is only very weakly dependent upon tem-
+perature but varies with molar volume, increasing rapidly
+in the approach to the triple point where the solid is in its
+most expanded state. The isobaric expansivity increases
+rapidly with temperature from zero at T ¼ 0 K but at
+higher temperatures also becomes nearly athermal. Similar
+behavior is observed for b ¼ a/jT which converges onto a
+single function of Vm with increasing T, indicating that the
+high-temperature ( p, Vm, T) behavior is fundamentally
+rather simple.
+Figure 18 shows the molar heat capacities of the solid,
+including the lattice heat capacity, CV,m and Cp,m, plotted as
+functions of temperature along the sublimation and melting
+curves. The lattice heat capacity, equal to ( CV,m /C0 Cint),
+increases to reach 4.92 R at T ¼ 800 K, just below the
+Dulong–Petit limit of 5 R. The contribution of the internal
+modes takes CV,m to 7.60R at 800 K, while Cp,m is 8.63R at
+the same temperature. There is a local maximum in Cp,m at
+the triple point caused by the large values of the thermal
+expansivity in that most expanded state. A sharp peak is seen
+in Fig. 18 at the triple point because of the discontinuity
+there in the p-T locus along which Cp,m is plotted.
+The three Gru¨neisen parameters associated with the exter-
+nal lattice modes vary slowly with molar volume and span a
+range of approximately 1 to 4, whereas spectroscopic studies
+of these modes yield values close to 2. 17 The thermal
+Gru¨neisen parameter, obtained from Eq. (39), is plotted in
+Fig. 19. The isotherms for this property do not converge at
+high temperatures because of the contribution of the internal
+modes to CV,m. If the lattice heat capacity were used in place
+of the thermodynamic CV,m, then the computed Gru ¨neisen
+parameter would be approximately 2 at high temperatures.
+The equation of state can also be used to explore metasta-
+ble crystalline states. At p ¼ 0.1 MPa, the solid is thermody-
+namically stable with respect to the vapor at temperatures up
+to about 195 K. However, the condition for mechanical sta-
+bility, namely ð@2Gm=@V2
+mÞT < 0, is satisﬁed for the meta-
+stable solid to considerably higher temperatures and,
+according to the new equation of state, the absolute limit of
+mechanical stability is not reached until T ¼ 235 K. As al-
+ready mentioned, the equation of state may also be extrapo-
+lated to very high pressures to obtain properties of solid
+phase I in what are probably metastable states at p > 12 GPa.
+The choice of the quasi-harmonic approximation leads to
+an equation of state in the form of a Helmholtz function with
+T and Vm as the independent variables. This approach was
+favored because of its theoretical basis, even though a Gibbs
+function such as that adopted for ice Ih by Feistel and
+Wagner,75 with T and p as the independent variables, would
+be somewhat more convenient in application. In the present
+case, when T and p are speciﬁed, it is ﬁrst necessary to solve
+the equation of state numerically for Vm(T,p), but this is very
+easily achieved with a standard root ﬁnder (e.g., the New-
+ton–Raphson method) and thereafter all properties follow
+from simple analytical expressions.
+The cold curve used in this work does not correspond
+exactly to any of the simple intermolecular potential models
+that might be applied to the system. However, it can be rep-
+resented approximately by a central Mie potential, con-
+strained to give the equilibrium molar volume at T ¼ 0K ,
+having an attractive exponent of 6 and a repulsive exponent
+of 10.87. However, this model does not match the accuracy
+of the present equation of state. The Vinet equation can also
+provide a reasonable representation of the cold curve.70
+11. Conclusions
+The present work provides for the ﬁrst time an equation of
+state for solid phase I of carbon dioxide from which all ther-
+modynamic properties may be obtained with some conﬁdence
+at pressures up to approximately 12 GPa and temperatures up
+to 800 K. The model is simple and easy to implement.
+The equation of state is probably as good as it could be,
+given the data available at the present time. New measure-
+ments of the compression behavior at low temperatures
+would be useful, as there are no reliable data at T < 295 K,
+and for the compressibility along the sublimation curve.
+The latter would be best addressed by means of sound-
+speed measurements on single crystals. The equation of
+FIG. 18. Molar heat capacities Cm as functions of temperature along the sub-
+limation curve ( T /C20 Tt) and melting curve ( T > Tt). Curves: 1, lattice heat
+capacity ( CV,m /C0 Cint)=R; 2, isochoric molar heat capacity CV,m=R; 3, iso-
+baric molar heat capacity Cp,m=R. The dotted line marks the triple-point
+temperature.
+FIG. 19. (Color online) Thermal Gru¨neisen parameter cth computed from the
+equation of state.
+043105-18 J. P . MARTIN TRUSLER
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions
+==== PAGE 19 ====
+state of the ﬂuid is also a limit ation in calculations of melt-
+ing properties at p > 800 MPa, and it would be useful to de-
+velop an improved and extended fundamental equation
+valid up to the pressure of the (ﬂuid þ solid I þ solid IV or
+VII) triple point.
+Acknowledgments
+The author would like to thank Sheena Sze Ying Lee and
+Ke Lun Chua for their help in the initial stages of this work.
+12. References
+1K. D. Litasov, A. F. Goncharov, and R. J. Hemley, Earth Planet. Sci. Lett.
+309, 318 (2011).
+2D. P. Cruikshank, T. L. Roush, T. O. Owen, T. R. Geballe, C. de Bergh, B.
+Schmitt, R. H. Brown, and M. J. Bartholomew, Science 261, 742 (1993).
+3M. C. Malin, M. A. Caplinger, and S. D. Davis, Science 294, 2146 (2001).
+4B. Metz, Carbon Dioxide Capture and Storage – Special Report of the
+Intergovernmental Panel on Climate Change (Cambridge University
+Press, Cambridge, 2006).
+5R. Span and W. Wagner, J. Phys. Chem. Ref. Data 25, 1509 (1996).
+6M. Santoro and F. A. Gorelli, Chem. Soc. Rev. 35, 918 (2006).
+7M. Santoro and F. A. Gorelli, Phys. Rev. B 80, 184109 (2009).
+8V. M. Giordano, F. Datchi, and A. Dewaele, J. Chem. Phys. 125, 054504
+(2006).
+9V. M. Giordano and F. Datchi, Europhys. Lett. 77, 46002 (2007).
+10M. C. A. Donkersloot and S. H. Walmsley, Chem. Phys. Lett. 11, 105
+(1971).
+11T. G. Gibbons and M. L. Klein, J. Chem. Phys. 60, 112 (1974).
+12C. S. Murthy, K. Singer, and I. R. McDonald, Mol. Phys. 44, 135 (1981).
+13.R. D. Etters and A. Helmy, Phys. Rev. B 27, 6439 (1983).
+14R. Lesar and R. G. Gordon, J. Chem. Phys. 78, 4991 (1983).
+15B. Kuchta and R. D. Etters, Phys. Rev. B 38, 6265 (1988).
+16R. D. Etters and B. Kuchta, J. Chem. Phys. 90, 4537 (1989).
+17V. M. Giordano, F. Datchi, F. A. Gorelli, and R. Bini, J. Chem. Phys. 133,
+144501 (2010).
+18A. Eucken, Verh. Dtsch. Phys. Ges. 18, 4 (1916).
+19O. Maass and W. H. Barnes,Proc. R. Soc. London, Ser. A111, 224 (1926).
+20A. Eucken and F. Hauck, Z. Phys. Chem., Stoechiom. Verwandtschaftsl.
+134, 161 (1928).
+21W. Heuse, Z. Phys. Chem. 147, 266 (1930).
+22W. H. Keesom and J. W. L. Kohler, Physica 1, 167 (1934).
+23W. H. Keesom and J. W. L. Kohler, Physica 1, 655 (1934).
+24W. F. Giauque and C. J. Egan, J. Chem. Phys. 5, 45 (1937).
+25V. Hovi and E. Ma¨ntyalo, Ann. Acad. Sci. Fenn. A6(24), 1 (1959).
+26V. G. Manzhelii, A. M. Tolkache, M. I. Bagatski, and E. I. Voitovic, Phys.
+Status Solidi B 44, 39 (1971).
+27A. E. Curzon, Physica 59, 733 (1972).
+28B. M. Powell, G. Dolling, L. Piseri, and P. Martel, in Neutron Inelastic
+Scattering (International Atomic Energy Agency, Grenoble, 1972), p. 207.
+29I. N. Krupskii, A. I. Prokhvatilov, A. I. Erenburg, and A. S. Barylnik, Fiz.
+Nizk. Temp. 8, 533 (1982).
+30Y. Yamashita and M. Kato, Geophys. Res. Lett. 24, 1327 (1997).
+31A. Eucken and E. Donath, Z. Phys. Chem., Stoechiom. Verwandtschaftsl.
+124, 181 (1926).
+32C. H. Meyers and M. S. Van Dusen, J. Res. Natl. Bur. Stand. 10, 381
+(1933).
+33A. W. Tickner and F. P. Lossing, J. Phys. Colloid Chem. 55, 733 (1951).
+34D. Ambrose, Trans. Faraday Soc. 52, 772 (1956).
+35G. L. Baughman, S. P. Westhoff, S. Dincer, D. D. Duston, and A. J. Kid-
+nay, J. Chem. Thermodyn. 6, 1121 (1974).
+36C. E. Bryson, V. Cazcarra, and L. L. Levenson, J. Chem. Eng. Data 19,
+107 (1974).
+37Z. Bilkadi, M. W. Lee, and J. Bigeleisen, J. Chem. Phys. 62, 2087 (1975).
+38E. Fernandez-Fassnacht and F. del Rio, J. Chem. Thermodyn. 16, 469
+(1984).
+39R. P. Wolf, F. A. Stahl, and J. A. Watrous, J. Chem. Phys. 59, 115 (1973).
+40J. P. Kuenen and W. G. Robson, Philos. Mag. 3, 622 (1902).
+41P. W. Bridgman, Proc. Am. Acad. Arts Sci. 72, 207 (1938).
+42R. Stevenson, J. Chem. Phys. 27, 673 (1957).
+43B. Olinger, J. Chem. Phys. 77, 6255 (1982).
+44L.-G. Liu, Earth Planet. Sci. Lett. 71, 104 (1984).
+45H. Shimizu, T. Kitagawa, and S. Sasaki, Phys. Rev. B 47, 11567 (1993).
+46H. P. Scott, T. W. Kinney, M. R. Frank, and J. Lin, in American Geophysi-
+cal Union, Fall Meeting 2010, San Francisco, California, USA, 13-17
+December (2010).
+47P. W. Bridgman, Phys. Rev. 3, 153 (1914).
+48A. Michels, B. Blaisse, and J. Hoogschagen, Physica 9, 565 (1942).
+49K. Clusius, U. Piesbergen, and E. Varde, Helv. Chim. Acta 63, 1290
+(1960).
+50J. D. Grace and G. C. Kennedy, J. Phys. Chem. Solids 28, 977 (1967).
+51V. Iota and C. S. Yoo, Phys. Rev. Lett. 86, 5922 (2001).
+52E. H. Abramson and J. M. Brown, EOS. Trans. AGU 85(47), Abstract
+V41A-1358 (2004), Fall Meeting Supplement.
+53H. Preston-Thomas, Metrologia 27, 3 (1990).
+54H. Preston-Thomas, Metrologia 27, 107 (1990).
+55R. L. Rusby, J. Chem. Thermodyn. 23, 1153 (1991).
+56R. E. Bedford and C. G. M. Kirby, Metrologia 5, 83 (1969).
+57M. E. Wieser and M. Berglund, Pure Appl. Chem. 81, 2131 (2007).
+58K. J. R. Rosman and P. D. P. Taylor, Pure Appl. Chem. 70, 217 (1998).
+59A. Chedin, J. Mol. Spectrosc. 76, 430 (1979).
+60H. W. Woolley, J. Res. Natl. Bur. Stand. 52, 289 (1954).
+61S. H. Walmsley and J. A. Pople, Mol. Phys. 8, 345 (1964).
+62K. G. Brown and W. T. King, J. Chem. Phys. 52, 4437 (1970).
+63A. Anderson and T. S. Sun, Chem. Phys. Lett. 8, 537 (1971).
+64J. W. Schmidt and W. B. Daniels, J. Chem. Phys. 73, 4848 (1980).
+65R. C. Hanson and L. H. Jones, J. Chem. Phys. 75, 1102 (1981).
+66H. Olijnyk, H. Daufer, H. J. Jodl, and H. D. Hochheimer, J. Chem. Phys.
+88, 4204 (1988).
+67P. Ranson, R. Ouillon, and S. Califano, J. Chem. Phys. 89,3 5 9 2
+(1988).
+68R. Bini, H. J. Jodl, and S. Califano, Phys. Rev. B 45, 5244 (1992).
+69J. P. Poirier and A. Tarantola, Phys. Earth Planet. Inter. 109, 1 (1998).
+70L. Vocˇadlo, J. P. Poirer, and G. D. Price, Am. Mineral.85, 390 (2000).
+71A. J. Macleod, ACM Trans. Math. Softw. 22, 288 (1996).
+72L. D. Landau and E. M. Lifshitz, Statistical Physics, Course of Theoretical
+Physics. (Butterworth & Heinemann, Oxford, 1980).
+73Z. Q. Wu and R. M. Wentzcovitch, Phys. Rev. B 79, 104304 (2009).
+74V. N. Zubarev and G. S. Telegin, Sov. Phys. Dokl. 7, 34 (1962).
+75R. Feistel and W. Wagner, J. Phys. Chem. Ref. Data 35, 1021 (2006).
+043105-19EQUATION OF STATE FOR SOLID CO2
+J. Phys. Chem. Ref. Data, Vol. 40, No. 4, 2011
+Downloaded 16 Mar 2013 to 136.159.235.223. Redistribution subject to AIP license or copyright; see http://jpcrd.aip.org/about/rights_and_permissions

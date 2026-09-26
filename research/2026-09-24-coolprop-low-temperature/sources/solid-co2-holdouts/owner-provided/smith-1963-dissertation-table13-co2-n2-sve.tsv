@@ -1,0 +1,158 @@
+# Smith G.E. (1963). Solid-Vapor Equilibrium of the Carbon Dioxide-Nitrogen System at Pressures to 200 Atmospheres.
+# PhD dissertation, University of Michigan, 1963 (University Microfilms 64-6752; committee chair R.E. Sonntag).
+# Published as Smith, Sonntag, Van Wylen, Adv. Cryog. Eng. 9, 197-206 (1964), doi:10.1007/978-1-4757-0525-6_24 (not in hand).
+# Local copy: sonntag-van-wylen-1962-solid-vapor-equilibrium-co2-n2.pdf (sha256 2c23234e6cccfb84a818590b794977c3aa74de15ba23dc3839352daae92b76bd).
+# NOTE: despite its file name, that PDF is Smith's 1963 dissertation (ProQuest scan, 219 pages), not the 1962
+# Sonntag-Van Wylen chapter. File name kept as provided.
+# Table XIII, "Mole fraction of carbon dioxide as a function of temperature and pressure", printed page 143
+# (PDF page index 157, 0-based), read from a 170 dpi render (the OCR text layer has misreads, not used for digits).
+# System: CO2 + N2, solid-vapour equilibrium (SVE, frost points). Solid phase: pure CO2 (N2 assumed negligible in the solid,
+# not measured). y_CO2 = vapour mole fraction of CO2. T = nominal isotherm, K; p = nominal equilibrium pressure, atm.
+# 125 values: 6 isotherms x 21 pressures (5, 10 to 200 atm in steps of 10), one blank (190 K, 5 atm).
+# origin column, from the table's staircase line and footnotes:
+#   sonntag = "all values at pressures lower than these [starred] points are those reported by Sonntag" (his 1960 data;
+#             identical to sonntag-1960-dissertation-table8-co2-n2-sve.tsv at those points);
+#   both    = starred: "points at which the data collected by Sonntag and that obtained here agree";
+#   smith   = Smith's own measurements (value from the original or the check run, whichever fitted a large-scale plot best);
+#   smith_avg = footnotes (2) 190 K 80 atm: average of 0.0292 +- 0.0002 and 0.0294 +- 0.0002;
+#               (3) 180 K 190 atm: average of 0.0305 +- 0.0002 and 0.0307 +- 0.0002;
+#   plotted = footnote (1) "values read from plot of data and not determined experimentally" (190 K at 70 and 90 atm):
+#             NOT a measurement, exclude from scoring.
+# Counts: smith 67, smith_avg 2, both 6, plotted 2, sonntag 48. Smith measured 75 (69 own + 6 agreement); compilations count
+# Smith 1964 as 72 points (Riva 2016 uses 64).
+# Where Smith re-measured Sonntag's range (140 and 150 K at 80 to 100 atm, 190 K at 60 to 100 atm) his y is lower; he
+# attributes the 190 K difference to a ~1 K warm bias of Sonntag's heat exchanger (text p. 141-142).
+# Uncertainty (chapter VII): temperature measurement +-0.01 K, temperature control +-0.05 K, equilibrium pressure +-0.2 atm,
+# infrared analyzer +-1 % of full scale; per-point analyzer limits in Table XIV (about +-0.00002 in y near 0.002,
+# +-0.00003 near 0.004, +-0.00005 near 0.009, +-0.0001 to +-0.0002 at 0.01 to 0.05).
+# p_MPa is derived here (atm x 0.101325), not printed.
+# Sanity check: y_CO2 increases with T at every pressure; every isotherm passes through a minimum (20 to 70 atm) and rises
+# smoothly to 200 atm.
+# Digits as printed, one sanity check, not re-verified (owner: not looking for 100 % correct data).
+# Role: G4 frost-point holdout (high pressure). Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+T_K	p_atm	p_MPa	y_CO2	origin
+140	5	0.5066	0.00042	sonntag
+140	10	1.0132	0.00024	sonntag
+140	20	2.0265	0.00018	sonntag
+140	30	3.0397	0.00019	sonntag
+140	40	4.0530	0.00025	sonntag
+140	50	5.0663	0.00043	sonntag
+140	60	6.0795	0.00078	sonntag
+140	70	7.0927	0.00112	both
+140	80	8.1060	0.00132	smith
+140	90	9.1192	0.00148	smith
+140	100	10.1325	0.00162	smith
+140	110	11.1457	0.00173	smith
+140	120	12.1590	0.00183	smith
+140	130	13.1723	0.00192	smith
+140	140	14.1855	0.00200	smith
+140	150	15.1988	0.00208	smith
+140	160	16.2120	0.00215	smith
+140	170	17.2252	0.00221	smith
+140	180	18.2385	0.00227	smith
+140	190	19.2518	0.00232	smith
+140	200	20.2650	0.00236	smith
+150	5	0.5066	0.00192	sonntag
+150	10	1.0132	0.00107	sonntag
+150	20	2.0265	0.00069	sonntag
+150	30	3.0397	0.00064	sonntag
+150	40	4.0530	0.00071	sonntag
+150	50	5.0663	0.00094	sonntag
+150	60	6.0795	0.00128	sonntag
+150	70	7.0927	0.00172	both
+150	80	8.1060	0.00219	smith
+150	90	9.1192	0.00259	smith
+150	100	10.1325	0.00295	smith
+150	110	11.1457	0.00325	smith
+150	120	12.1590	0.00348	smith
+150	130	13.1723	0.00370	smith
+150	140	14.1855	0.00388	smith
+150	150	15.1988	0.00405	smith
+150	160	16.2120	0.00420	smith
+150	170	17.2252	0.00434	smith
+150	180	18.2385	0.00447	smith
+150	190	19.2518	0.00458	smith
+150	200	20.2650	0.00468	smith
+160	5	0.5066	0.00699	sonntag
+160	10	1.0132	0.00395	sonntag
+160	20	2.0265	0.00251	sonntag
+160	30	3.0397	0.00217	sonntag
+160	40	4.0530	0.00217	sonntag
+160	50	5.0663	0.00243	sonntag
+160	60	6.0795	0.00280	sonntag
+160	70	7.0927	0.00332	sonntag
+160	80	8.1060	0.00393	sonntag
+160	90	9.1192	0.00461	sonntag
+160	100	10.1325	0.00534	both
+160	110	11.1457	0.00595	smith
+160	120	12.1590	0.00650	smith
+160	130	13.1723	0.00698	smith
+160	140	14.1855	0.00741	smith
+160	150	15.1988	0.00784	smith
+160	160	16.2120	0.00821	smith
+160	170	17.2252	0.00856	smith
+160	180	18.2385	0.00885	smith
+160	190	19.2518	0.00912	smith
+160	200	20.2650	0.00937	smith
+170	5	0.5066	0.0220	sonntag
+170	10	1.0132	0.0121	sonntag
+170	20	2.0265	0.00735	sonntag
+170	30	3.0397	0.00608	sonntag
+170	40	4.0530	0.00572	sonntag
+170	50	5.0663	0.00580	sonntag
+170	60	6.0795	0.00618	sonntag
+170	70	7.0927	0.00685	sonntag
+170	80	8.1060	0.00760	sonntag
+170	90	9.1192	0.00860	sonntag
+170	100	10.1325	0.00964	both
+170	110	11.1457	0.0106	smith
+170	120	12.1590	0.0115	smith
+170	130	13.1723	0.0123	smith
+170	140	14.1855	0.0131	smith
+170	150	15.1988	0.0138	smith
+170	160	16.2120	0.0146	smith
+170	170	17.2252	0.0152	smith
+170	180	18.2385	0.0158	smith
+170	190	19.2518	0.0163	smith
+170	200	20.2650	0.0168	smith
+180	5	0.5066	0.0595	sonntag
+180	10	1.0132	0.0325	sonntag
+180	20	2.0265	0.0190	sonntag
+180	30	3.0397	0.0151	sonntag
+180	40	4.0530	0.0137	sonntag
+180	50	5.0663	0.0133	sonntag
+180	60	6.0795	0.0135	sonntag
+180	70	7.0927	0.0141	sonntag
+180	80	8.1060	0.0150	sonntag
+180	90	9.1192	0.0161	sonntag
+180	100	10.1325	0.0175	both
+180	110	11.1457	0.0190	smith
+180	120	12.1590	0.0205	smith
+180	130	13.1723	0.0221	smith
+180	140	14.1855	0.0236	smith
+180	150	15.1988	0.0251	smith
+180	160	16.2120	0.0267	smith
+180	170	17.2252	0.0282	smith
+180	180	18.2385	0.0295	smith
+180	190	19.2518	0.0306	smith_avg
+180	200	20.2650	0.0315	smith
+190	10	1.0132	0.0778	sonntag
+190	20	2.0265	0.0455	sonntag
+190	30	3.0397	0.0354	sonntag
+190	40	4.0530	0.0311	sonntag
+190	50	5.0663	0.0293	both
+190	60	6.0795	0.0285	smith
+190	70	7.0927	0.0285	plotted
+190	80	8.1060	0.0293	smith_avg
+190	90	9.1192	0.0305	plotted
+190	100	10.1325	0.0324	smith
+190	110	11.1457	0.0347	smith
+190	120	12.1590	0.0375	smith
+190	130	13.1723	0.0400	smith
+190	140	14.1855	0.0425	smith
+190	150	15.1988	0.0448	smith
+190	160	16.2120	0.0470	smith
+190	170	17.2252	0.0490	smith
+190	180	18.2385	0.0510	smith
+190	190	19.2518	0.0530	smith
+190	200	20.2650	0.0548	smith

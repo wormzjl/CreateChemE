@@ -1,0 +1,11 @@
+fluid,sparse_knots,dense_knots,refined_knots,sparse_build_cpu_ms,total_unique_flashes,status
+water-cooling,9,513,1025,46.875,1029,OK
+water-heating,9,513,1025,46.875,1029,OK
+steam-condensing,0,0,0,0,0,java.lang.IllegalArgumentException: Water-vapor approximation outside qualified partial-pressure range
+steam-sensible,9,513,1025,46.875,1027,OK
+methane-cooling,9,513,1025,46.875,1028,OK
+methane-heating,9,513,1025,31.25,1027,OK
+pentane-liquid,9,513,1025,31.25,1030,OK
+pentane-condensing,30,528,1039,296.875,1057,OK
+crude-cooling,11,513,1025,31.25,1028,OK
+heavy-liquid,12,513,1025,15.625,1030,OK

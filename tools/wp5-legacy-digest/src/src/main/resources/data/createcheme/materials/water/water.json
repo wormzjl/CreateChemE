@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:water",
+  "revision": "water-iapws-shomate-r1",
+  "source": "IAPWS Wagner-Pruss auxiliary saturation; NIST H2O(g) Shomate; Watson latent heat",
+  "type": "iapws_shomate_watson",
+  "viscosity": {
+    "liquid": {
+      "type": "power_sum",
+      "temperature_min_kelvin": 253.15,
+      "temperature_max_kelvin": 383.15,
+      "pressure_min_pascal": 100000.0,
+      "pressure_max_pascal": 100000.0,
+      "reference_temperature_kelvin": 300.0,
+      "coefficients": [0.00028068, 0.00051145, 0.000061131, 0.00000045903],
+      "exponents": [-1.9, -7.7, -19.6, -40.0],
+      "revision": "iapws-sr6-2011-viscosity-r1",
+      "source": "IAPWS SR6-08(2011), equation 7 and table 5; coefficients converted from microPa.s to Pa.s. https://iapws.org/technical-guidance/release/LiquidWater.download . Includes metastable liquid below freezing and above boiling at 0.1 MPa; this is not a phase-stability model.",
+      "estimated": false
+    }
+  },
+  "molar_mass": 0.01801528,
+  "triple_point": 273.16,
+  "critical_temperature": 647.096,
+  "critical_pressure": 22064000.0,
+  "max_enthalpy_temperature": 900.0,
+  "reference_boiling_temperature": 373.15,
+  "reference_vaporization_enthalpy": 40660.0,
+  "watson_exponent": 0.38,
+  "saturation_coefficients": [
+    -7.85951783,
+    1.84408259,
+    -11.7866497,
+    22.6807411,
+    -15.9618719,
+    1.80122502
+  ],
+  "shomate_coefficients": [
+    30.092,
+    6.832514,
+    6.793435,
+    -2.53448,
+    0.082139,
+    -250.881,
+    241.8264
+  ]
+}

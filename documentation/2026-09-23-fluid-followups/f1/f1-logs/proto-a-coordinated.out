@@ -1,0 +1,163 @@
+=== GUPRPRPR nanosPerCall=1000 budget=2000.0 ms
+ #0 slice [0,+100] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #1 slice [0,+50] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #2 slice [0,+25] HELD: Substep refinement exhausted: Newton line search stalled at residual 0.10479032967202645; active-set pass=0 work=1.54 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #3 slice [0,+25] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #4 slice [0,+12] FULL accepted=159 rejected=66 work=1.89 s committed=12 tanks 100782/0.006 100603/0.000 100567/0.000
+ #5 slice [12,+24] FULL accepted=29 rejected=1 work=0.11 s committed=36 tanks 101051/0.018 100672/0.000 100390/0.000
+ #6 slice [36,+48] FULL accepted=41 rejected=3 work=0.04 s committed=84 tanks 101886/0.041 101830/0.001 101827/0.000
+ #7 slice [84,+96] FULL accepted=5 rejected=1 work=0.00 s committed=180 tanks 104520/0.088 104376/0.002 104373/0.000
+ #8 slice [180,+100] FULL accepted=2 rejected=0 work=0.00 s committed=280 tanks 107020/0.134 106754/0.005 106751/0.000
+ #9 slice [280,+100] FULL accepted=2 rejected=0 work=0.00 s committed=380 tanks 109440/0.180 109054/0.010 109049/0.000
+ #10 slice [380,+100] FULL accepted=2 rejected=1 work=0.00 s committed=480 tanks 111887/0.223 111377/0.016 111370/0.000
+ #11 slice [480,+100] FULL accepted=3 rejected=0 work=0.00 s committed=580 tanks 114386/0.265 113746/0.024 113735/0.001
+ #12 slice [580,+100] FULL accepted=3 rejected=1 work=0.00 s committed=680 tanks 116932/0.305 116153/0.033 116136/0.001
+ #13 slice [680,+100] FULL accepted=3 rejected=1 work=0.00 s committed=780 tanks 119519/0.344 118592/0.044 118565/0.002
+ #14 slice [780,+100] FULL accepted=2 rejected=1 work=0.00 s committed=880 tanks 122140/0.381 121061/0.056 121023/0.002
+ #15 slice [880,+100] FULL accepted=2 rejected=0 work=0.00 s committed=980 tanks 124804/0.417 123572/0.070 123519/0.003
+ #16 slice [980,+100] FULL accepted=2 rejected=1 work=0.00 s committed=1080 tanks 127521/0.450 126138/0.085 126068/0.005
+ #17 slice [1080,+100] FULL accepted=1 rejected=0 work=0.00 s committed=1180 tanks 130309/0.482 128778/0.101 128688/0.007
+ #18 slice [1180,+100] FULL accepted=2 rejected=0 work=0.00 s committed=1280 tanks 133181/0.513 131506/0.118 131395/0.009
+ #19 slice [1280,+100] FULL accepted=1 rejected=0 work=0.00 s committed=1380 tanks 136153/0.542 134337/0.136 134202/0.011
+ #20 slice [1380,+100] FULL accepted=1 rejected=0 work=0.00 s committed=1480 tanks 139237/0.570 137282/0.155 137121/0.015
+ #21 slice [1480,+100] FULL accepted=1 rejected=0 work=0.00 s committed=1580 tanks 142445/0.597 140355/0.175 140165/0.018
+ #22 slice [1580,+100] FULL accepted=1 rejected=0 work=0.00 s committed=1680 tanks 145788/0.622 143566/0.196 143345/0.022
+ #23 slice [1680,+100] FULL accepted=1 rejected=0 work=0.00 s committed=1780 tanks 149278/0.646 146926/0.217 146672/0.027
+ #24 slice [1780,+100] FULL accepted=1 rejected=0 work=0.00 s committed=1880 tanks 152927/0.668 150449/0.239 150158/0.032
+ #25 slice [1880,+100] FULL accepted=1 rejected=0 work=0.00 s committed=1980 tanks 156749/0.690 154147/0.262 153816/0.038
+ #26 slice [1980,+100] FULL accepted=1 rejected=0 work=0.00 s committed=2080 tanks 160755/0.710 158033/0.285 157660/0.045
+ #27 slice [2080,+100] FULL accepted=1 rejected=0 work=0.00 s committed=2180 tanks 164963/0.730 162124/0.308 161706/0.052
+ #28 slice [2180,+100] FULL accepted=1 rejected=0 work=0.00 s committed=2280 tanks 169387/0.748 166435/0.332 165968/0.060
+ #29 slice [2280,+100] FULL accepted=1 rejected=0 work=0.00 s committed=2380 tanks 174047/0.765 170985/0.356 170467/0.069
+ #30 slice [2380,+100] FULL accepted=1 rejected=0 work=0.00 s committed=2480 tanks 178963/0.782 175793/0.380 175221/0.078
+ #31 slice [2480,+100] FULL accepted=1 rejected=0 work=0.00 s committed=2580 tanks 184156/0.797 180884/0.404 180254/0.089
+ #32 slice [2580,+100] FULL accepted=1 rejected=0 work=0.00 s committed=2680 tanks 189653/0.811 186281/0.429 185591/0.100
+ #33 slice [2680,+100] FULL accepted=1 rejected=0 work=0.00 s committed=2780 tanks 195481/0.825 192014/0.453 191260/0.112
+ #34 slice [2780,+100] FULL accepted=1 rejected=0 work=0.00 s committed=2880 tanks 201673/0.838 198113/0.477 197293/0.125
+ #35 slice [2880,+100] FULL accepted=1 rejected=0 work=0.00 s committed=2980 tanks 208264/0.850 204616/0.501 203726/0.139
+ #36 slice [2980,+100] FULL accepted=1 rejected=0 work=0.00 s committed=3080 tanks 215296/0.861 211563/0.525 210600/0.153
+ #37 slice [3080,+100] FULL accepted=1 rejected=0 work=0.00 s committed=3180 tanks 222815/0.872 219001/0.549 217963/0.169
+ #38 slice [3180,+100] FULL accepted=1 rejected=0 work=0.00 s committed=3280 tanks 230876/0.882 226984/0.572 225868/0.186
+ #39 slice [3280,+100] FULL accepted=1 rejected=0 work=0.00 s committed=3380 tanks 239539/0.892 235573/0.595 234377/0.203
+ #40 slice [3380,+100] FULL accepted=1 rejected=0 work=0.00 s committed=3480 tanks 248878/0.900 244840/0.618 243561/0.222
+ #41 slice [3480,+100] FULL accepted=1 rejected=0 work=0.00 s committed=3580 tanks 258974/0.909 254869/0.640 253505/0.241
+ #42 slice [3580,+100] FULL accepted=1 rejected=0 work=0.00 s committed=3680 tanks 269927/0.916 265756/0.662 264306/0.262
+ #43 slice [3680,+100] FULL accepted=1 rejected=0 work=0.00 s committed=3780 tanks 281851/0.924 277619/0.683 276080/0.283
+ #44 slice [3780,+100] FULL accepted=1 rejected=0 work=0.00 s committed=3880 tanks 294884/0.930 290592/0.703 288963/0.306
+ #45 slice [3880,+100] FULL accepted=1 rejected=0 work=0.00 s committed=3980 tanks 309188/0.937 304842/0.724 303120/0.329
+ #46 slice [3980,+100] FULL accepted=1 rejected=0 work=0.00 s committed=4080 tanks 324964/0.942 320564/0.743 318749/0.354
+ #47 slice [4080,+100] FULL accepted=1 rejected=0 work=0.00 s committed=4180 tanks 342451/0.948 338001/0.762 336092/0.379
+ #48 slice [4180,+100] FULL accepted=1 rejected=0 work=0.00 s committed=4280 tanks 361948/0.953 357450/0.781 355446/0.406
+ #49 slice [4280,+100] FULL accepted=1 rejected=0 work=0.00 s committed=4380 tanks 383824/0.958 379281/0.798 377182/0.433
+ #50 slice [4380,+100] FULL accepted=1 rejected=0 work=0.00 s committed=4480 tanks 408546/0.962 403961/0.815 401766/0.462
+ #51 slice [4480,+100] FULL accepted=1 rejected=0 work=0.00 s committed=4580 tanks 436713/0.966 432088/0.832 429796/0.491
+ #52 slice [4580,+100] FULL accepted=1 rejected=0 work=0.00 s committed=4680 tanks 469100/0.970 464437/0.848 462050/0.521
+ #53 slice [4680,+100] FULL accepted=1 rejected=0 work=0.00 s committed=4780 tanks 506736/0.974 502038/0.863 499556/0.552
+ #54 slice [4780,+100] FULL accepted=1 rejected=0 work=0.00 s committed=4880 tanks 551015/0.977 546284/0.878 543707/0.584
+  total work 9.6 s (at 1000 ns per checkpoint)
+=== GUPRPRPRPRPRPR nanosPerCall=1000 budget=2000.0 ms
+ #0 slice [0,+100] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #1 slice [0,+50] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #2 slice [0,+25] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #3 slice [0,+12] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #4 slice [0,+6] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #5 slice [0,+3] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #6 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #7 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #8 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #9 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #10 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #11 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+  twelve holds in a row: stop
+  total work 24.0 s (at 1000 ns per checkpoint)
+=== GUPRPRPRPV nanosPerCall=1000 budget=2000.0 ms
+ #0 slice [0,+100] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #1 slice [0,+50] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #2 slice [0,+25] HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0 work=0.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #3 slice [0,+25] HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0 work=0.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #4 slice [0,+25] HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0 work=0.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #5 slice [0,+25] HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0 work=0.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #6 slice [0,+25] HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0 work=0.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #7 slice [0,+25] HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0 work=0.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #8 slice [0,+25] HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0 work=0.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #9 slice [0,+25] HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0 work=0.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #10 slice [0,+25] HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0 work=0.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+ #11 slice [0,+25] HELD: Substep refinement exhausted: Newton iteration limit at residual 1.965038869308691E-6; active-set pass=0 work=0.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000
+  twelve holds in a row: stop
+  total work 4.0 s (at 1000 ns per checkpoint)
+=== GUPRPRPRPRPRPRPV nanosPerCall=1000 budget=2000.0 ms
+ #0 slice [0,+100] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #1 slice [0,+50] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #2 slice [0,+25] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #3 slice [0,+12] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #4 slice [0,+6] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #5 slice [0,+3] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #6 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #7 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #8 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #9 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #10 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+ #11 slice [0,+1] HELD: wall deadline work=2.00 s committed=0 tanks 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000 101325/0.000
+  twelve holds in a row: stop
+  total work 24.0 s (at 1000 ns per checkpoint)
+=== RUPR nanosPerCall=1000 budget=2000.0 ms
+ #0 slice [0,+100] FULL accepted=7 rejected=0 work=0.00 s committed=100 tanks 94470/0.000 108321/0.000
+ #1 slice [100,+100] FULL accepted=1 rejected=0 work=0.00 s committed=200 tanks 88077/0.000 115124/0.000
+ #2 slice [200,+100] FULL accepted=1 rejected=0 work=0.00 s committed=300 tanks 82118/0.000 121754/0.000
+ #3 slice [300,+100] FULL accepted=1 rejected=0 work=0.00 s committed=400 tanks 76561/0.000 128227/0.000
+ #4 slice [400,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09571166727086529; active-set pass=0 work=0.05 s committed=400 tanks 76561/0.000 128227/0.000
+ #5 slice [400,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.0820386128943617; active-set pass=0 work=0.05 s committed=400 tanks 76561/0.000 128227/0.000
+ #6 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8579920767848583 of 5.0 s, accepted=492, rejected=532, reasons={Newton line search stalled at residual #; active-set pass=#=34, Newton iteration limit at residual #; active-set pass=#=498}, last=Newton iteration limit at residual 0.15142983998100687; active-set pass=0 work=0.44 s committed=400 tanks 76561/0.000 128227/0.000
+ #7 slice [400,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.060552309518239665; active-set pass=0 work=0.05 s committed=400 tanks 76561/0.000 128227/0.000
+ #8 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8579920767848583 of 5.0 s, accepted=492, rejected=532, reasons={Newton line search stalled at residual #; active-set pass=#=34, Newton iteration limit at residual #; active-set pass=#=498}, last=Newton iteration limit at residual 0.15142983998100687; active-set pass=0 work=0.44 s committed=400 tanks 76561/0.000 128227/0.000
+ #9 slice [400,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.060552309518239665; active-set pass=0 work=0.05 s committed=400 tanks 76561/0.000 128227/0.000
+ #10 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8579920767848583 of 5.0 s, accepted=492, rejected=532, reasons={Newton line search stalled at residual #; active-set pass=#=34, Newton iteration limit at residual #; active-set pass=#=498}, last=Newton iteration limit at residual 0.15142983998100687; active-set pass=0 work=0.44 s committed=400 tanks 76561/0.000 128227/0.000
+ #11 slice [400,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.060552309518239665; active-set pass=0 work=0.05 s committed=400 tanks 76561/0.000 128227/0.000
+ #12 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8579920767848583 of 5.0 s, accepted=492, rejected=532, reasons={Newton line search stalled at residual #; active-set pass=#=34, Newton iteration limit at residual #; active-set pass=#=498}, last=Newton iteration limit at residual 0.15142983998100687; active-set pass=0 work=0.44 s committed=400 tanks 76561/0.000 128227/0.000
+ #13 slice [400,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.060552309518239665; active-set pass=0 work=0.05 s committed=400 tanks 76561/0.000 128227/0.000
+ #14 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8579920767848583 of 5.0 s, accepted=492, rejected=532, reasons={Newton line search stalled at residual #; active-set pass=#=34, Newton iteration limit at residual #; active-set pass=#=498}, last=Newton iteration limit at residual 0.15142983998100687; active-set pass=0 work=0.44 s committed=400 tanks 76561/0.000 128227/0.000
+ #15 slice [400,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.060552309518239665; active-set pass=0 work=0.05 s committed=400 tanks 76561/0.000 128227/0.000
+  twelve holds in a row: stop
+  total work 2.6 s (at 1000 ns per checkpoint)
+=== RUPRPR nanosPerCall=1000 budget=2000.0 ms
+ #0 slice [0,+100] FULL accepted=23 rejected=6 work=0.02 s committed=100 tanks 94470/0.000 104806/0.000 104804/0.000
+ #1 slice [100,+100] FULL accepted=1 rejected=0 work=0.00 s committed=200 tanks 88077/0.000 108155/0.000 108153/0.000
+ #2 slice [200,+100] FULL accepted=1 rejected=0 work=0.00 s committed=300 tanks 82118/0.000 111383/0.000 111381/0.000
+ #3 slice [300,+100] FULL accepted=1 rejected=0 work=0.00 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #4 slice [400,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.07517641320853834; active-set pass=0 work=0.06 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #5 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178166996; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #6 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178149549; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #7 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178131925; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #8 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178156547; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #9 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178128421; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #10 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178131925; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #11 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178160037; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #12 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178128421; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #13 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178131925; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #14 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178128421; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+ #15 slice [400,+100] HELD: Interval substep limit; no partial interval may commit: advanced=1.8580162940968785 of 5.0 s, accepted=491, rejected=533, reasons={Newton line search stalled at residual #; active-set pass=#=31, Newton iteration limit at residual #; active-set pass=#=502}, last=Newton iteration limit at residual 0.06790131178121374; active-set pass=0 work=0.66 s committed=400 tanks 76561/0.000 114499/0.000 114497/0.000
+  twelve holds in a row: stop
+  total work 7.4 s (at 1000 ns per checkpoint)
+=== RPRUPRPR nanosPerCall=1000 budget=2000.0 ms
+ #0 slice [0,+100] FULL accepted=23 rejected=6 work=0.02 s committed=100 tanks 97839/0.000 97836/0.000 104849/0.000 104847/0.000
+ #1 slice [100,+100] FULL accepted=1 rejected=0 work=0.00 s committed=200 tanks 94471/0.000 94469/0.000 108322/0.000 108319/0.000
+ #2 slice [200,+100] FULL accepted=1 rejected=0 work=0.00 s committed=300 tanks 91219/0.000 91217/0.000 111746/0.000 111744/0.000
+ #3 slice [300,+100] FULL accepted=1 rejected=0 work=0.00 s committed=400 tanks 88080/0.000 88077/0.000 115125/0.000 115123/0.000
+ #4 slice [400,+100] FULL accepted=1 rejected=0 work=0.00 s committed=500 tanks 85048/0.000 85046/0.000 118460/0.000 118458/0.000
+ #5 slice [500,+100] FULL accepted=1 rejected=0 work=0.00 s committed=600 tanks 82121/0.000 82119/0.000 121754/0.000 121752/0.000
+ #6 slice [600,+100] FULL accepted=1 rejected=0 work=0.00 s committed=700 tanks 79294/0.000 79292/0.000 125008/0.000 125007/0.000
+ #7 slice [700,+100] FULL accepted=1 rejected=0 work=0.00 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #8 slice [800,+100] HELD: Interval substep limit; no partial interval may commit: advanced=3.7250333598872487 of 5.0 s, accepted=490, rejected=534, reasons={Newton line search stalled at residual #; active-set pass=#=36, Newton iteration limit at residual #; active-set pass=#=498}, last=Newton iteration limit at residual 0.03356213948881956; active-set pass=0 work=0.81 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #9 slice [800,+100] HELD: Interval substep limit; no partial interval may commit: advanced=3.725082471338514 of 5.0 s, accepted=492, rejected=532, reasons={Newton iteration limit at residual #; active-set pass=#=498, Newton line search stalled at residual #; active-set pass=#=34}, last=Newton iteration limit at residual 0.09083830405337259; active-set pass=0 work=0.66 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #10 slice [800,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09083830403854434; active-set pass=0 work=0.08 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #11 slice [800,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.10597802137667263; active-set pass=0 work=0.08 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #12 slice [800,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.10597802137766425; active-set pass=0 work=0.08 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #13 slice [800,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09083830403029323; active-set pass=0 work=0.08 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #14 slice [800,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09572208382503708; active-set pass=0 work=0.08 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #15 slice [800,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.11354788003828506; active-set pass=0 work=0.08 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #16 slice [800,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09572208382498071; active-set pass=0 work=0.08 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #17 slice [800,+100] HELD: Interval substep limit; no partial interval may commit: advanced=3.725082453911791 of 5.0 s, accepted=492, rejected=532, reasons={Newton line search stalled at residual #; active-set pass=#=32, Newton iteration limit at residual #; active-set pass=#=500}, last=Newton iteration limit at residual 0.10597802137853084; active-set pass=0 work=0.68 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #18 slice [800,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.1135478800475964; active-set pass=0 work=0.08 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+ #19 slice [800,+100] HELD: Substep refinement exhausted: Newton iteration limit at residual 0.11354788004746336; active-set pass=0 work=0.08 s committed=800 tanks 76565/0.000 76563/0.000 128226/0.000 128224/0.000
+  twelve holds in a row: stop
+  total work 2.9 s (at 1000 ns per checkpoint)

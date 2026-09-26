@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.RetainedSolverTest" tests="3" skipped="0" failures="1" errors="0" timestamp="2026-09-26T07:45:00.262Z" hostname="WORMZ-PC" time="0.066">
+  <properties/>
+  <testcase name="aRetainedSolverIsExclusiveAndIsHandedBackAfterEveryOutcome()" classname="com.wormzjl.createcheme.runtime.fluid.RetainedSolverTest" time="0.02"/>
+  <testcase name="sharingTheIslandSolverWithTheModulePlannerNeverCostsMoreWork()" classname="com.wormzjl.createcheme.runtime.fluid.RetainedSolverTest" time="0.029"/>
+  <testcase name="aRetainedSolverReusesItsStructureAcrossTheIntervalBoundary()" classname="com.wormzjl.createcheme.runtime.fluid.RetainedSolverTest" time="0.016">
+    <failure message="org.opentest4j.AssertionFailedError: carried vs fresh Jacobian builds ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: carried vs fresh Jacobian builds ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:166)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:664)
+	at app//com.wormzjl.createcheme.runtime.fluid.RetainedSolverTest.aRetainedSolverReusesItsStructureAcrossTheIntervalBoundary(RetainedSolverTest.java:33)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

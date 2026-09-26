@@ -1,0 +1,49 @@
+2026-09-23T13:35:42.963Z gate ok {"endfield":0,"freeMiB":27130} for cli-empty-base-r01
+2026-09-23T13:35:42.965Z start cli-empty-base-r01 (client base empty warmup 60 s window 60 s)
+2026-09-23T13:38:41.247Z end cli-empty-base-r01 status=0
+2026-09-23T13:38:41.477Z analyzed cli-empty-base-r01
+2026-09-23T13:38:41.940Z gate ok {"endfield":0,"freeMiB":26963} for cli-empty-wp5-r01
+2026-09-23T13:38:41.940Z start cli-empty-wp5-r01 (client wp5 empty warmup 60 s window 60 s)
+2026-09-23T13:41:38.276Z end cli-empty-wp5-r01 status=0
+2026-09-23T13:41:38.502Z analyzed cli-empty-wp5-r01
+2026-09-23T13:41:38.968Z gate ok {"endfield":0,"freeMiB":26847} for cli-rest100-wp5-r01
+2026-09-23T13:41:38.974Z start cli-rest100-wp5-r01 (client wp5 rest100 warmup 60 s window 60 s)
+2026-09-23T13:44:34.447Z end cli-rest100-wp5-r01 status=0
+2026-09-23T13:44:34.670Z analyzed cli-rest100-wp5-r01
+2026-09-23T13:44:35.114Z gate ok {"endfield":0,"freeMiB":26919} for cli-rest100-base-r01
+2026-09-23T13:44:35.115Z start cli-rest100-base-r01 (client base rest100 warmup 60 s window 60 s)
+2026-09-23T13:47:30.336Z end cli-rest100-base-r01 status=0
+2026-09-23T13:47:30.573Z analyzed cli-rest100-base-r01
+2026-09-23T13:47:31.017Z gate ok {"endfield":0,"freeMiB":27014} for cli-through100-base-r01
+2026-09-23T13:47:31.017Z start cli-through100-base-r01 (client base through100 warmup 60 s window 60 s)
+2026-09-23T13:50:26.411Z end cli-through100-base-r01 status=0
+2026-09-23T13:50:26.656Z analyzed cli-through100-base-r01
+2026-09-23T13:50:27.097Z gate ok {"endfield":0,"freeMiB":27014} for cli-through100-wp5-r01
+2026-09-23T13:50:27.098Z start cli-through100-wp5-r01 (client wp5 through100 warmup 60 s window 60 s)
+2026-09-23T13:53:22.076Z end cli-through100-wp5-r01 status=0
+2026-09-23T13:53:22.304Z analyzed cli-through100-wp5-r01
+2026-09-23T13:53:22.750Z gate ok {"endfield":0,"freeMiB":26964} for cli-fill100-wp5-r01
+2026-09-23T13:53:22.751Z start cli-fill100-wp5-r01 (client wp5 fill100 warmup 60 s window 60 s)
+2026-09-23T13:56:22.242Z end cli-fill100-wp5-r01 status=0
+2026-09-23T13:56:22.758Z analyzed cli-fill100-wp5-r01
+2026-09-23T13:56:23.208Z gate ok {"endfield":0,"freeMiB":26908} for cli-fill100-base-r01
+2026-09-23T13:56:23.208Z start cli-fill100-base-r01 (client base fill100 warmup 60 s window 60 s)
+2026-09-23T13:59:22.453Z end cli-fill100-base-r01 status=0
+2026-09-23T13:59:22.977Z analyzed cli-fill100-base-r01
+2026-09-23T13:59:23.425Z gate ok {"endfield":0,"freeMiB":27348} for cli-mixed100-base-r01
+2026-09-23T13:59:23.427Z start cli-mixed100-base-r01 (client base mixed100 warmup 60 s window 60 s)
+2026-09-23T14:02:18.634Z end cli-mixed100-base-r01 status=0
+2026-09-23T14:02:19.077Z analyzed cli-mixed100-base-r01
+2026-09-23T14:02:19.519Z gate ok {"endfield":0,"freeMiB":27374} for cli-mixed100-wp5-r01
+2026-09-23T14:02:19.520Z start cli-mixed100-wp5-r01 (client wp5 mixed100 warmup 60 s window 60 s)
+2026-09-23T14:05:16.243Z end cli-mixed100-wp5-r01 status=0
+2026-09-23T14:05:16.665Z analyzed cli-mixed100-wp5-r01
+2026-09-23T14:05:17.119Z gate ok {"endfield":0,"freeMiB":27232} for cli-rest1000-wp5-r01
+2026-09-23T14:05:17.120Z start cli-rest1000-wp5-r01 (client wp5 rest1000 warmup 60 s window 60 s)
+2026-09-23T14:09:03.397Z end cli-rest1000-wp5-r01 status=0
+2026-09-23T14:09:03.614Z analyzed cli-rest1000-wp5-r01
+2026-09-23T14:09:04.051Z gate ok {"endfield":0,"freeMiB":27330} for cli-rest1000-base-r01
+2026-09-23T14:09:04.051Z start cli-rest1000-base-r01 (client base rest1000 warmup 60 s window 60 s)
+2026-09-23T14:12:49.337Z end cli-rest1000-base-r01 status=0
+2026-09-23T14:12:49.581Z analyzed cli-rest1000-base-r01
+2026-09-23T14:12:49.582Z campaign done

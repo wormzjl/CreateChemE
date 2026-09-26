@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.thermo.V3Cdu17TiaJuanaPackageTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:57.461Z" hostname="WORMZ-PC" time="0.075">
+  <properties/>
+  <testcase name="zeroBinaryInteractionMatrixIsHydrocarbonOnlyAndDefensivelyCopied()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3Cdu17TiaJuanaPackageTest" time="0.011"/>
+  <testcase name="characterizationUsesTheCommittedKeslerLeeVectorsAndKeepsItsExtrapolationAdvisory()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3Cdu17TiaJuanaPackageTest" time="0.012"/>
+  <testcase name="pc12KeepsTheRequiredLastovkaShawCubicHeatCapacityTerm()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3Cdu17TiaJuanaPackageTest" time="0.009"/>
+  <testcase name="publicAxisIsStableAndContainsOnlyTheSixteenV3Hydrocarbons()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3Cdu17TiaJuanaPackageTest" time="0.01"/>
+  <testcase name="standardLiquidReconstructionClosesTheAcsDensityConstraint()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3Cdu17TiaJuanaPackageTest" time="0.013"/>
+  <testcase name="heavyResidueAndUnknownPackageContractsFailClosed()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3Cdu17TiaJuanaPackageTest" time="0.01"/>
+  <testcase name="c4HiddenProvenanceClosesItsInternalSplit()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3Cdu17TiaJuanaPackageTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

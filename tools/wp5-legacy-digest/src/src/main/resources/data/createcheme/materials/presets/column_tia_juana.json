@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "id": "tia_juana",
+  "kind": "column",
+  "label": "Tia Juana Light (default)",
+  "translation_key": "gui.createcheme.column_preset.tia_juana",
+  "order": 0,
+  "visible": true,
+  "package": "createcheme:tjl20_methane",
+  "assay": "createcheme:tia_juana_light_methane",
+  "operating": {
+    "feedTemperatureKelvin": 638.15,
+    "stageCount": 40,
+    "feedStageNumber": 37,
+    "topPressurePascal": 250000.0,
+    "stagePressureDropPascal": 0.0,
+    "columnDiameterMetres": 8.0,
+    "sideDraws": [
+      {
+        "trayNumber": 10,
+        "molarFlowMolPerSecond": 136.46221820029854
+      },
+      {
+        "trayNumber": 18,
+        "molarFlowMolPerSecond": 143.16163238752443
+      },
+      {
+        "trayNumber": 28,
+        "molarFlowMolPerSecond": 45.87851513484432
+      }
+    ],
+    "steamFeeds": [
+      {
+        "stageNumber": 41,
+        "molarFlowMolPerSecond": 333.3333333333333,
+        "temperatureKelvin": 533.15
+      }
+    ],
+    "pumparounds": [
+      {
+        "returnTray": 8,
+        "drawTray": 10,
+        "dutyWatts": -12840000.0,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 16,
+        "drawTray": 18,
+        "dutyWatts": -17890000.0,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 26,
+        "drawTray": 28,
+        "dutyWatts": -11200000.0,
+        "split": "UNIFORM"
+      }
+    ],
+    "feedStandardVolumeCubicMetresPerSecond": 0.1832627693034672,
+    "condenserTemperatureKelvin": 332.15,
+    "organicRefluxRatio": 4.17,
+    "reboilerDutyWatts": 0
+  }
+}

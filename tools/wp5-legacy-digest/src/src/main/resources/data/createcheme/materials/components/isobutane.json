@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "Isobutane",
+  "kind": "chemical",
+  "translation_key": "material.createcheme.isobutane",
+  "fallback": "Isobutane",
+  "appearance": {
+    "color": "#F3F4EA",
+    "transparency": 0.85,
+    "estimated": true
+  }
+}

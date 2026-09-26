@@ -1,0 +1,110 @@
+[
+  {
+    "sign": -1,
+    "leftSlope": 190.13724628838176,
+    "roughnessMetres": 0.0,
+    "reynoldsBoundary": 2000.0,
+    "rightSlope": 190.13709402886806,
+    "status": "PASS",
+    "analyticSlope": 190.13710534711765
+  },
+  {
+    "sign": 1,
+    "leftSlope": 190.13709402886806,
+    "roughnessMetres": 0.0,
+    "reynoldsBoundary": 2000.0,
+    "rightSlope": 190.13724628838176,
+    "status": "PASS",
+    "analyticSlope": 190.13710534711765
+  },
+  {
+    "sign": -1,
+    "leftSlope": 709.2634462619384,
+    "roughnessMetres": 0.0,
+    "reynoldsBoundary": 4000.0,
+    "rightSlope": 709.2639800296929,
+    "status": "PASS",
+    "analyticSlope": 709.263380087894
+  },
+  {
+    "sign": 1,
+    "leftSlope": 709.2639800296929,
+    "roughnessMetres": 0.0,
+    "reynoldsBoundary": 4000.0,
+    "rightSlope": 709.2634462619384,
+    "status": "PASS",
+    "analyticSlope": 709.263380087894
+  },
+  {
+    "sign": -1,
+    "leftSlope": 190.13725167129388,
+    "roughnessMetres": 4.5E-5,
+    "reynoldsBoundary": 2000.0,
+    "rightSlope": 190.13709402886806,
+    "status": "PASS",
+    "analyticSlope": 190.13710534711765
+  },
+  {
+    "sign": 1,
+    "leftSlope": 190.13709402886806,
+    "roughnessMetres": 4.5E-5,
+    "reynoldsBoundary": 2000.0,
+    "rightSlope": 190.13725167129388,
+    "status": "PASS",
+    "analyticSlope": 190.13710534711765
+  },
+  {
+    "sign": -1,
+    "leftSlope": 731.7688509798317,
+    "roughnessMetres": 4.5E-5,
+    "reynoldsBoundary": 4000.0,
+    "rightSlope": 731.7694046507906,
+    "status": "PASS",
+    "analyticSlope": 731.7687802948781
+  },
+  {
+    "sign": 1,
+    "leftSlope": 731.7694046507906,
+    "roughnessMetres": 4.5E-5,
+    "reynoldsBoundary": 4000.0,
+    "rightSlope": 731.7688509798317,
+    "status": "PASS",
+    "analyticSlope": 731.7687802948781
+  },
+  {
+    "sign": -1,
+    "leftSlope": 190.1373515039578,
+    "roughnessMetres": 0.001,
+    "reynoldsBoundary": 2000.0,
+    "rightSlope": 190.13709402886806,
+    "status": "PASS",
+    "analyticSlope": 190.1371053471177
+  },
+  {
+    "sign": 1,
+    "leftSlope": 190.13709402886806,
+    "roughnessMetres": 0.001,
+    "reynoldsBoundary": 2000.0,
+    "rightSlope": 190.1373515039578,
+    "status": "PASS",
+    "analyticSlope": 190.1371053471177
+  },
+  {
+    "sign": -1,
+    "leftSlope": 1080.0669501684683,
+    "roughnessMetres": 0.001,
+    "reynoldsBoundary": 4000.0,
+    "rightSlope": 1080.0678678871298,
+    "status": "PASS",
+    "analyticSlope": 1080.0668277735892
+  },
+  {
+    "sign": 1,
+    "leftSlope": 1080.0678678871298,
+    "roughnessMetres": 0.001,
+    "reynoldsBoundary": 4000.0,
+    "rightSlope": 1080.0669501684683,
+    "status": "PASS",
+    "analyticSlope": 1080.0668277735892
+  }
+]

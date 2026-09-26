@@ -1,0 +1,16 @@
+JDK 21.0.11, 16 processors
+service construction (forPackage): median 994.5 us; anchored view (g0, g1): median 2.80 us
+anchored crystal chemical potential: 78.0 ns per call (sink -5.22e+11)
+request | answer | cold median us | warm mean us | warm p95 us | fluid equilibria or TP calls
+TP 10 % CO2 in N2, 160 K, 1 MPa (deposit, fluid-only answer VL) | VAPOR_SOLID | 384.3 | 40.95 | 70.90 | 2
+TP 1 % CO2 in N2, 150 K, 0.1 MPa (deposit from one vapour) | VAPOR_SOLID | 64.1 | 22.85 | 28.10 | 2
+TP 10 % CO2 in N2, 200 K, 1 MPa (no solid) | SINGLE_FLUID | 27.0 | 7.48 | 9.30 | 1
+TP pure CO2, 180 K, 0.1 MPa (complete deposition) | SOLID_PRESENT | 18.3 | 2.75 | 4.50 | 1
+TP 10 % CO2 in N2, 250 K, 1 MPa, crystal competition | SINGLE_FLUID | 13.7 | 4.93 | 7.50 | 1
+TP same state, fluid-only (baseline) | SINGLE_FLUID | 8.2 | 3.10 | 4.00 | 1
+PH at the 160 K deposit | VAPOR_SOLID | 464.5 | 225.98 | 288.70 | 10
+UV at the 160 K deposit | VAPOR_SOLID | 468.7 | 420.06 | 513.50 | 19
+depositionTemperature 10 % CO2 in N2, 1 MPa | CONVERGED 192.7548 K | 45.7 | 32.71 | 42.10 | 4
+depositionTemperature 1 % CO2 in N2, 0.1 MPa | CONVERGED 150.8446 K | 35.6 | 34.56 | 39.90 | 4
+depositionPressure 10 % CO2 in N2, 180 K | CONVERGED 292088.0796 Pa | 46.8 | 32.19 | 40.20 | 4
+depositionPressure 1 % CO2 in CH4, 170 K | CONVERGED 1384457.9751 Pa | 66.1 | 34.69 | 40.50 | 6

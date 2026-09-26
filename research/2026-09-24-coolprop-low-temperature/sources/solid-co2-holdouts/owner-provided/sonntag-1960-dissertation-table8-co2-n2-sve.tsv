@@ -1,0 +1,86 @@
+# Sonntag R.E. (1960). The Equilibrium of Solid Carbon Dioxide with its Vapor in the Presence of Nitrogen.
+# PhD dissertation, University of Michigan (Industry Program report IP-469), October 1960; Deep Blue hdl 2027.42/7707.
+# Local copy: sonntag-1960-dissertation-umich-bad2222.pdf (sha256 3b2709380b9bd87ce5a545fad1976a948b12093c77e461022c488c4992d7bd7c),
+# a scan with no text layer. Table VIII, "Mole fraction of carbon dioxide as a function of temperature and pressure",
+# printed page 100 (PDF page index 119, 0-based), read from a 200 dpi render.
+# System: CO2 + N2, solid-vapour equilibrium (SVE, frost points). Solid phase: pure CO2 (N2 assumed negligible in the solid,
+# not measured). y_CO2 = mole fraction of CO2 in the vapour. T = nominal isotherm, K; p = nominal equilibrium pressure, atm.
+# 64 points (6 isotherms x 11 pressures, two blanks printed as "--": 190 K at 5 atm and 140 K at 100 atm).
+# Uncertainty: per-point gas-analysis limits are in Table IX (not transcribed); the footnotes quote +-0.00002 to +-0.00003 in y
+# near y = 0.002 to 0.003. Table VIII footnotes: 160 K 70 atm = average of .00334 +- .00002 and .00330 +- .00003;
+# 150 K 80 atm = average of .00223 +- .00002 and .00221 +- .00002 (flag avg).
+# The same data were published as Sonntag and Van Wylen, Adv. Cryog. Eng. 7, 99 (1962), doi:10.1007/978-1-4757-0531-7_12
+# (not in hand), and are the "EXP" enhancement factors of Smith, Sonntag, Van Wylen, Adv. Cryog. Eng. 8, 162 (1963), Table I
+# (check: 140 K, 5 atm: 0.00042 x 5 / 0.00184 atm = 1.141 against the printed E = 1.1414).
+# Smith 1963 (dissertation, Table XIII, file smith-1963-dissertation-table13-co2-n2-sve.tsv) re-measured 80 atm and up at
+# 140 and 150 K and 60 atm and up at 190 K and found lower y there; he attributes the 190 K difference to a ~1 K warm bias in
+# Sonntag's heat exchanger. Prefer Smith's values where the two overlap.
+# p_MPa is derived here (atm x 0.101325), not printed.
+# Sanity check: y_CO2 increases with T at every pressure; each isotherm has its minimum near 20 to 50 atm (enhancement).
+# Digits as printed, one sanity check, not re-verified (owner: not looking for 100 % correct data).
+# Role: G4 frost-point holdout. Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+T_K	p_atm	p_MPa	y_CO2	flag
+140	5	0.5066	0.00042	
+140	10	1.0132	0.00024	
+140	20	2.0265	0.00018	
+140	30	3.0397	0.00019	
+140	40	4.0530	0.00025	
+140	50	5.0663	0.00043	
+140	60	6.0795	0.00078	
+140	70	7.0927	0.00112	
+140	80	8.1060	0.00139	
+140	90	9.1192	0.00158	
+150	5	0.5066	0.00192	
+150	10	1.0132	0.00107	
+150	20	2.0265	0.00069	
+150	30	3.0397	0.00064	
+150	40	4.0530	0.00071	
+150	50	5.0663	0.00094	
+150	60	6.0795	0.00128	
+150	70	7.0927	0.00172	
+150	80	8.1060	0.00222	avg of 2 runs (footnote **)
+150	90	9.1192	0.00270	
+150	100	10.1325	0.00304	
+160	5	0.5066	0.00699	
+160	10	1.0132	0.00395	
+160	20	2.0265	0.00251	
+160	30	3.0397	0.00217	
+160	40	4.0530	0.00217	
+160	50	5.0663	0.00243	
+160	60	6.0795	0.00280	
+160	70	7.0927	0.00332	avg of 2 runs (footnote *)
+160	80	8.1060	0.00393	
+160	90	9.1192	0.00461	
+160	100	10.1325	0.00536	
+170	5	0.5066	0.0220	
+170	10	1.0132	0.0121	
+170	20	2.0265	0.00735	
+170	30	3.0397	0.00608	
+170	40	4.0530	0.00572	
+170	50	5.0663	0.00580	
+170	60	6.0795	0.00618	
+170	70	7.0927	0.00685	
+170	80	8.1060	0.00760	
+170	90	9.1192	0.00860	
+170	100	10.1325	0.00968	
+180	5	0.5066	0.0595	
+180	10	1.0132	0.0325	
+180	20	2.0265	0.0190	
+180	30	3.0397	0.0151	
+180	40	4.0530	0.0137	
+180	50	5.0663	0.0133	
+180	60	6.0795	0.0135	
+180	70	7.0927	0.0141	
+180	80	8.1060	0.0150	
+180	90	9.1192	0.0161	
+180	100	10.1325	0.0176	
+190	10	1.0132	0.0778	
+190	20	2.0265	0.0455	
+190	30	3.0397	0.0354	
+190	40	4.0530	0.0311	
+190	50	5.0663	0.0293	
+190	60	6.0795	0.0290	
+190	70	7.0927	0.0293	
+190	80	8.1060	0.0303	
+190	90	9.1192	0.0320	
+190	100	10.1325	0.0340	

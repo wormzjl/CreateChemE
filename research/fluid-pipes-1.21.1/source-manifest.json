@@ -1,0 +1,72 @@
+[
+  {
+    "sha": "91a01deda19e5beb19fe7840aa14daaa312aa212",
+    "id": "pipez",
+    "repo": "henkelmax/pipez",
+    "source_ref": "branch 1.21.1 snapshot, version text 1.21.1-1.2.31",
+    "retrieved_on": "2026-09-14"
+  },
+  {
+    "sha": "559b1d959811cf04021b51810f353d8c048cd65e",
+    "id": "xnet",
+    "repo": "McJtyMods/XNet",
+    "source_ref": "branch 1.21_neo snapshot, version text 1.21-7.0.7",
+    "retrieved_on": "2026-09-14"
+  },
+  {
+    "sha": "4d278a6351a434d343fbf70d942baeeaf2607536",
+    "id": "laserio",
+    "repo": "Direwolf20-MC/LaserIO",
+    "source_ref": "branch main snapshot, version text 1.9.11, Minecraft 1.21.1",
+    "retrieved_on": "2026-09-14"
+  },
+  {
+    "sha": "e0b405a1f24917db38cb5e82836511f3ad357afe",
+    "id": "mi",
+    "repo": "AztechMC/Modern-Industrialization",
+    "source_ref": "2.5.8",
+    "retrieved_on": "2026-09-14"
+  },
+  {
+    "sha": "9d35cace6895f451b4478a8608ff0fa0506530a5",
+    "id": "enderio",
+    "repo": "Team-EnderIO/EnderIO",
+    "source_ref": "v8.2.12-beta",
+    "retrieved_on": "2026-09-14"
+  },
+  {
+    "sha": "ac0c444d9828da3453ae8cc65338e8de063286fb",
+    "id": "create",
+    "repo": "Creators-of-Create/Create",
+    "source_ref": "mc1.21.1-6.0.10",
+    "retrieved_on": "2026-09-14"
+  },
+  {
+    "sha": "583a182549d284a35c813b55ac2a0d1fddcf945a",
+    "id": "ie",
+    "repo": "BluSunrize/ImmersiveEngineering",
+    "source_ref": "12.4.2-194",
+    "retrieved_on": "2026-09-14"
+  },
+  {
+    "sha": "a00109e4856fd38b9c5b3dd7f22ce4a59cd65a80",
+    "id": "mekanism",
+    "repo": "mekanism/Mekanism",
+    "source_ref": "v1.21.1-10.7.19.85",
+    "retrieved_on": "2026-09-14"
+  },
+  {
+    "id": "oritech",
+    "repo": "Rearth/Oritech",
+    "sha": "bf0d3e96b9a21e3b132d06a6be3c505b00588f00",
+    "source_ref": "v1.2.12",
+    "retrieved_on": "2026-09-14"
+  },
+  {
+    "id": "gt",
+    "repo": "GregTechCEu/GregTech-Modern",
+    "sha": "f6200e018582c3e26e8db06c289d9e01c8250ac8",
+    "source_ref": "v7.0.2-1.21.1",
+    "retrieved_on": "2026-09-14"
+  }
+]

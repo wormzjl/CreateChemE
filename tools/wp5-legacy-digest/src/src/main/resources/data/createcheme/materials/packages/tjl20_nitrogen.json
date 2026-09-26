@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:tjl20_methane_nitrogen",
+  "revision": "crude-regrouped-r1",
+  "model": "pr78",
+  "interactions": "createcheme:tjl20",
+  "missing_interactions": "zero",
+  "water_model": "createcheme:water",
+  "temperature_min_kelvin": 298.15,
+  "temperature_max_kelvin": 900,
+  "pressure_min_pascal": 50000,
+  "pressure_max_pascal": 2000000,
+  "fluid_domain": {
+    "temperature_min_kelvin": 63.151,
+    "temperature_max_kelvin": 900,
+    "pressure_min_pascal": 100,
+    "pressure_max_pascal": 2000000,
+    "evidence": "Fluid network envelope: from the nitrogen triple point (63.151 K, the lowest minimum of any component) to the 900 K of the caloric fits; 100 Pa..2 MPa is the span the network evaluates (liquid reference 2 MPa). The crude components keep 293.15 K and water its 273.16 K triple point inside it."
+  },
+  "aliases": {},
+  "advisory_evidence": [
+    "RECONSTRUCTED_PETROLEUM_PROPERTIES: frozen TJL19 reconstruction, not original HYSYS properties; 60 F standard-liquid basis assumed",
+    "ESTIMATED_HEAVY_RESIDUE: empirical critical-property extrapolation retained for flagged petroleum fractions",
+    "THERMAL_FIT: degree-five Cp fit, analytic H relative to 298.15 K; validated over 298.15..900 K",
+    "PR78_MODEL_DIFFERENCE: V3 low-omega coefficient 1.54226; reconstruction source 1.5422",
+    "METHANE_EXTENSION: NIST ideal-gas Cp fit; CoolProp PR constants; methane binary interactions assumed zero, not fitted",
+    "METHANE_ASSAY: synthetic 0.5 mol% methane blend; hypothetical liquid-density metadata is unused by the molar feed and PR equations",
+    "NITROGEN_EXTENSION: initial charge is conserved inventory; nitrogen/hydrocarbon PR interactions estimated zero; no nitrogen dissolution in the separate free-water phase.",
+    "NITROGEN_CRYOGENIC: valid from its 63.151 K triple point (Cp segment below 273.16 K, NIST viscosity tables); PR78 Psat at 77.355 K +1.23 %, liquid density +0.34 % against NIST (F4)",
+    "ESTIMATED_REGROUPING: PC08-12 mass/volume-constrained Tia Juana reconstruction; heavy Tc/Pc extrapolated; global Dalia transport"
+  ],
+  "liquid_mixture": {
+    "type": "symmetric_pair_groups_v1",
+    "coefficients": [
+      0.7585241056539558,
+      0.45724340571290695,
+      0.08245501128109843,
+      0.05051713998043995
+    ],
+    "reference_kelvin": 323.15,
+    "slope_cap_kelvin": 373.15,
+    "source": "Global Dalia whole/residue fit; whole 40C and residue 60C held out; non-donor mismatch accepted",
+    "revision": "dalia-global-r1"
+  },
+  "basis": "createcheme:network"
+}

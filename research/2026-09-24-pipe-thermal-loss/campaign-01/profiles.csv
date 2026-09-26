@@ -1,0 +1,11 @@
+fluid,sparse_knots,dense_knots,refined_knots,sparse_build_cpu_ms,total_unique_flashes,status
+water-cooling,9,513,1025,31.25,1071,OK
+water-heating,9,513,1025,296.875,1072,OK
+steam-condensing,30,528,1039,31.25,1082,OK
+steam-sensible,9,513,1025,46.875,1048,OK
+methane-cooling,9,513,1025,46.875,1057,OK
+methane-heating,9,513,1025,31.25,1052,OK
+pentane-liquid,9,513,1025,31.25,1077,OK
+pentane-condensing,30,528,1039,62.5,1099,OK
+crude-cooling,11,513,1025,15.625,1066,OK
+heavy-liquid,12,513,1025,15.625,1070,OK

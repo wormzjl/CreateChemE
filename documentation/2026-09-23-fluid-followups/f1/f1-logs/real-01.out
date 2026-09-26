@@ -1,0 +1,109 @@
+=== GUPRPRPR at 1000 ns per checkpoint, 12000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) HELD: wall deadline work=2.00 s
+ tick 99 committed=0 status=HELD: wall deadline
+  slice [280,380) FULL work=0.00 s
+ tick 404 committed=380 status=FULL
+  slice [5280,5380) FULL work=0.00 s
+ tick 5379 committed=5380 status=STEADY: replaying 1.713e-10 kg/s since 269.0 s, next check at 86669.0 s
+ END online=12000 committed=12000 status=STEADY: replaying 1.713e-10 kg/s since 269.0 s, next check at 86669.0 s certificate=Optional[Certified[STEADY, since 5380, base 5380, horizon 1733380, largest flow 1.7129977487274615E-10]] jobs=59 work=8.2 s
+ tanks [P=601325.0 T=298.17 liq=0.9799] [P=601325.0 T=298.19 liq=0.8923] [P=601325.0 T=298.31 liq=0.6200]
+ last modes=[PASSIVE, CLOSED, PASSIVE, PASSIVE] flows=[0.0, 0.0, 1.7129977487274615E-10, 1.63403547578549E-11]
+=== GUPRPRPRPRPRPR at 1000 ns per checkpoint, 12000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) HELD: wall deadline work=2.00 s
+ tick 99 committed=0 status=HELD: wall deadline
+  slice [1,3) HELD: soft budget; approximate fallback refused: Device regime changed work=1.51 s
+ tick 700 committed=1 status=HELD: soft budget; approximate fallback refused: Device regime changed
+  slice [1,2) HELD: soft budget; approximate fallback refused: Substep refinement exhausted: Linearized error estimate does not contract inside the supported domain work=1.69 s
+ tick 800 committed=1 status=HELD: soft budget; approximate fallback refused: Substep refinement exhausted: Linearized error estimate does not contract inside the supported domain
+ END online=12000 committed=1 status=HELD: soft budget; approximate fallback refused: Substep refinement exhausted: Linearized error estimate does not contract inside the supported domain certificate=Optional.empty jobs=15 work=27.2 s
+ tanks [P=100445.8 T=288.14 liq=0.0005] [P=100676.9 T=297.60 liq=0.0000] [P=101066.0 T=297.93 liq=0.0000] [P=101214.5 T=298.06 liq=0.0000] [P=101264.1 T=298.10 liq=0.0000] [P=101276.2 T=298.11 liq=0.0000]
+ last modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, -0.18209659466488892, -0.07735135019224745, -0.03553534279629348, -0.01770035533693619, -0.007868548108322316]
+=== GUPRPRPRPV at 1000 ns per checkpoint, 12000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) HELD: wall deadline work=2.00 s
+ tick 99 committed=0 status=HELD: wall deadline
+  slice [36,84) HELD: Substep refinement exhausted: Newton iteration limit at residual 3.1331773188659637E-6; active-set pass=0 work=0.05 s
+ tick 401 committed=36 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 3.1331773188659637E-6; active-set pass=0
+  slice [404,504) FULL work=0.00 s
+ tick 506 committed=504 status=FULL
+ END online=12000 committed=11904 status=FULL certificate=Optional.empty jobs=126 work=8.3 s
+ tanks [P=116687.1 T=298.15 liq=0.9977] [P=111436.6 T=298.15 liq=0.9829] [P=106263.0 T=298.15 liq=0.9367]
+ last modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 9.936022222905269, 9.786592304073718, 9.32630807990119]
+=== GUPRPRPRPRPRPRPV at 1000 ns per checkpoint, 12000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) HELD: wall deadline work=2.00 s
+ tick 99 committed=0 status=HELD: wall deadline
+  slice [1,3) HELD: soft budget; approximate fallback refused: Device regime changed work=1.51 s
+ tick 700 committed=1 status=HELD: soft budget; approximate fallback refused: Device regime changed
+  slice [1,2) HELD: soft budget; approximate fallback refused: Substep refinement exhausted: Linearized error estimate does not contract inside the supported domain work=1.69 s
+ tick 800 committed=1 status=HELD: soft budget; approximate fallback refused: Substep refinement exhausted: Linearized error estimate does not contract inside the supported domain
+ END online=12000 committed=1 status=HELD: soft budget; approximate fallback refused: Substep refinement exhausted: Linearized error estimate does not contract inside the supported domain certificate=Optional.empty jobs=15 work=27.2 s
+ tanks [P=100445.8 T=288.14 liq=0.0005] [P=100676.9 T=297.60 liq=0.0000] [P=101066.0 T=297.93 liq=0.0000] [P=101214.5 T=298.06 liq=0.0000] [P=101264.1 T=298.10 liq=0.0000] [P=101276.2 T=298.11 liq=0.0000]
+ last modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, CLOSED] flows=[9.9600560504597, 9.9600560504597, -0.18209659466488892, -0.07735135019224745, -0.03553534279629348, -0.01770035533693619, -0.007868548108322316, 0.0]
+=== RUPR at 1000 ns per checkpoint, 12000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) FULL work=0.00 s
+ tick 99 committed=100 status=FULL
+  slice [400,500) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09571166727086529; active-set pass=0 work=0.05 s
+ tick 499 committed=400 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09571166727086529; active-set pass=0
+  slice [400,450) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09082846412291075; active-set pass=0 work=0.05 s
+ tick 599 committed=400 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09082846412291075; active-set pass=0
+  slice [425,475) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.0605523165403119; active-set pass=0 work=0.05 s
+ tick 700 committed=425 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.0605523165403119; active-set pass=0
+  slice [425,450) HELD: Interval substep limit; no partial interval may commit: advanced=0.6079987575500004 of 1.25 s, accepted=492, rejected=532, reasons={Newton line  work=0.44 s
+ tick 800 committed=425 status=HELD: Interval substep limit; no partial interval may commit: advanced=0.6079987575500004 of 1.25 s, accepted=492, rejected=532, reasons={Newton line search sta
+  slice [437,461) HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381060102 of 1.2 s, accepted=490, rejected=534, reasons={Newton line work=0.52 s
+ tick 901 committed=437 status=HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381060102 of 1.2 s, accepted=490, rejected=534, reasons={Newton line search st
+  slice [437,449) HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381105576 of 0.6 s, accepted=492, rejected=532, reasons={Newton line work=0.52 s
+ tick 1001 committed=437 status=HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381105576 of 0.6 s, accepted=492, rejected=532, reasons={Newton line search st
+  slice [437,443) HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381105576 of 0.3 s, accepted=492, rejected=532, reasons={Newton line work=0.52 s
+ tick 1101 committed=437 status=HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381105576 of 0.3 s, accepted=492, rejected=532, reasons={Newton line search st
+  slice [437,440) HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381105576 of 0.15 s, accepted=492, rejected=532, reasons={Newton lin work=0.52 s
+ tick 1201 committed=437 status=HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381105576 of 0.15 s, accepted=492, rejected=532, reasons={Newton line search s
+  slice [437,438) HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381105576 of 0.05 s, accepted=492, rejected=532, reasons={Newton lin work=0.52 s
+ tick 1301 committed=437 status=HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381105576 of 0.05 s, accepted=492, rejected=532, reasons={Newton line search s
+ END online=12000 committed=437 status=HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381105576 of 0.05 s, accepted=492, rejected=532, reasons={Newton line search stalled at residual #; active-set pass=#=32, Newton iteration limit at residual #; active-set pass=#=500}, last=Newton iteration limit at residual 0.08203862378840619; active-set pass=0 certificate=Optional.empty jobs=21 work=6.3 s
+ tanks [P=74602.6 T=273.17 liq=0.0000] [P=130585.2 T=321.15 liq=0.0000]
+ last modes=[PASSIVE, PUMP_TARGET] flows=[0.009232647301369417, 0.009232647301369417]
+=== RUPRPR at 1000 ns per checkpoint, 12000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) FULL work=0.02 s
+ tick 99 committed=100 status=FULL
+  slice [400,500) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.07517641320853834; active-set pass=0 work=0.06 s
+ tick 499 committed=400 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.07517641320853834; active-set pass=0
+  slice [400,450) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.08770586090107498; active-set pass=0 work=0.06 s
+ tick 599 committed=400 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.08770586090107498; active-set pass=0
+  slice [425,475) HELD: Interval substep limit; no partial interval may commit: advanced=0.6080220097755833 of 2.5 s, accepted=489, rejected=535, reasons={Newton line s work=0.59 s
+ tick 700 committed=425 status=HELD: Interval substep limit; no partial interval may commit: advanced=0.6080220097755833 of 2.5 s, accepted=489, rejected=535, reasons={Newton line search stal
+  slice [425,450) HELD: Interval substep limit; no partial interval may commit: advanced=0.6080229748642174 of 1.25 s, accepted=492, rejected=532, reasons={Newton line  work=0.55 s
+ tick 800 committed=425 status=HELD: Interval substep limit; no partial interval may commit: advanced=0.6080229748642174 of 1.25 s, accepted=492, rejected=532, reasons={Newton line search sta
+  slice [437,461) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.06790132117241986; active-set pass=0 work=0.06 s
+ tick 901 committed=437 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.06790132117241986; active-set pass=0
+  slice [437,449) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.06790132117246434; active-set pass=0 work=0.05 s
+ tick 1001 committed=437 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.06790132117246434; active-set pass=0
+ END online=12000 committed=437 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.06790132117246434; active-set pass=0 certificate=Optional.empty jobs=21 work=1.9 s
+ tanks [P=74602.6 T=273.17 liq=0.0000] [P=115624.6 T=309.97 liq=0.0000] [P=115622.9 T=309.62 liq=0.0000]
+ last modes=[PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.009232647813917966, 0.009232647813917966, 0.004705272544851508]
+=== RPRUPRPR at 1000 ns per checkpoint, 12000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) FULL work=0.02 s
+ tick 99 committed=100 status=FULL
+  slice [800,900) HELD: Interval substep limit; no partial interval may commit: advanced=3.7250333598872487 of 5.0 s, accepted=490, rejected=534, reasons={Newton line s work=0.81 s
+ tick 899 committed=800 status=HELD: Interval substep limit; no partial interval may commit: advanced=3.7250333598872487 of 5.0 s, accepted=490, rejected=534, reasons={Newton line search stal
+  slice [850,950) HELD: Interval substep limit; no partial interval may commit: advanced=1.2250946334113946 of 5.0 s, accepted=489, rejected=535, reasons={Newton line s work=0.67 s
+ tick 1000 committed=850 status=HELD: Interval substep limit; no partial interval may commit: advanced=1.2250946334113946 of 5.0 s, accepted=489, rejected=535, reasons={Newton line search stal
+  slice [850,900) HELD: Interval substep limit; no partial interval may commit: advanced=1.2250965667873763 of 2.5 s, accepted=491, rejected=533, reasons={Newton line s work=0.81 s
+ tick 1100 committed=850 status=HELD: Interval substep limit; no partial interval may commit: advanced=1.2250965667873763 of 2.5 s, accepted=491, rejected=533, reasons={Newton line search stal
+  slice [850,875) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.07032643913237496; active-set pass=0 work=0.07 s
+ tick 1200 committed=850 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.07032643913237496; active-set pass=0
+  slice [862,886) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.11354789649502399; active-set pass=0 work=0.07 s
+ tick 1301 committed=862 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.11354789649502399; active-set pass=0
+  slice [874,898) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09572209788898992; active-set pass=0 work=0.06 s
+ tick 1402 committed=874 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.09572209788898992; active-set pass=0
+  slice [874,886) HELD: Substep refinement exhausted: Newton iteration limit at residual 0.0957220978968198; active-set pass=0 work=0.06 s
+ tick 1502 committed=874 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.0957220978968198; active-set pass=0
+ END online=12000 committed=874 status=HELD: Substep refinement exhausted: Newton iteration limit at residual 0.0957220978968198; active-set pass=0 certificate=Optional.empty jobs=27 work=3.1 s
+ tanks [P=74606.3 T=273.18 liq=0.0000] [P=74604.2 T=273.17 liq=0.0000] [P=130584.4 T=321.69 liq=0.0000] [P=130582.9 T=320.60 liq=0.0000]
+ last modes=[PASSIVE, PASSIVE, PUMP_TARGET, PASSIVE] flows=[0.004609417882293426, 0.009218820321433866, 0.009218820321433866, 0.004751564378599396]

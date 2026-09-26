@@ -1,0 +1,14 @@
+// Add a scoped TRAIN-only check without editing the frozen build.gradle.
+gradle.projectsEvaluated {
+    def project = gradle.rootProject
+    project.tasks.register('generationPredictionCheck', JavaExec) {
+        group = 'verification'
+        dependsOn project.tasks.named('neuralMvpClasses')
+        classpath = project.sourceSets.neuralMvp.runtimeClasspath
+        mainClass = 'com.wormzjl.createcheme.science.column.v3.V3GenerationPredictionCheck'
+        maxHeapSize = '1g'
+        args project.providers.gradleProperty('generationModel').get(),
+            project.providers.gradleProperty('generationFixtures').get(),
+            project.providers.gradleProperty('generationCheckOutput').get()
+    }
+}

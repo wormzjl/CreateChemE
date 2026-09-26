@@ -1,0 +1,2853 @@
+{
+  "archive": {
+    "path": ".neural-cache/trace-followup-v1/results.zip",
+    "sha256": "aa46495c70e5f712a2493d9ae2ce4884a481045ca0ca939620c18af078568133"
+  },
+  "entries": [
+    {
+      "bytes": 40813,
+      "entry": ".neural-cache/trace-followup-v1/registration-manifest.json",
+      "sha256": "097d8904d3da005fee95a85e147036730cc4934a0cbc258c9842bef27202716b"
+    },
+    {
+      "bytes": 3437,
+      "entry": "build/neural-trace-followup/analysis-checks.log",
+      "sha256": "6ae7034f2c657480421f6c32e24ea57225bbecc2c537f7a4033b1aacfbf71a48"
+    },
+    {
+      "bytes": 29672,
+      "entry": "build/neural-trace-followup/export-output.log",
+      "sha256": "7aaa0d01101f5a5a3b4ae33ac8c17e6050551ea47132f68956b3dc5f64e72bf6"
+    },
+    {
+      "bytes": 40314,
+      "entry": "build/neural-trace-followup/screen-output.log",
+      "sha256": "504ff30374f42ae41eaba1290e843914d42d74608bc7eb20187d48d3253ee3b2"
+    },
+    {
+      "bytes": 4781,
+      "entry": "build/neural-trace-followup/training-output.log",
+      "sha256": "315a0ecb5f6f541428b3608a35637fbf7c572e62bc98980a42027f268dfc1ed2"
+    },
+    {
+      "bytes": 4656102,
+      "entry": "build/neural-trace-followup/v1/added101.jsonl",
+      "sha256": "dcf645d877c1149a891b96b43c0f1b21f5ba7e8a5e8072dc8f6b8df94a5456fc"
+    },
+    {
+      "bytes": 4255,
+      "entry": "build/neural-trace-followup/v1/calibration-plan.json",
+      "sha256": "8c00e17b8c37203e9c8f4d79acd267e544e7ac8da6b0e1a6cf0351d3bf485fe7"
+    },
+    {
+      "bytes": 5039,
+      "entry": "build/neural-trace-followup/v1/calibration.json",
+      "sha256": "ec97f885670a536464b7d113620fc971ef624e709fdc00c7c3547cc9f4168157"
+    },
+    {
+      "bytes": 2631,
+      "entry": "build/neural-trace-followup/v1/cohorts.json",
+      "sha256": "bd7130353d3f40fa09bb4969db1f2347af68ada72c07870b1982414bb49ae135"
+    },
+    {
+      "bytes": 2081,
+      "entry": "build/neural-trace-followup/v1/fit-verification.json",
+      "sha256": "21bcc7a6ebe942c8b794e8b5173483f206f726e55bd69f8dfd1e14da6400de56"
+    },
+    {
+      "bytes": 31578,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260911/checkpoint-3120.json",
+      "sha256": "36734acd2c7569d3c0dd8cefaeb46f462470e1065773f6ffe657a1109d9bdb50"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260911/checkpoint-3120.pt",
+      "sha256": "5f048b0b61ad4055b9a8ad9d1303f5f6430120bf18beda2f567e2270cd0dbb6e"
+    },
+    {
+      "bytes": 31576,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260911/checkpoint-4160.json",
+      "sha256": "03334924fd7968fb221387399a5d4fd5bbda61c5655794f46c9e33ba185246dc"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260911/checkpoint-4160.pt",
+      "sha256": "133678a689015a53725c84019a02e60418c6e9eefc35222d65252c9990e6b8ce"
+    },
+    {
+      "bytes": 31583,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260911/checkpoint-4640.json",
+      "sha256": "354ef61aaa0546c9ae4da370ad26f7673d8f40d38e787a8829db722ca9c323a4"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260911/checkpoint-4640.pt",
+      "sha256": "bfe5d0f26eb3494ecc2758252b6c71c19ea59f79e1dd5dde4f6242c59694375f"
+    },
+    {
+      "bytes": 134209,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260911/report.json",
+      "sha256": "20fd32e46154a544dad2f702b219f801c9a599101ee12e8654b4c00c700581b6"
+    },
+    {
+      "bytes": 200,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260911/started.json",
+      "sha256": "a3c44d1f45c6e65b3f288b4a15fc18b1c2841abc3f07326f6626e482f463ad30"
+    },
+    {
+      "bytes": 31582,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260912/checkpoint-3120.json",
+      "sha256": "26454404010f781ce1ec884e332268e31806bed1bee3c1c16e69c4a4b912d1cf"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260912/checkpoint-3120.pt",
+      "sha256": "41546fdadb4f3bc88520bc04cc3248c34f35ad9123b6f8cbfb839bee3d95af17"
+    },
+    {
+      "bytes": 31582,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260912/checkpoint-4160.json",
+      "sha256": "7242cbaa51bfb59e464c2372e1b93e36d8cff7a2aeef0a5c3a4595ad79115788"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260912/checkpoint-4160.pt",
+      "sha256": "9184dd4c5d1313a93eb15c23de6be82944b8998a8a73857db437eb6c4a2ca4a1"
+    },
+    {
+      "bytes": 31580,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260912/checkpoint-4640.json",
+      "sha256": "111ee65020a958c2a41f419d9115a339b079d3b1ddb4f802792632ad00b0da03"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260912/checkpoint-4640.pt",
+      "sha256": "41ad640c503eda559164983abd4cd81c510fc7b56a70efadede743e27c28c166"
+    },
+    {
+      "bytes": 134268,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260912/report.json",
+      "sha256": "16183b08c73d705e92c6616c7b5b801065af3b726fa183e9d05a9fe8edcabb3e"
+    },
+    {
+      "bytes": 200,
+      "entry": "build/neural-trace-followup/v1/fits/C-20260912/started.json",
+      "sha256": "7bc5ec648c25ba79f1afe7524bb91b1783b0e79a87d4528064030658614567e7"
+    },
+    {
+      "bytes": 35015,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260911/checkpoint-3120.json",
+      "sha256": "caf5d07ea480226490e9a6806e0976f322ccc876e4e0e0c3a94e44d483b61662"
+    },
+    {
+      "bytes": 1083039,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260911/checkpoint-3120.pt",
+      "sha256": "6d43871777c8067583790b1922bfb3e2859ff62ed793919319454bac34465de7"
+    },
+    {
+      "bytes": 35018,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260911/checkpoint-4160.json",
+      "sha256": "be1b4f406e615c8d99a4ede2fcdfa45cf4018964fabdb35ab2ece9233d98ce4d"
+    },
+    {
+      "bytes": 1083039,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260911/checkpoint-4160.pt",
+      "sha256": "ded4127f4537c36b4b7a5fb0ef2611b8c646aa40a71457cdbed4d159088300eb"
+    },
+    {
+      "bytes": 35019,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260911/checkpoint-4640.json",
+      "sha256": "762cfb4751621a7b3be1a35198eed57c3936514a3b8286a38019bc86868f59e8"
+    },
+    {
+      "bytes": 1083039,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260911/checkpoint-4640.pt",
+      "sha256": "0c7a366de2b01641d3504b24d87835ff45734dc1923c8b74c3864c97bcc22c4e"
+    },
+    {
+      "bytes": 148410,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260911/report.json",
+      "sha256": "6f5c2323e7fd975da7d736a8e292cdde90cedc132e7869626dc875f7f343bb16"
+    },
+    {
+      "bytes": 200,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260911/started.json",
+      "sha256": "e662adeb2f54720675328fe28f7c9f8fd04a9800f299e2315b6edc3e853e7976"
+    },
+    {
+      "bytes": 35012,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260912/checkpoint-3120.json",
+      "sha256": "aab7f8094ff27aa5858ecc4f2138a23f5801eabce5bc72bf0a39890f617cbc67"
+    },
+    {
+      "bytes": 1083039,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260912/checkpoint-3120.pt",
+      "sha256": "5262b8634dfc84fd19238845b08b5594bbd3659eebe2c97d91e6bb4283b4bbd1"
+    },
+    {
+      "bytes": 35023,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260912/checkpoint-4160.json",
+      "sha256": "dd21f0d37ea2ac3cf654afa263ac1d8c8dd58a107d2c1a8db627cf1362cf715c"
+    },
+    {
+      "bytes": 1083039,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260912/checkpoint-4160.pt",
+      "sha256": "5f5e0dfc7e61344502f28391b5ac2ad29d95593b1ba3aa208e5a3d9ef64a0640"
+    },
+    {
+      "bytes": 35016,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260912/checkpoint-4640.json",
+      "sha256": "de80f0ddc4fe4f84cf370ea78a37b6dbd8ed5d190e9eab93c0a72c2d853625e2"
+    },
+    {
+      "bytes": 1083039,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260912/checkpoint-4640.pt",
+      "sha256": "e6cdbda42a864633af9150442d9a1079898386d041349ea751d8069b27ef9fb2"
+    },
+    {
+      "bytes": 148418,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260912/report.json",
+      "sha256": "07e940dfdf1f91900aca62d6284e669b980cd1d0d6095ff36f9e6c434136244f"
+    },
+    {
+      "bytes": 200,
+      "entry": "build/neural-trace-followup/v1/fits/D-20260912/started.json",
+      "sha256": "c94f10110c8d5329c8a308e089f27bb0ad5ebded41c793d282e84914d4b2095b"
+    },
+    {
+      "bytes": 31578,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260911/checkpoint-3120.json",
+      "sha256": "a8943612200f40d8341834bc01c733b5c6540887eb4f9c312b087a1d081f9e97"
+    },
+    {
+      "bytes": 1148255,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260911/checkpoint-3120.pt",
+      "sha256": "15960dac6a0c60cb84ef9144b0c4057e121210c8baf9c4233104857208f92bf9"
+    },
+    {
+      "bytes": 31576,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260911/checkpoint-4160.json",
+      "sha256": "305ed912f9fd0a7a0a814101e83a451246c9c9f4421bbbf4ba926f57d14b98c3"
+    },
+    {
+      "bytes": 1148255,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260911/checkpoint-4160.pt",
+      "sha256": "0a638a1f8f41912dccd6e6d3ebb8f5242132cd0bde17c5a899b9ac3159a9bdf4"
+    },
+    {
+      "bytes": 31580,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260911/checkpoint-4640.json",
+      "sha256": "88e6b91682aa56a84d4e12b381adcfcca2e831a9e1ed3440f079b7f0196cbf88"
+    },
+    {
+      "bytes": 1148255,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260911/checkpoint-4640.pt",
+      "sha256": "ca63951476f73c561987cb0bb1d5edb364fc90eb02dfda9e814da0cb301cfb35"
+    },
+    {
+      "bytes": 134207,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260911/report.json",
+      "sha256": "5a3c2645fcb8e212e728582ff5397a71deae9a45989b6771af261185ee7534f7"
+    },
+    {
+      "bytes": 200,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260911/started.json",
+      "sha256": "1ee7d4ecc3dacc0ad65e650b30e9e727a3aed78e7a677d730a6aa4522c66eee4"
+    },
+    {
+      "bytes": 31582,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260912/checkpoint-3120.json",
+      "sha256": "d5776878bfaa30b18116efaff878a8317ead283d759b2ad7e1d95c2157c4d1e6"
+    },
+    {
+      "bytes": 1148255,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260912/checkpoint-3120.pt",
+      "sha256": "7c44e6c811513995a4547408554bcaf946ead980d4a2ee2845b42e6a46ba0e4b"
+    },
+    {
+      "bytes": 31583,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260912/checkpoint-4160.json",
+      "sha256": "5a7942ec4f4b7173313aa2c340cc44e36437a02371c12f6d64496c24b85e1c62"
+    },
+    {
+      "bytes": 1148255,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260912/checkpoint-4160.pt",
+      "sha256": "a650f2e0044563f5235aba66341233c019ff2107bd6be4459bf1a789cb718ef5"
+    },
+    {
+      "bytes": 31585,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260912/checkpoint-4640.json",
+      "sha256": "4fb66756aa0305c3980f201d9346d0054e79760208caeccf9d268ed1f71a5551"
+    },
+    {
+      "bytes": 1148255,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260912/checkpoint-4640.pt",
+      "sha256": "e9fb073f2753e41c7578cc3876e75f793e051d8f9b28c67c1f1d7df4f56752c1"
+    },
+    {
+      "bytes": 134270,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260912/report.json",
+      "sha256": "a87a78ed7178d1a26988d7909eccbfc465706ca44592a2b6371768a799dc1364"
+    },
+    {
+      "bytes": 200,
+      "entry": "build/neural-trace-followup/v1/fits/F-20260912/started.json",
+      "sha256": "689801b634eadb6a9576cb8fef97ddb46ff244c6b3b3fa5622be688824d7356a"
+    },
+    {
+      "bytes": 31586,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260911/checkpoint-3120.json",
+      "sha256": "8d91f7ed57fdba3f2b32ecbc5168c1b0422c6c6282d4606eea50f8f2e5d8d46d"
+    },
+    {
+      "bytes": 1085279,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260911/checkpoint-3120.pt",
+      "sha256": "a815220944fd8b0e76a41441a304e109daa3c9f75748dbf7b3937281f6f2d3af"
+    },
+    {
+      "bytes": 31580,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260911/checkpoint-4160.json",
+      "sha256": "fedeb59d3677bf8ddee99d234683f2a7eb29c4532298c96b85f1f5c7ff87144d"
+    },
+    {
+      "bytes": 1085279,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260911/checkpoint-4160.pt",
+      "sha256": "1b33470ec415298d6b071bcf4e0285888ebcc05d152c890075c82549afa0c916"
+    },
+    {
+      "bytes": 31583,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260911/checkpoint-4640.json",
+      "sha256": "209faad97fdae4bf8fb62b0be74802302eb97144319ccef100a3e39a2ca6298d"
+    },
+    {
+      "bytes": 1085279,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260911/checkpoint-4640.pt",
+      "sha256": "ac0908bc5e8eda7a03dcd44139a93954a938fac9a262f15276bf7d13e9068029"
+    },
+    {
+      "bytes": 134212,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260911/report.json",
+      "sha256": "54dffd396803a6af8b17554ebee738b4ee2b3b75a06cbd056d3f9d2ee2755a24"
+    },
+    {
+      "bytes": 200,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260911/started.json",
+      "sha256": "c6e7cffb108f3985fbe9da1b514e5f81e5780c272714f0dafaf16ed7f72b716c"
+    },
+    {
+      "bytes": 31580,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260912/checkpoint-3120.json",
+      "sha256": "d0ea0a49616bd66ed3081fd5ca2610c66d1a4229213846b6f33337dd6cbd16a8"
+    },
+    {
+      "bytes": 1085279,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260912/checkpoint-3120.pt",
+      "sha256": "b3f5f80ba91a315f6df08dda0c1a93660514c6f9d548bde4e993c132e7acf013"
+    },
+    {
+      "bytes": 31581,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260912/checkpoint-4160.json",
+      "sha256": "0e1ca1e7ccbc72be0574ab0b3633c0ca6b68471ea1a18741ef7419d6b291f0af"
+    },
+    {
+      "bytes": 1085279,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260912/checkpoint-4160.pt",
+      "sha256": "c6fc5d3329da20074aef319c5681291be99bc3b964d932b8ed65f50f2b6766c4"
+    },
+    {
+      "bytes": 31576,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260912/checkpoint-4640.json",
+      "sha256": "2009b09e1f49ebd2d9c57fd2c57fd65a5eb07f2f0117845f987db82c216e25b9"
+    },
+    {
+      "bytes": 1085279,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260912/checkpoint-4640.pt",
+      "sha256": "3888b84c4e9aafca989b9dd2a06e276941c0fde48a91342b4ff5d59a8be65f21"
+    },
+    {
+      "bytes": 134256,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260912/report.json",
+      "sha256": "6a34e5e42169ff9d20568abddd45fca601c621130f1cc7405fa853f97086e5ce"
+    },
+    {
+      "bytes": 200,
+      "entry": "build/neural-trace-followup/v1/fits/K-20260912/started.json",
+      "sha256": "4df71bf30711211c9a15acbe798ec27da449ec26d5384473c071307981e566b1"
+    },
+    {
+      "bytes": 31595,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260911/checkpoint-3120.json",
+      "sha256": "8d81f17c1bcf37f5bbd642a3e1c1733ea26d6d62543a7e19d6744ae3f4fde8ae"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260911/checkpoint-3120.pt",
+      "sha256": "5ffbefa281a7e4616067cffadb97baeb257ee1bde02e06074202d79d5d973207"
+    },
+    {
+      "bytes": 31597,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260911/checkpoint-4160.json",
+      "sha256": "06a35601591dedde088972ba2a1be2b72d40ba89322fbae496497f7983660805"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260911/checkpoint-4160.pt",
+      "sha256": "475b78c3cab9e13934b70c0ef2c66566d7d6df8e75ea1ce457e683353e75f57f"
+    },
+    {
+      "bytes": 31595,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260911/checkpoint-4640.json",
+      "sha256": "e4d6df57cd51515c530d96f28f980c142c2238d99958e9d5f5923f60ed20fc2b"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260911/checkpoint-4640.pt",
+      "sha256": "f288ecc3aaa7f62f9135a296c0d0f498c03732657eff8fec7324fe65f140a25c"
+    },
+    {
+      "bytes": 134425,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260911/report.json",
+      "sha256": "58893cac6d8031aeaa52bfc29c08014b447f2d667d248d3916c59b9c0194db39"
+    },
+    {
+      "bytes": 200,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260911/started.json",
+      "sha256": "d76ea70ce17752f71bb01cd31956357bf77cce0d0bc2aadcf4f951d74e161119"
+    },
+    {
+      "bytes": 31593,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260912/checkpoint-3120.json",
+      "sha256": "929f703970137e800f5bbe1e7846eed725bc064bfb3a015a66cbb82dafb9c398"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260912/checkpoint-3120.pt",
+      "sha256": "2293f4457258d6f7b8a6f8631dd37c7fa42a2eae48b47cc5642a4e9d3e4f350a"
+    },
+    {
+      "bytes": 31602,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260912/checkpoint-4160.json",
+      "sha256": "c3a87ddf59f8c69ef7b04f8abca306be69582718dba8c50ac37fc018f0ea1fb2"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260912/checkpoint-4160.pt",
+      "sha256": "684fede86c653f2dc6441826504f10f3916cc00b3dfba9e38d526959e2934951"
+    },
+    {
+      "bytes": 31601,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260912/checkpoint-4640.json",
+      "sha256": "fb46558dd1d60e0ff7725cd680bd7ea9f35c120f6b2cbc2a1808386a2eba750e"
+    },
+    {
+      "bytes": 1079903,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260912/checkpoint-4640.pt",
+      "sha256": "6a73c37de397f76ba2e7e2dd98da485c8c7471c61d4ff57b876949138c9585b5"
+    },
+    {
+      "bytes": 134413,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260912/report.json",
+      "sha256": "35d7c9c9741cc31c144b23d2013956e46498811a475d66850ff4db437ab29bdb"
+    },
+    {
+      "bytes": 200,
+      "entry": "build/neural-trace-followup/v1/fits/T-20260912/started.json",
+      "sha256": "afea8748d7b8640d68b3bec8b79f695e38228edb5772a8c9accbd8963b5fb589"
+    },
+    {
+      "bytes": 2975860,
+      "entry": "build/neural-trace-followup/v1/initial-models/compact/fixture.json",
+      "sha256": "9f5b5deedd1b1351c4ae874ec26c882fa7dc3668cdb42efea651d0913ad1a1aa"
+    },
+    {
+      "bytes": 539,
+      "entry": "build/neural-trace-followup/v1/initial-models/compact/java-parity.json",
+      "sha256": "189978b09bb0570f647b867681b723f77fe2c02fc45c0e544c9448c8a16b087d"
+    },
+    {
+      "bytes": 869,
+      "entry": "build/neural-trace-followup/v1/initial-models/compact/java-parity.log",
+      "sha256": "e3b43195c938a2b6524eaca3a05b0ec93b9307c7379d9eb614ebaaa958485beb"
+    },
+    {
+      "bytes": 2512209,
+      "entry": "build/neural-trace-followup/v1/initial-models/compact/model.json",
+      "sha256": "e99bb7d7cafa201e2eb6b101efc971aa24310685ec01de06227584e1b616f4ac"
+    },
+    {
+      "bytes": 314,
+      "entry": "build/neural-trace-followup/v1/initial-models/compact/pipeline.json",
+      "sha256": "69f42d61bba861df664487c54b93ccf602a9dae37f9661e6f9faf1368d11e4bf"
+    },
+    {
+      "bytes": 812,
+      "entry": "build/neural-trace-followup/v1/initial-models/compact/precision-check.json",
+      "sha256": "fd604b581fc282fc66566cbd739a6e6ea1a92ce6ffa8748a0c80227cd4e9d5c3"
+    },
+    {
+      "bytes": 2975860,
+      "entry": "build/neural-trace-followup/v1/initial-models/full/fixture.json",
+      "sha256": "9f5b5deedd1b1351c4ae874ec26c882fa7dc3668cdb42efea651d0913ad1a1aa"
+    },
+    {
+      "bytes": 539,
+      "entry": "build/neural-trace-followup/v1/initial-models/full/java-parity.json",
+      "sha256": "189978b09bb0570f647b867681b723f77fe2c02fc45c0e544c9448c8a16b087d"
+    },
+    {
+      "bytes": 869,
+      "entry": "build/neural-trace-followup/v1/initial-models/full/java-parity.log",
+      "sha256": "e3b43195c938a2b6524eaca3a05b0ec93b9307c7379d9eb614ebaaa958485beb"
+    },
+    {
+      "bytes": 2580427,
+      "entry": "build/neural-trace-followup/v1/initial-models/full/model.json",
+      "sha256": "206231800a23a404e767dfd6098cbd0599887886e3903c86cb52660bb7f269a7"
+    },
+    {
+      "bytes": 308,
+      "entry": "build/neural-trace-followup/v1/initial-models/full/pipeline.json",
+      "sha256": "893741aa3eb98a5df7212c639abd668a64929c05e015fd4ce153176d11124062"
+    },
+    {
+      "bytes": 800,
+      "entry": "build/neural-trace-followup/v1/initial-models/full/precision-check.json",
+      "sha256": "b8d3eaa4d70559dd752d5a0f8abe577079bd12bb5c400792837661b5db57577b"
+    },
+    {
+      "bytes": 2976064,
+      "entry": "build/neural-trace-followup/v1/initial-models/plain/fixture.json",
+      "sha256": "c9e426dfcff567c4317b208ecefd87dde2b5da9a8fea25bf968da8474873d0eb"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/initial-models/plain/java-parity.json",
+      "sha256": "9b0b740f32234fc0734dc28cd6497242aca8067031d6b261c6d253658a2c75f4"
+    },
+    {
+      "bytes": 845,
+      "entry": "build/neural-trace-followup/v1/initial-models/plain/java-parity.log",
+      "sha256": "9fa431f76e0751bcd732e4ef8448701b601f3fe132363fddbed6ffdeb490dbd7"
+    },
+    {
+      "bytes": 2506258,
+      "entry": "build/neural-trace-followup/v1/initial-models/plain/model.json",
+      "sha256": "055b7713a34e55eeff230bbfc2eca43d7c68b17e454ee0ab793a060551dd29e8"
+    },
+    {
+      "bytes": 305,
+      "entry": "build/neural-trace-followup/v1/initial-models/plain/pipeline.json",
+      "sha256": "0f2df2232eadf0181d42c43ccd391c1d5bc2769b8c0389685884f3c7b3f6d000"
+    },
+    {
+      "bytes": 804,
+      "entry": "build/neural-trace-followup/v1/initial-models/plain/precision-check.json",
+      "sha256": "7cd98c63a48f014ae0f52994b5c02396d89839ac724994534c7911c95571efce"
+    },
+    {
+      "bytes": 1107,
+      "entry": "build/neural-trace-followup/v1/initial-models.json",
+      "sha256": "cefcd8d213b6bdb4829affd802a84fe26c18b026a31b03fef02a7fa5887eafac"
+    },
+    {
+      "bytes": 2572,
+      "entry": "build/neural-trace-followup/v1/initialization-proof.json",
+      "sha256": "8fd0854ff4f6b3e7e35490cf119e4a6383c63f6017a9393fa0c9000b67e508f0"
+    },
+    {
+      "bytes": 471,
+      "entry": "build/neural-trace-followup/v1/logs/fit-C-20260911.log",
+      "sha256": "430b67fa586422c92d8884b2e05c10acebd6d9192f89adf6063871664864539c"
+    },
+    {
+      "bytes": 469,
+      "entry": "build/neural-trace-followup/v1/logs/fit-C-20260912.log",
+      "sha256": "0029042cf1b1226130734c24e9d3a01ba5e0e6fd768d3e280221e4bbf2d25824"
+    },
+    {
+      "bytes": 469,
+      "entry": "build/neural-trace-followup/v1/logs/fit-D-20260911.log",
+      "sha256": "9801cb380606b285372ec4591a3938e07a160b162e9def8c7e76e8a14e3d2506"
+    },
+    {
+      "bytes": 470,
+      "entry": "build/neural-trace-followup/v1/logs/fit-D-20260912.log",
+      "sha256": "87e8cde87a3b0697eb4b0c4230e582d31f20cc3cfe140308806aa99664bd3341"
+    },
+    {
+      "bytes": 469,
+      "entry": "build/neural-trace-followup/v1/logs/fit-F-20260911.log",
+      "sha256": "670a16070add060c636cf427b7d7d086e34c5bed72397127472bd4a49e38d736"
+    },
+    {
+      "bytes": 470,
+      "entry": "build/neural-trace-followup/v1/logs/fit-F-20260912.log",
+      "sha256": "902428e8eaa19d014baeae6718da303678c40f740765075eb4b146b08beb6f1b"
+    },
+    {
+      "bytes": 470,
+      "entry": "build/neural-trace-followup/v1/logs/fit-K-20260911.log",
+      "sha256": "2c63aad23772b547d1b0128dadbfea9e9dc8e61e9bd3c559c294850b7550700c"
+    },
+    {
+      "bytes": 468,
+      "entry": "build/neural-trace-followup/v1/logs/fit-K-20260912.log",
+      "sha256": "4e76415d5967b97c14f71dc761a8006294cbebd57f72a15a09cdfd5a1083ca30"
+    },
+    {
+      "bytes": 471,
+      "entry": "build/neural-trace-followup/v1/logs/fit-T-20260911.log",
+      "sha256": "040d8a504b17eadc3b741c25cc49945e9ae3210426d2a3aa9e3da2cb35ef5597"
+    },
+    {
+      "bytes": 469,
+      "entry": "build/neural-trace-followup/v1/logs/fit-T-20260912.log",
+      "sha256": "48056b5c88dd9a22d16ab24b96b3aed3896a5e20bb4a6c37ced842cc9c020c40"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-C-20260911-s3120.log",
+      "sha256": "a598768ac30a752d8e012005fba951cfabb180f19ae31394f7a29a939681ba18"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-C-20260911-s4160.log",
+      "sha256": "4d5a8074318e80980ade0cee84cfb84fabb61d0f948e92f754725ae88b60836c"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-C-20260911-s4640.log",
+      "sha256": "0285397eab54f986e167e6932ca006ebe209e2a03a8a16dd89b079448dbdadb0"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-C-20260912-s3120.log",
+      "sha256": "56c2473f8442a1728b7c2db1cc5f926bf15472fcbb3cfae27998825b2ccf1a75"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-C-20260912-s4160.log",
+      "sha256": "f98db5e6e4cb3431228cec17e9b0cbd08c6691fa5ebb9825b3199e01ec3697da"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-C-20260912-s4640.log",
+      "sha256": "4e83804550c2a51c7dd9369520d5670a5a592c6d55ed25fa664ad4670ecbf51e"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-D-20260911-s3120.log",
+      "sha256": "df370e11ab2472c83bb75ff2efae4c55fcbf480b040c17ff8099e2862bd3933e"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-D-20260911-s4160.log",
+      "sha256": "fcbcf01abaf2233dbdf99a5731409e5e2aa10f8aa73d897c0f757ff492200e7b"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-D-20260911-s4640.log",
+      "sha256": "28f83773cd819d65310577e5f13f0189f35ca230db42c1c0c8d61898c15e1bf8"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-D-20260912-s3120.log",
+      "sha256": "bd4a90e144c5ab683d3fc20a043327802e55b644fdb40a51e49d2c2970899db1"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-D-20260912-s4160.log",
+      "sha256": "93105f48880343cc0b77c21a85a2cda349ff64cc7ec1a83eacadcbfdfbc6f35d"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-D-20260912-s4640.log",
+      "sha256": "772171fca2a36fb0b5f85ba0303ff63dfe01dc22c8f6d015caf8011dc4cd914c"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-F-20260911-s3120.log",
+      "sha256": "79018f6deb1f09bb66b261c0342b00a38eef287533f9b91036728f71ca4e3ca3"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-F-20260911-s4160.log",
+      "sha256": "59747677c661eecc7d0599bce1c338cb024ea54ed07f5966dbe005ee12f0b20a"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-F-20260911-s4640.log",
+      "sha256": "8e4a0904ab5a8701a788ec5ebb7db0e5ba24b32b3cebc5b71d7be40f2a215855"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-F-20260912-s3120.log",
+      "sha256": "d0e638c33f86075f01be4fdc6030c3cf87e3d6b5253ed72162a65d745dcd9fe5"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-F-20260912-s4160.log",
+      "sha256": "a688986ac4239e13be25927d59710f05b098b734f1c2dc2842fd7f09b3e79eff"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-F-20260912-s4640.log",
+      "sha256": "4537916200b014b668263eb2f12ce3dd192be0738ccc9a59691b8750c2b4e2dd"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-H805.log",
+      "sha256": "8a368960c0c6c341eeaba5ae9b5edf273ff709dd8e4a9624bf96e4a09933cf8f"
+    },
+    {
+      "bytes": 1074,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-I.log",
+      "sha256": "050394fba066404e637ec5516bd06b05cf118f46e60dbe2dc2b4755db7326e2d"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-K-20260911-s3120.log",
+      "sha256": "ecc0a10f048e813c13d26b69828147086e38d899779baefc893fb88c99d2d9e4"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-K-20260911-s4160.log",
+      "sha256": "8da60dc3b8ef1d6cc52681d21673bff2d696b194905ad872d64b09904d5db31f"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-K-20260911-s4640.log",
+      "sha256": "18e7d29d014819bdf91e8b389898356916ac3c0a8d859581075bf27a71168501"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-K-20260912-s3120.log",
+      "sha256": "895aba9d4523447df3c8afab79a9321ff31b66c2eedb39ad05d510f046d708bb"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-K-20260912-s4160.log",
+      "sha256": "ba15443f963438cbd1da254de83bd5a96ceb0ccdb2530573a0365307824d60ad"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-K-20260912-s4640.log",
+      "sha256": "cafdf11b5b9afd8e4ccaa60311df5a264c7cf47a1be72369667ea3ddf975bb95"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-T-20260911-s3120.log",
+      "sha256": "68b109f13a429a860d1889402da9f904f4576a69018d4f8fe7c0467ea1b601c7"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-T-20260911-s4160.log",
+      "sha256": "20f81bbfc38513b21eb2c86f6026bacb9393b6945acb2aaecefa3cbcb46d59dd"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-T-20260911-s4640.log",
+      "sha256": "2bc3c5df5f2e5f3c677953354407f46584df99f658cb500d71875159a13d6906"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-T-20260912-s3120.log",
+      "sha256": "111c37129a212813f2765dbe9cb624b045c908e8de0ff99ed56f8eef76a88f28"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-T-20260912-s4160.log",
+      "sha256": "30280c8f90bc879cf5d83ca05d8699aa98920718f022d97a3a41bdcd2d71486e"
+    },
+    {
+      "bytes": 1053,
+      "entry": "build/neural-trace-followup/v1/logs/screen-block-1-T-20260912-s4640.log",
+      "sha256": "0ab93108979c842ed1f4199ea771c9a37cb039318bf6d1500bd8306cf4cc7ce5"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-C-20260911-s4160.log",
+      "sha256": "060a04a703000320571e6769832f7f1523c1e16f4c6d2a2d77526f4f23be58ed"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-C-20260911-s4640.log",
+      "sha256": "43a51fe0d531ad3dc6929662b57b1f95260cfb59fff5d272ae66273e31e05a6a"
+    },
+    {
+      "bytes": 1904,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-D-20260911-s3120.log",
+      "sha256": "1690296ea62d523d323c29180235147c8ba7ca149a04c561e45f6af7e42714f8"
+    },
+    {
+      "bytes": 1904,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-D-20260911-s4160.log",
+      "sha256": "5ece1d21fe89d9ccecc3c92e84be528a7f40b620496b37df15b798f8b97cfe9a"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-D-20260911-s4640.log",
+      "sha256": "e8696e9c21976bd80f12b431bc242990c327dd713cb6a7cef7bf1f733587a358"
+    },
+    {
+      "bytes": 1904,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-F-20260911-s4160.log",
+      "sha256": "c7a6fb859a3218c279ccf4333099d9a4de703c404891342a4cdb99a6f790f4a4"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-H805.log",
+      "sha256": "5aec1dd9913acefb97cc33f92765bea4906a82990d5006fcce8d0133ae3f5494"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-I.log",
+      "sha256": "f61967a64fddebc83137304ff6a29fcc62e3b39ed53616b4dad37fe94da5d66a"
+    },
+    {
+      "bytes": 1904,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-K-20260911-s3120.log",
+      "sha256": "66e7aac6cca375f7c07e73220ebbb71d2098643f52f837968d277e92fc3eb9df"
+    },
+    {
+      "bytes": 1904,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-K-20260911-s4160.log",
+      "sha256": "bc5ae942b59b86c423fac723e4bc51c5e3db5d0dd0b318b4357344bcce247660"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-T-20260911-s3120.log",
+      "sha256": "906805c530ecf275a8e3fda72b27a5db02ef8e445a7ec1cbe9a4ca769d8617c3"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-1-T-20260911-s4160.log",
+      "sha256": "bfc38a252a469d80dcb5611e61da3c462132b048cfff2447c5b0940c86062e22"
+    },
+    {
+      "bytes": 1900,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-C-20260911-s4160.log",
+      "sha256": "0d44a387dde9b3182a368bcc20916fc84a4bd0af2f9b0724777542231ffbb609"
+    },
+    {
+      "bytes": 1904,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-C-20260911-s4640.log",
+      "sha256": "eacb02a4f2b7c5d7295555e6f7f14e5fea586ac9a096f18b9b87ebd2c7f9484b"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-D-20260911-s3120.log",
+      "sha256": "f395525547254d9abcbc7cdc67e8768b575fc34cea64e0e0d1ad833b2a3eff9d"
+    },
+    {
+      "bytes": 1904,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-D-20260911-s4160.log",
+      "sha256": "c18b450d0cb6ca540772a7b87549fe8cd894c0c80a1bb342ff54c6f8d7ea617c"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-D-20260911-s4640.log",
+      "sha256": "8d12258df7f45f4c5d4dc8aa7c579023ec425ce7c176e3c2371a748e9993becd"
+    },
+    {
+      "bytes": 1904,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-F-20260911-s4160.log",
+      "sha256": "b5154e2442d08a3d9440693236e5158c7fc6cf8810bb967db4afce56ba36b32b"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-H805.log",
+      "sha256": "fb4673e16bab5eac66f330a6809bac295e4234028f72d22d3a83136da25f1822"
+    },
+    {
+      "bytes": 1904,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-I.log",
+      "sha256": "b2f7bcddab2cc010873fbb63fccf104878cc78539e7cc9be3ff1e277fdf0158b"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-K-20260911-s3120.log",
+      "sha256": "d55dae1c37d53ed5134373717bf9b96df23081a83c6978bf1b5a65c97dc02ec2"
+    },
+    {
+      "bytes": 1900,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-K-20260911-s4160.log",
+      "sha256": "a52d9fd2a3b1b712d07607b35341dcda4d9081dd42284445f83cda51fb37ea18"
+    },
+    {
+      "bytes": 1903,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-T-20260911-s3120.log",
+      "sha256": "dde00cdab4629d61f22c0de39daa4cb386fbc2df625ca04a47da7fc9ea9fb8eb"
+    },
+    {
+      "bytes": 1905,
+      "entry": "build/neural-trace-followup/v1/logs/validation-block-2-T-20260911-s4160.log",
+      "sha256": "bbdcd6a93b6f4b66b547ef85d62317915a9e70164a82177f409f777f450e3cf9"
+    },
+    {
+      "bytes": 2975458,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s3120/fixture.json",
+      "sha256": "4109b6c02922f60eee096ce3a96798953ed0f583c5e1803ad02605a99a103dac"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s3120/java-parity.json",
+      "sha256": "8c730a5a919b9e922e936a493330843939994f92f074e4d6c521329741774eb7"
+    },
+    {
+      "bytes": 868,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s3120/java-parity.log",
+      "sha256": "9224c1cccbdd23d6c5227604d459b6b8be01c0530f7fb04472627ee92103e247"
+    },
+    {
+      "bytes": 2506192,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s3120/model.json",
+      "sha256": "57398e99bd8f80362ffba70c17f5c66501e97d0bc1a3b890fa41917d9d26f0c4"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s3120/pipeline.json",
+      "sha256": "026b6b51310ebad2e140ea6390c83056072d8940dcd29bc2fb1dc55724cfd8c9"
+    },
+    {
+      "bytes": 816,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s3120/precision-check.json",
+      "sha256": "1ba43b6bbd2dde8639adce4046bf5220d2e52da1a83ddec0ff8346b03325a490"
+    },
+    {
+      "bytes": 2976182,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4160/fixture.json",
+      "sha256": "5ca5d85b7128aa3ffb555fe7e2844623f45c0780b50b865ef3810e08335a639a"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4160/java-parity.json",
+      "sha256": "1ec716521939279375f9eb69444f00533b699bd841650ab21572e8b01947ec0c"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4160/java-parity.log",
+      "sha256": "ab6ae4788d263974e11ab174a313b85c81c4567ab52f8f090c707f1c4538b7bb"
+    },
+    {
+      "bytes": 2505938,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4160/model.json",
+      "sha256": "7285f5872b157fb8c69824b8438a81220b7648e9d1265ee69fb3f45f2aa0b5c8"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4160/pipeline.json",
+      "sha256": "14d3a7f73712715167853f932c9e276739b1b68efedca5a09267b53106ae0671"
+    },
+    {
+      "bytes": 813,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4160/precision-check.json",
+      "sha256": "458a1c8c93358bf9ce8b2024c20192f9ba4e77f5c4c79ba75ed306af6648837b"
+    },
+    {
+      "bytes": 2975423,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4640/fixture.json",
+      "sha256": "841493ea5fd58819cc5bd6930f624d127a9ce9b07176521a70794012539b2ad8"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4640/java-parity.json",
+      "sha256": "9067599faffeef943fc5a8fd151ab71de381111444afd9943196b8988da09c47"
+    },
+    {
+      "bytes": 868,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4640/java-parity.log",
+      "sha256": "825f2e006c1166ac4fb82d554695493a2cef61916d60da3bbb537176596cfc75"
+    },
+    {
+      "bytes": 2505773,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4640/model.json",
+      "sha256": "6559f4b3c9805e67bf375b956f8555992ccc982f18d1b9ca01a643e739223ca4"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4640/pipeline.json",
+      "sha256": "8a5ca3835434153924f7d6cef134c603fd66e6635d491e2bd7fa70d69e1c75d6"
+    },
+    {
+      "bytes": 813,
+      "entry": "build/neural-trace-followup/v1/models/C-20260911-s4640/precision-check.json",
+      "sha256": "7ed1007ae03d4c599b48017281884094af81c620f735ddf9e03dad00cffc8f38"
+    },
+    {
+      "bytes": 2976023,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s3120/fixture.json",
+      "sha256": "7317bd06634bd041747316c04b5fe1259fdbe0b91ecc5db5d1680134d3c5d9e1"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s3120/java-parity.json",
+      "sha256": "ac0a42f27895213ac876a2b5b3019d32be6be1b77e1115d577b5c38342bd0315"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s3120/java-parity.log",
+      "sha256": "7724fdb248b563476cb93210bbf1f651ee120ce9357e29c7a8ed5b6c7d92f5f9"
+    },
+    {
+      "bytes": 2506163,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s3120/model.json",
+      "sha256": "09ebaf67ec5541df80c40fe814a28336df5cb156ebf20b7a5681e47057cf89e3"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s3120/pipeline.json",
+      "sha256": "c2a60099cfbeb312f4f0d14ab66f67232d63f6324383dbd6d61bea01f40d865d"
+    },
+    {
+      "bytes": 815,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s3120/precision-check.json",
+      "sha256": "b63b23c6a57ac819cd6054299486264089729aac03d916c0cf0d920af862257c"
+    },
+    {
+      "bytes": 2975471,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4160/fixture.json",
+      "sha256": "f11283d93d5bd421b4b260752b690dbedd9f754a11ce32d2bc6a2c005d9b7859"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4160/java-parity.json",
+      "sha256": "474ac09d956a99f027b010ff6c059f6ba808158c101b091f258ffdaac0a00b48"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4160/java-parity.log",
+      "sha256": "656410f0da437027af6812a8ae8a2396dc33e70cd8e70fb47e6441954a338a68"
+    },
+    {
+      "bytes": 2506010,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4160/model.json",
+      "sha256": "921fa2a0e2ed2ed49e1b6a30c44e8727ae693e777f810f7c88e6f8e876454ced"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4160/pipeline.json",
+      "sha256": "8f14799f189be7cf009acf8650c70211e0edc44982be08b0e721047e4e7a6411"
+    },
+    {
+      "bytes": 813,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4160/precision-check.json",
+      "sha256": "367d9615185e7c749577a7c581f05030613181095544368e1613f9f5b445feab"
+    },
+    {
+      "bytes": 2975452,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4640/fixture.json",
+      "sha256": "92edc9d326101866129fefedd2ec4d23bc3321199317941dcff0ebb3cdaad8a3"
+    },
+    {
+      "bytes": 539,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4640/java-parity.json",
+      "sha256": "41a574986d63c3498ac549e73e99a014460cfe4edf4e98aa7e09f408a266c02c"
+    },
+    {
+      "bytes": 869,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4640/java-parity.log",
+      "sha256": "905e14f6e8148b8cba46f5ea1163b7017234f0e2e8914cdd4cde5dbc443323b4"
+    },
+    {
+      "bytes": 2505741,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4640/model.json",
+      "sha256": "d534a91c207f6e8603328f7a79a1be5238ad13753110f382ede0a0d4d4c3f3aa"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4640/pipeline.json",
+      "sha256": "9f4eeeef73395d9ab9c629695f23de9e92fba386e8aa5415b91d44f3102ce6fd"
+    },
+    {
+      "bytes": 815,
+      "entry": "build/neural-trace-followup/v1/models/C-20260912-s4640/precision-check.json",
+      "sha256": "89f2d2a05c12969122fcabbfec03ffac68ede9036926dcfc7a73f576b34c7191"
+    },
+    {
+      "bytes": 2975765,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s3120/fixture.json",
+      "sha256": "db0d2276e9caedf5a1cdad13186c9010e82f2ff79782ec2600e5eb2537682029"
+    },
+    {
+      "bytes": 541,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s3120/java-parity.json",
+      "sha256": "4d1e9e64a5df410bbee6877323380763f3a38fc924f309530049deba4f9c1d18"
+    },
+    {
+      "bytes": 871,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s3120/java-parity.log",
+      "sha256": "0ca3bbad2a9c78b406ef1186deee60ec910cfec63817cb432a45a9a77ff31acb"
+    },
+    {
+      "bytes": 2506007,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s3120/model.json",
+      "sha256": "b61055183009b50d99381af49b51d62093bf052638ffa65b70de5f12371c5e82"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s3120/pipeline.json",
+      "sha256": "32a5f4ec4b2d08718e9cebc3dc1eb0934fa23777a7c2ae16f4efe63369252dee"
+    },
+    {
+      "bytes": 814,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s3120/precision-check.json",
+      "sha256": "63af24a5a990c3388ce8d6773e777919d818703c57389799ae7dc691c9bff75f"
+    },
+    {
+      "bytes": 2975472,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4160/fixture.json",
+      "sha256": "e11713f90c6782702a4f06f9ab9ef369fa75e7be7fb1e39550d0ac522401a40d"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4160/java-parity.json",
+      "sha256": "c4f27dcea2d7f1fb8ff43ebd3ea726663e96e339174bddaf04b05aefffb1a6b4"
+    },
+    {
+      "bytes": 868,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4160/java-parity.log",
+      "sha256": "9eb156102728c3735ea256136d99c300ae907210540b657de67d3f3c8701c8ea"
+    },
+    {
+      "bytes": 2505888,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4160/model.json",
+      "sha256": "8273d10f25abc0f6d80f2229c59258ad209ed70411ee6cb11e8719448a0c87e9"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4160/pipeline.json",
+      "sha256": "84bb3b46a8d761102c38317c34d6315afa5ae5ecedbc888b83ebf3c90ce9f618"
+    },
+    {
+      "bytes": 813,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4160/precision-check.json",
+      "sha256": "970dece913d6fb68f981c16348c0db352a8d37a2b014d8f91d27d87fbefc7f2d"
+    },
+    {
+      "bytes": 2975618,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4640/fixture.json",
+      "sha256": "c7b9773448d54ed6e9d586b52decdd0367d2300f1ab7fb119f93055422c89a61"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4640/java-parity.json",
+      "sha256": "19facd540a321cfbaddc8f74bbaf43eab041afbe2f92012d03c3f8978edbd673"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4640/java-parity.log",
+      "sha256": "928cd3dafa70cfb65d261887e879b220a50c0a201cd1e65fe5727a34126d89fb"
+    },
+    {
+      "bytes": 2505979,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4640/model.json",
+      "sha256": "830f07ff0b3098ee9cc0621da47ba2f7db27c9d1e3b04d710abb8ae288dc6833"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4640/pipeline.json",
+      "sha256": "c025be19aec995408acf84480bd5525bc649bb9de755c2fd3eaedce0b3847e63"
+    },
+    {
+      "bytes": 812,
+      "entry": "build/neural-trace-followup/v1/models/D-20260911-s4640/precision-check.json",
+      "sha256": "9234a01700af607e4ebc7dbce557b9427dab16d0535c3869aede6c016147fcb0"
+    },
+    {
+      "bytes": 2975667,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s3120/fixture.json",
+      "sha256": "bb5264ae5c8ef5e74637558ea5a9221b15fd6b5006fa16ffe398015844cfc6b5"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s3120/java-parity.json",
+      "sha256": "1b26135c9761fc16e6443160c6c9f1e60addea3b37c0918d026ef5c97ffcd600"
+    },
+    {
+      "bytes": 868,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s3120/java-parity.log",
+      "sha256": "b57ada69c236668b66d6511602ee9a0615708881b908dc34ae4c22dbf0f4232e"
+    },
+    {
+      "bytes": 2506304,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s3120/model.json",
+      "sha256": "a22a94366a3d61ae1e1a975d077c0be51eef80121af98343488728d52f70ac06"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s3120/pipeline.json",
+      "sha256": "03578657c3989583d67a584e7c0eccfb3c7d677d186c8369e8defbe533e1cb7e"
+    },
+    {
+      "bytes": 814,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s3120/precision-check.json",
+      "sha256": "e1081ca4cb30e86e78dd9a56d89d1ba4f0911d197f13059445e2ec3786338217"
+    },
+    {
+      "bytes": 2976052,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4160/fixture.json",
+      "sha256": "9cbb9deb372ba405d095dfc11b4b643a05ec617264b93156c8d786a20eb6e44b"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4160/java-parity.json",
+      "sha256": "e8358e7b68e8d7309f1edd1f6439979c04cfd11440a156afeb33e737633f908c"
+    },
+    {
+      "bytes": 868,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4160/java-parity.log",
+      "sha256": "5c6a7cac01b8b7a4b7d42ff04e0fa1b772b5bfb1e42793541b17d7da8e8ac4b4"
+    },
+    {
+      "bytes": 2505838,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4160/model.json",
+      "sha256": "ac1082a17a01742e3d1e57e36ff77c944bbb082bf5afaff49854fd7f3ed23b8f"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4160/pipeline.json",
+      "sha256": "d153e7e19e96c9a9af02c532c8e9407d7ef3ed84fd4ffff79c60b7198690f7ca"
+    },
+    {
+      "bytes": 814,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4160/precision-check.json",
+      "sha256": "ac6c7dba55919d085f8d3899d67c0d5be1ce07ad7083ebb555f63a01e6e443e0"
+    },
+    {
+      "bytes": 2975616,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4640/fixture.json",
+      "sha256": "731f7d55441acc9b89613a14d2ca093cab2f0610de4dc8fcf2d898afb94229fb"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4640/java-parity.json",
+      "sha256": "dceebb36420556a45d59314039927b7977166c0bc3389b183ec0bb6a5002d2d4"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4640/java-parity.log",
+      "sha256": "e5ab39a3dbd022ebb23f89c0be40ec4db585146d9508f58cc4aa34b00cbc7b7d"
+    },
+    {
+      "bytes": 2505812,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4640/model.json",
+      "sha256": "1022d14d4e2fa89dbca35ea0164ccd1899197ecd5e5970ca06b722983a6bdae5"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4640/pipeline.json",
+      "sha256": "8e0bae892a73858f84d08bd0c6c04033073886b247f56149ce3abf22e4e68270"
+    },
+    {
+      "bytes": 816,
+      "entry": "build/neural-trace-followup/v1/models/D-20260912-s4640/precision-check.json",
+      "sha256": "093233d9222282f60efe3341064d2f4d6956cd7ab64b05fe2531eec82a05ade4"
+    },
+    {
+      "bytes": 2976047,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s3120/fixture.json",
+      "sha256": "794467f8e3630349767c8b540409541d85d1eb62abea5e84579367ed18fdb0ac"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s3120/java-parity.json",
+      "sha256": "ad1b3a1c964e5383a546533662e6a594f4a1aa7da7ea7395f1a8e0b607de69de"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s3120/java-parity.log",
+      "sha256": "8f5c4698712a26424e128db94e5e868b9af899da2c3d1fdd25734a7d52584e31"
+    },
+    {
+      "bytes": 2658975,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s3120/model.json",
+      "sha256": "d665fdacf7ddd08e3dba8bd498541ad7831a4084ba33d7c70bcfb0b1ecdd33e5"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s3120/pipeline.json",
+      "sha256": "932016337c7aa5e4b96088ab25ccac16da29e911bdb8a3ae5ea488f0d26d0b3c"
+    },
+    {
+      "bytes": 813,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s3120/precision-check.json",
+      "sha256": "ae683f65c29af8778b08662eab9ce7353188d5adc11117c31007895bf7201024"
+    },
+    {
+      "bytes": 2976016,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4160/fixture.json",
+      "sha256": "a6a7002ca849a32c0f1c88afb185d466337f49b16c3c29eceff9c2da2efadc10"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4160/java-parity.json",
+      "sha256": "d35de8d980a4e6de239d7a80676b7452deba3f4514e4ab2d2ad4890698d1d298"
+    },
+    {
+      "bytes": 868,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4160/java-parity.log",
+      "sha256": "59c21f1c9d7c8bdab9c8d3c0c7ec719764c29dadb5618c2c1d7b530b610c4031"
+    },
+    {
+      "bytes": 2658860,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4160/model.json",
+      "sha256": "7f909d025e12cbc7e8457b459adfbc63e48f52fb9e98ce45b91e64e84ddd1962"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4160/pipeline.json",
+      "sha256": "cf6d32007f66ca23cea8a4cc0c3c744ae72c501284a8dcb6edffb0fbf0902534"
+    },
+    {
+      "bytes": 815,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4160/precision-check.json",
+      "sha256": "4344ee1110fb848b31974ba5815d22c947a15085efefa42f7b20e2798312f6a6"
+    },
+    {
+      "bytes": 2975262,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4640/fixture.json",
+      "sha256": "8ba84121102e0422185500e7ab5cc1e2ecdd8e99d71f1af9052e26449793ed50"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4640/java-parity.json",
+      "sha256": "80e897b220b92b9610f9e9c1ee798d89d26cc1dcfa384b2964680f0a80ac2fc7"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4640/java-parity.log",
+      "sha256": "e184d1ea47c3d3bbe9efe463e1198f62febd9edf602992827914862e64aa2ad5"
+    },
+    {
+      "bytes": 2658749,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4640/model.json",
+      "sha256": "7e59b399c0248ea23c416434dbf621ae532826b9b235a14040063ff5524c9685"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4640/pipeline.json",
+      "sha256": "5ca120577e06d977d13729b8e6a5da5d1abd9420d1909558a3b250414a604fd5"
+    },
+    {
+      "bytes": 813,
+      "entry": "build/neural-trace-followup/v1/models/F-20260911-s4640/precision-check.json",
+      "sha256": "404fe310c02af8c59748c688a98ae92338048ee39b06cbba27257203cc71ffcc"
+    },
+    {
+      "bytes": 2976104,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s3120/fixture.json",
+      "sha256": "1e87a0cdd5ae7e76c79f5a203d3d2bd447ec2ee9ad5c18030302ca09ee99b252"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s3120/java-parity.json",
+      "sha256": "0cd87424e9cbcaa5e3d27d970cef2345db9714a559bc3edfe468514aeeb069b3"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s3120/java-parity.log",
+      "sha256": "594360744c2decb8f7744198d2337bb8d70ba8ea07d9e1d0eae6e37ab2b3c856"
+    },
+    {
+      "bytes": 2658599,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s3120/model.json",
+      "sha256": "ed7161fec39acbdfedf942af310e8737b98a11cfa78f39a63a286d131a386e3a"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s3120/pipeline.json",
+      "sha256": "8cf5c659cf1fd2c73516cfc0538dcc9fe11e1dab0b555a161d612d652d3f95e4"
+    },
+    {
+      "bytes": 812,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s3120/precision-check.json",
+      "sha256": "58da080dfa5bb973f13372d3f9041ef3311a2d74b5023c988735deb11bae5694"
+    },
+    {
+      "bytes": 2975503,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4160/fixture.json",
+      "sha256": "1c0c395b0e03032d40dd92af3a1b104866559f787f6cd25d8ede4c66b51226d0"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4160/java-parity.json",
+      "sha256": "928ead515624a6ce1b739872ea537e16411ebef352d4cd4062dbdca395f355f4"
+    },
+    {
+      "bytes": 868,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4160/java-parity.log",
+      "sha256": "be1053099ecc228650a5cc446f14a0ef87a405bf047c8d901124d6c16558f6d1"
+    },
+    {
+      "bytes": 2658788,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4160/model.json",
+      "sha256": "3f8c4cded6a9d074d9348916850778b7bc1282457e8a1ec534c4e52952ac6490"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4160/pipeline.json",
+      "sha256": "4546a30fb261d06dc72e8d569bdde4fde44e5c9a4f648e08b9c2ab748e197595"
+    },
+    {
+      "bytes": 814,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4160/precision-check.json",
+      "sha256": "5034da8d39652f9543a5007386dacfe5743f839cb4325c741d2a734c5cce26ab"
+    },
+    {
+      "bytes": 2975279,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4640/fixture.json",
+      "sha256": "0ad037d36a2b3cfc841e1ca9987ea3c725663a390487765dbc866cac5943ea45"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4640/java-parity.json",
+      "sha256": "23a9da5393452256d6d54944ad0ca41e071b864f92d081fa11e1fd4c75e5ca93"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4640/java-parity.log",
+      "sha256": "c6a36299209a005f5086b26da36e2fc283e9ef77986c7d423909d6bc6233f2e6"
+    },
+    {
+      "bytes": 2658456,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4640/model.json",
+      "sha256": "05619a02d6ce0598dfc303483985ba209835523a85323926a33dbe126bd171ab"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4640/pipeline.json",
+      "sha256": "ece802fa31bf9dd9b2163286a8a5560ffd5b2ba1f7ae6b2d4cd0e85e661e3123"
+    },
+    {
+      "bytes": 814,
+      "entry": "build/neural-trace-followup/v1/models/F-20260912-s4640/precision-check.json",
+      "sha256": "19602e90dbf6f3a38445ce9a5e7a76e393b186282a168b9e41c12674c30689fc"
+    },
+    {
+      "bytes": 2975271,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s3120/fixture.json",
+      "sha256": "0f0f274d3f93720565bbb6569f7d653e7b5c74a33f09bfa5023743efbb31094a"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s3120/java-parity.json",
+      "sha256": "196735942e3db0c39d97087bd10d2597a9b890be5ea0bb95d5cc11a6ef2235d5"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s3120/java-parity.log",
+      "sha256": "639b54924c3baac889ce24b999dbc79ae7b53e88ad0319a8c577b8f3392f5d58"
+    },
+    {
+      "bytes": 2519074,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s3120/model.json",
+      "sha256": "76c9da4d09df714174bee860c1a1d14def6dce98e4545e9d9d35035364513429"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s3120/pipeline.json",
+      "sha256": "f6512ea8c14328fde69127288942a32d816d5626dffdc125bf301d4ca369acb8"
+    },
+    {
+      "bytes": 815,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s3120/precision-check.json",
+      "sha256": "caeab455672c374e667f4bfaef9a647b4f21d5545574d1c5ae7effb5f76b0a00"
+    },
+    {
+      "bytes": 2975959,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4160/fixture.json",
+      "sha256": "5d416319d628a98000e873ff7024a63b3bbf49b8faabda1b4ea901fc7d8e44ce"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4160/java-parity.json",
+      "sha256": "155546e1cd21903f6403920d58f16c1589519ff58b278b784e46bc873f0fdfd6"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4160/java-parity.log",
+      "sha256": "8e85373c5cd0cf4defe8c0eb95e70e1226d61bf223b79b2b12a84dd608b12563"
+    },
+    {
+      "bytes": 2518628,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4160/model.json",
+      "sha256": "3a75502d12ed61d3ac4a966abb5764383cad596f97ab4501904ed73d3e12fa55"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4160/pipeline.json",
+      "sha256": "558070115de6b9fc4bdf8b64c56480234cce5fdb0ff98046195610a045ec166d"
+    },
+    {
+      "bytes": 814,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4160/precision-check.json",
+      "sha256": "8fe6fde9217df5bdd0ac38b8cf9972c5313fef131677a86637e86833bf686e0a"
+    },
+    {
+      "bytes": 2975378,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4640/fixture.json",
+      "sha256": "44203e816ba2ffc43006a5466a25a70c3bfe0ed01596527e243e909e74df3c00"
+    },
+    {
+      "bytes": 537,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4640/java-parity.json",
+      "sha256": "4a5b48693aea12b9c9864bb0213bf88bb9625a21f5249e5e963294b8f73f6ad3"
+    },
+    {
+      "bytes": 867,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4640/java-parity.log",
+      "sha256": "5e1a65c9edf4181b27661fab7c017b65f82fe662a2b0913a00fa65a8bfa5b100"
+    },
+    {
+      "bytes": 2518642,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4640/model.json",
+      "sha256": "4a30334627a95135ec33168a400d5fffaf0412c77abfa71a1119c28f4da45067"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4640/pipeline.json",
+      "sha256": "ece4584383f0b8c4267cb9d5fd9a637a170d06fa85dbed85a4af9bd032bc3dc7"
+    },
+    {
+      "bytes": 814,
+      "entry": "build/neural-trace-followup/v1/models/K-20260911-s4640/precision-check.json",
+      "sha256": "04aeee8a430a29330b3197c26711eec6791a59adec5560352a490ebe02eef1ae"
+    },
+    {
+      "bytes": 2976056,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s3120/fixture.json",
+      "sha256": "e272306cc46d900c72b274610cfd369d890eba34f494926ce9cc08a8cc963499"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s3120/java-parity.json",
+      "sha256": "51d38d2fb9c0f4f7a47538f4c08c63ac5ee363a13460d0b3bbd2fdcb1b24b7de"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s3120/java-parity.log",
+      "sha256": "f936a1dff0faa6eadf0f95b4e58c8c8f807f535cc211227cfae1e879e371a21a"
+    },
+    {
+      "bytes": 2518636,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s3120/model.json",
+      "sha256": "76350b41d74247b0c9ba298e480479b34cf2aaeb8a085828bdb7448959d0283a"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s3120/pipeline.json",
+      "sha256": "af463dc2a234a144e58d2bd9f9a67a3e37e928b7f3d9464eeebe63ea7e01f33e"
+    },
+    {
+      "bytes": 816,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s3120/precision-check.json",
+      "sha256": "55667beded1a5c10b26eeb48b1672b0484f525d1b1d47d6e73ade239cab81ffc"
+    },
+    {
+      "bytes": 2975319,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4160/fixture.json",
+      "sha256": "004d202fcdded693e3049afea557a97c66320b976471c7ce2a07be2c3c324266"
+    },
+    {
+      "bytes": 539,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4160/java-parity.json",
+      "sha256": "7a1101af55f0f10bc01e118341815cad3ed1102277b58cc3575c5fba9fafca69"
+    },
+    {
+      "bytes": 869,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4160/java-parity.log",
+      "sha256": "1037599b0bd1ee80ee427c1f5991075dc189a94656e03a20c2876ae983760b57"
+    },
+    {
+      "bytes": 2518743,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4160/model.json",
+      "sha256": "72404dd320ccce92b6927e7ca7553710a89fef28d7f94f03232c0f380c2d5bdb"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4160/pipeline.json",
+      "sha256": "e4b7a05f18dd03a751b143ffb288249c95d10d23462c6f6c90fce6952e75c48d"
+    },
+    {
+      "bytes": 816,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4160/precision-check.json",
+      "sha256": "a0fa1daa93432c3f12bf3ed8f1ca96672a43919fec594450d29816536ffa5338"
+    },
+    {
+      "bytes": 2975186,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4640/fixture.json",
+      "sha256": "0f70d3af9ae75b9f2e5a170af88242e3803e59bfd1d7e2451ceb9257b22e19ba"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4640/java-parity.json",
+      "sha256": "06c42665d45718247eb949b1ee54e27d3af2985783397090411043d890d21aef"
+    },
+    {
+      "bytes": 868,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4640/java-parity.log",
+      "sha256": "64e4c5960dddb08c342534c79043fb29463e72e2920a722f078794132c518de0"
+    },
+    {
+      "bytes": 2518829,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4640/model.json",
+      "sha256": "2153ef2a7cec35ec1d2fd6dbcb3bd64fa79cef93bd1be7416548e6c5bac42d3d"
+    },
+    {
+      "bytes": 325,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4640/pipeline.json",
+      "sha256": "3c94aa773aa4745f5abc30e6e00674764184518fd05bde5e494eb8dc318f988a"
+    },
+    {
+      "bytes": 816,
+      "entry": "build/neural-trace-followup/v1/models/K-20260912-s4640/precision-check.json",
+      "sha256": "0248aa67df9e7e9166bed5e95133d6e8954218e240826f6dddc62329270a87fa"
+    },
+    {
+      "bytes": 2975610,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s3120/fixture.json",
+      "sha256": "95f73d3bd66bf52016b32b0864a02a5f61c1f9f6730aac7245d43ee661f699fc"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s3120/java-parity.json",
+      "sha256": "fc90cc05e785b930ff8faadab83a2e8bf3c97f025d10ba2f067ec02bd117b0b3"
+    },
+    {
+      "bytes": 868,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s3120/java-parity.log",
+      "sha256": "7a589241037d4e268e2d6bd76509e546db353438d9ef9a6e9864fa6203aa151b"
+    },
+    {
+      "bytes": 2506124,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s3120/model.json",
+      "sha256": "ea657476e03c0c83bf4efa6cd1b5423ed97b9fb844ee6982a12d2f466fa54c0d"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s3120/pipeline.json",
+      "sha256": "24d1f54fb35f68df03f0bdf28c1e05517858a8a0a013cfe78c57cd46e50278a9"
+    },
+    {
+      "bytes": 813,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s3120/precision-check.json",
+      "sha256": "1ed9df690d55fbc24aa526a1167365d4f83f86fc06d9035a511736624c3292f1"
+    },
+    {
+      "bytes": 2975698,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4160/fixture.json",
+      "sha256": "31fb0df69eebb97060543befb92fbacc49be49a388b3590cb8e0fe0fa32952a5"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4160/java-parity.json",
+      "sha256": "e4c04da52731b2817871e44a0d60c77663e97b31c5a6a1ce7535d4e6988ef1d4"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4160/java-parity.log",
+      "sha256": "4203e48b5df4e2b437331ebe9bf4f3a550a351e6eafe2f4ec32700d585d14470"
+    },
+    {
+      "bytes": 2506022,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4160/model.json",
+      "sha256": "0437e6377c3d21f835c7d7872db2d385769f697a7206702bbbb4f43ce6dab707"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4160/pipeline.json",
+      "sha256": "d2fa2b23e9d1052e2f1367b785881086e6492d70aefa3884669451cb750a81fe"
+    },
+    {
+      "bytes": 814,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4160/precision-check.json",
+      "sha256": "d28ae78871fad9cb8db9edafc9bf62cb23c4c02fbd5b19dbb5b4009caeaa75e8"
+    },
+    {
+      "bytes": 2975071,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4640/fixture.json",
+      "sha256": "2d575cb53430aa80557f25381c335aca2d079514f23ff6b741fa49d32f753da8"
+    },
+    {
+      "bytes": 536,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4640/java-parity.json",
+      "sha256": "2298d7127b3ee099448f0f17b1b5f19c9f76168b0e1cc15bd3a5c0e692ac0212"
+    },
+    {
+      "bytes": 866,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4640/java-parity.log",
+      "sha256": "125ea3db350969bb4d7e0c294a8595c1a5c8ee21c9aa56649f9779b53c3fb365"
+    },
+    {
+      "bytes": 2505739,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4640/model.json",
+      "sha256": "334bbfa174cca79f91da9ab9f99ab3b547c6207266a035ac461a947af295d950"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4640/pipeline.json",
+      "sha256": "dd44ab019dcf99e8ae0b1d71e6d2b89147b3d210cbe6dd8c5a1f6a42f78a50f6"
+    },
+    {
+      "bytes": 814,
+      "entry": "build/neural-trace-followup/v1/models/T-20260911-s4640/precision-check.json",
+      "sha256": "3f35ba75fb22972d8dbbb92e76cf328d0025c3544af1c64700ee74fc6f4f9fc3"
+    },
+    {
+      "bytes": 2976178,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s3120/fixture.json",
+      "sha256": "1dfdf34b6f7c54d068531610d26ed756a3270e4ecdadf12fb35e9d6b15e22b42"
+    },
+    {
+      "bytes": 538,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s3120/java-parity.json",
+      "sha256": "027d7c0f373800d61fe036df500078b7cf80b48402966e7ee99028da1ec8bc42"
+    },
+    {
+      "bytes": 868,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s3120/java-parity.log",
+      "sha256": "396cbe99885773ab06dcdbcaf69f1fb3056bd04064de302bc5552a6d503b3629"
+    },
+    {
+      "bytes": 2506171,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s3120/model.json",
+      "sha256": "8861d4e64eae48ac0da5013a73ec0d15bdba06b3d0ddded1ffeed6eaf92f0232"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s3120/pipeline.json",
+      "sha256": "f108cbc62a9180997447267ec473b6c40bdedc371d798764aab019cc88d73fe9"
+    },
+    {
+      "bytes": 815,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s3120/precision-check.json",
+      "sha256": "092ee4f00941779498f099063306aa18402a6dc31e17505dcce3ba3d56ffdbd1"
+    },
+    {
+      "bytes": 2975324,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4160/fixture.json",
+      "sha256": "73726ce93afe10312221739ec4b34bc54101e7ed005e1b39428458a52f94cf1e"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4160/java-parity.json",
+      "sha256": "1ca9f6c0ccaaff17c53ece337378a028332949e35910a234e6e060994b9b0ae1"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4160/java-parity.log",
+      "sha256": "39367e4b9380b98d1968ffbfdf81c0434b5610f9b73a791521bf1630242d92c6"
+    },
+    {
+      "bytes": 2506052,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4160/model.json",
+      "sha256": "5ddd30bc84883652457fd540105d116e2674644a162900ccb1af00a8fc9b9e23"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4160/pipeline.json",
+      "sha256": "353b36cd696314f466f67945a46b6440f4704dec79541503762ed5d43701b8a4"
+    },
+    {
+      "bytes": 814,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4160/precision-check.json",
+      "sha256": "5fef8c97e13c6b8bad9b67a6a08bd06229ee29075a6b91618928ca983d071794"
+    },
+    {
+      "bytes": 2975857,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4640/fixture.json",
+      "sha256": "a0b8ef6371433318ac0ce2ac7677a006982630e18fdfbb2d021e2299f1e2b5ee"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4640/java-parity.json",
+      "sha256": "3b7cd043c158e225ee9be5fa5f4e2c96d31a2574fcfbcaf1e8b62234284b96d6"
+    },
+    {
+      "bytes": 870,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4640/java-parity.log",
+      "sha256": "8db74101a28f4f773e08219dcb2cc4d44bc9657a0895a9e5712752ae7ee53f73"
+    },
+    {
+      "bytes": 2506383,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4640/model.json",
+      "sha256": "346987e201519f0258edca87c3484e22de9a1edf9b82ec4501fc0d26b691e43e"
+    },
+    {
+      "bytes": 320,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4640/pipeline.json",
+      "sha256": "82dc06a6338a93df07ec62e0ae313a37755152ec46eba4f31008708a78934407"
+    },
+    {
+      "bytes": 811,
+      "entry": "build/neural-trace-followup/v1/models/T-20260912-s4640/precision-check.json",
+      "sha256": "b0ccc7c2f0e4ab0698fc75e3e209622d7918cb6484924cf7afec018953deecbd"
+    },
+    {
+      "bytes": 28067,
+      "entry": "build/neural-trace-followup/v1/models.json",
+      "sha256": "36a1119712acbbbf51d1ab0c52494e63197ed4e6d01e6d90caaaa391609b23d7"
+    },
+    {
+      "bytes": 30367358,
+      "entry": "build/neural-trace-followup/v1/N804.jsonl",
+      "sha256": "12573c376342389cf40731d68f92e2aacbb26306c84b959a522365b4a18bcc4b"
+    },
+    {
+      "bytes": 35023460,
+      "entry": "build/neural-trace-followup/v1/N905.jsonl",
+      "sha256": "56682d2886060c01e778cd36eb12217800301c360770d88b0d647550e45323f1"
+    },
+    {
+      "bytes": 13948,
+      "entry": "build/neural-trace-followup/v1/normalization.json",
+      "sha256": "4e0920d495d7d20bb2edfed3562c9b0dbd12f7f8be7698a71c164264efb72806"
+    },
+    {
+      "bytes": 2593,
+      "entry": "build/neural-trace-followup/v1/preflight/all-tests-final.log",
+      "sha256": "4e7f739ff34151c802c4399d1a83838bf6419989f46a7420a50b2254df39c4d9"
+    },
+    {
+      "bytes": 2593,
+      "entry": "build/neural-trace-followup/v1/preflight/all-tests.log",
+      "sha256": "f1d9d61d088aff2e6f83877996d936cba4a03adae35424f894f34454c623b4c6"
+    },
+    {
+      "bytes": 162,
+      "entry": "build/neural-trace-followup/v1/preflight/calibration.log",
+      "sha256": "e0e8e240b39695989a572db3d7f32eb79e3cb53885a1320bbd5bfc2a7b4667fe"
+    },
+    {
+      "bytes": 218,
+      "entry": "build/neural-trace-followup/v1/preflight/compile-final.log",
+      "sha256": "a574aa5ba0f6918dac9e5eefb7371134c149f1b5d1411db5933536eb29f05c81"
+    },
+    {
+      "bytes": 663,
+      "entry": "build/neural-trace-followup/v1/preflight/compile-first.log",
+      "sha256": "130d4417d75c8dae836d03e4abdbdea050c86e16c90e584e88d46c95b7b000d7"
+    },
+    {
+      "bytes": 155,
+      "entry": "build/neural-trace-followup/v1/preflight/compile-registered-runtime.log",
+      "sha256": "3ccf944c4f450ac0808669da87f72b3f0f199ffa76d451e75118f021b665146f"
+    },
+    {
+      "bytes": 2927,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-parity-final.log",
+      "sha256": "98b230205fb6b9a45af9c8910a376adafb953ae7a894dbc5b7d5e43edd2d070a"
+    },
+    {
+      "bytes": 2861,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-parity.log",
+      "sha256": "31b48e7e4ad1ed241526233ea29483817f8c80c1c03195371a237ed12586e7fc"
+    },
+    {
+      "bytes": 2975860,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/compact/fixture.json",
+      "sha256": "9f5b5deedd1b1351c4ae874ec26c882fa7dc3668cdb42efea651d0913ad1a1aa"
+    },
+    {
+      "bytes": 539,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/compact/java-parity.json",
+      "sha256": "189978b09bb0570f647b867681b723f77fe2c02fc45c0e544c9448c8a16b087d"
+    },
+    {
+      "bytes": 869,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/compact/java-parity.log",
+      "sha256": "e3b43195c938a2b6524eaca3a05b0ec93b9307c7379d9eb614ebaaa958485beb"
+    },
+    {
+      "bytes": 2547124,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/compact/model.json",
+      "sha256": "276bf1d1f112184b20b8a00b371f06e99b6ff6f8a80d3e438864b7ea7bed0485"
+    },
+    {
+      "bytes": 314,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/compact/pipeline.json",
+      "sha256": "01ca2f6a2922b28506a8778db42cba9ae64c609cfd19aa26c6020364d3ef84e6"
+    },
+    {
+      "bytes": 812,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/compact/precision-check.json",
+      "sha256": "25d7deb1982ad4cba346e4f342babbf967bb2e600a5901000b052bb11f629359"
+    },
+    {
+      "bytes": 2975860,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/full/fixture.json",
+      "sha256": "9f5b5deedd1b1351c4ae874ec26c882fa7dc3668cdb42efea651d0913ad1a1aa"
+    },
+    {
+      "bytes": 539,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/full/java-parity.json",
+      "sha256": "189978b09bb0570f647b867681b723f77fe2c02fc45c0e544c9448c8a16b087d"
+    },
+    {
+      "bytes": 869,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/full/java-parity.log",
+      "sha256": "e3b43195c938a2b6524eaca3a05b0ec93b9307c7379d9eb614ebaaa958485beb"
+    },
+    {
+      "bytes": 2580398,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/full/model.json",
+      "sha256": "4bec5ea6c9fc9a26d315c4635306058c5303aa620c4fa6fdd16d516e334eb786"
+    },
+    {
+      "bytes": 308,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/full/pipeline.json",
+      "sha256": "49fd375ae457ab6c20714b410731ff16e14f3e054332f8bc057fd8a0e753cf4a"
+    },
+    {
+      "bytes": 800,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/full/precision-check.json",
+      "sha256": "3e23a029f56e9c53e57915d2f233e55f34f66ac83b1e5f32da30390f6a17892e"
+    },
+    {
+      "bytes": 2976064,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/plain/fixture.json",
+      "sha256": "c9e426dfcff567c4317b208ecefd87dde2b5da9a8fea25bf968da8474873d0eb"
+    },
+    {
+      "bytes": 540,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/plain/java-parity.json",
+      "sha256": "9b0b740f32234fc0734dc28cd6497242aca8067031d6b261c6d253658a2c75f4"
+    },
+    {
+      "bytes": 779,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/plain/java-parity.log",
+      "sha256": "c7481203397eaa21f0b926b18eebb01f62032d012c5fb8f9188e0b0647e89d22"
+    },
+    {
+      "bytes": 2506229,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/plain/model.json",
+      "sha256": "f6aa11203eadf9792bc64815ab76c451fe9bd0278854e117cb219a258012179f"
+    },
+    {
+      "bytes": 305,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/plain/pipeline.json",
+      "sha256": "0bb1102f6f08c88da80f73e24dd8fce85eb92e561690654602b25cf570215289"
+    },
+    {
+      "bytes": 804,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models/plain/precision-check.json",
+      "sha256": "40b5095f830f6bd022e1c6c5b7f77ebb54d9e13c58349972c1a7a39aaeea4fee"
+    },
+    {
+      "bytes": 1107,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initial-models.json",
+      "sha256": "82dcd9b60c5718af224f0e55c8c34523d3322c4f58d264454beaa338ba6e2de7"
+    },
+    {
+      "bytes": 2572,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/initialization-proof.json",
+      "sha256": "cdfebb7ea15aa021e79f08a2303e098bbe2b8b2338428140acb2ef97104362dc"
+    },
+    {
+      "bytes": 13948,
+      "entry": "build/neural-trace-followup/v1/preflight/initial-v0/normalization.json",
+      "sha256": "4e0920d495d7d20bb2edfed3562c9b0dbd12f7f8be7698a71c164264efb72806"
+    },
+    {
+      "bytes": 627,
+      "entry": "build/neural-trace-followup/v1/preflight/initialization-final.log",
+      "sha256": "8fe939a75fed001c4f2359b62f4c13f1803e0d6475a547c6b37d93f5678e185e"
+    },
+    {
+      "bytes": 653,
+      "entry": "build/neural-trace-followup/v1/preflight/initialization-tests.log",
+      "sha256": "32572a76326c89a80a6639ba34cdd5ee9eb9989f6c7e89be8367dc81e8dfa9bc"
+    },
+    {
+      "bytes": 627,
+      "entry": "build/neural-trace-followup/v1/preflight/initialization.log",
+      "sha256": "1ff8371cdc5b53beabc45a2a619dd1f3756ae9d5129eed804e4cd0c5a4c9c3a9"
+    },
+    {
+      "bytes": 1280,
+      "entry": "build/neural-trace-followup/v1/preflight/objective-tests.log",
+      "sha256": "99f4d56bd0b7cd1a7a8c91f8e3f3840761c810dafcf7015d6d6d03fc25a6982f"
+    },
+    {
+      "bytes": 560,
+      "entry": "build/neural-trace-followup/v1/preflight/python-compile-first.log",
+      "sha256": "d2c206c81eb644d7e325b731fa979b483eb6eca3d6cf1a18248cb08757eaafca"
+    },
+    {
+      "bytes": 131,
+      "entry": "build/neural-trace-followup/v1/preflight/registration-seal.log",
+      "sha256": "a6a0fbacd0fa6d998ce4c6211f37724573517e308469b2e914468a3e316360be"
+    },
+    {
+      "bytes": 120,
+      "entry": "build/neural-trace-followup/v1/preflight/registration.log",
+      "sha256": "b4fb9a7533316f53fb3680d42abb487aa1f6f9a7688fc55bc121696f8c9ce6e9"
+    },
+    {
+      "bytes": 331,
+      "entry": "build/neural-trace-followup/v1/preflight/schedule-tests.log",
+      "sha256": "3e3b1c6ddbc00dba6fba3da3de3e2496330e2ee5d8c3d5ab0686e14964e8a45e"
+    },
+    {
+      "bytes": 3109,
+      "entry": "build/neural-trace-followup/v1/report-summary.json",
+      "sha256": "f2e617fcc63cf7b3f6b223efeb43e621e3f789c473953f04a3bd18f8beb173cf"
+    },
+    {
+      "bytes": 10140,
+      "entry": "build/neural-trace-followup/v1/report.md",
+      "sha256": "7bacc2c1641e2cc0ac5084eaa3765d68c4be553100c59725483fcd5d42ebf838"
+    },
+    {
+      "bytes": 5012693,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260911-s3120/evaluation.jsonl",
+      "sha256": "ddaa01fba90825de2ffe284d3a6d2cf527c508a157f5f7bf4f4bc3ac5c7f4604"
+    },
+    {
+      "bytes": 2535,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260911-s3120/run.json",
+      "sha256": "bb6fdd319f699eb875ca2714607fa93b13f17685fcdac4d62a6c354e3b842cd4"
+    },
+    {
+      "bytes": 5010212,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260911-s4160/evaluation.jsonl",
+      "sha256": "7cb1ad5327c9c8026ac5842d56dfcdf1379d9504d2b414d57b3e070109d908fb"
+    },
+    {
+      "bytes": 2534,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260911-s4160/run.json",
+      "sha256": "b617e7a1cf9c4d9ea9c4060d2e11608537889567a1e473a249e04c03b6f72e39"
+    },
+    {
+      "bytes": 4916024,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260911-s4640/evaluation.jsonl",
+      "sha256": "9a50bd6645c117a3362ad124fdb468a871068dd8a10475d2c69a1d2f2a2d8786"
+    },
+    {
+      "bytes": 2534,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260911-s4640/run.json",
+      "sha256": "91d0f57993350c32220a829af8eb71d4b65f20d0387c9b0966d876652881b9e8"
+    },
+    {
+      "bytes": 4942336,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260912-s3120/evaluation.jsonl",
+      "sha256": "b577ee47bde6420ffff72dce731837b5ad4d419586507f94e859c2fd0ed39048"
+    },
+    {
+      "bytes": 2535,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260912-s3120/run.json",
+      "sha256": "4f51f16106af2396ce2d875265f9dcc2edea9bb5bf22ef9aec009e2623a0600d"
+    },
+    {
+      "bytes": 4995660,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260912-s4160/evaluation.jsonl",
+      "sha256": "f143ea8412929c0f64cad3a3e6b66a6ed63f5be89aef79a28c5662b42185cad5"
+    },
+    {
+      "bytes": 2535,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260912-s4160/run.json",
+      "sha256": "e540f1f2e192661897dc6e427730b70f177817c8c8b149a48a94265385709ee4"
+    },
+    {
+      "bytes": 5020164,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260912-s4640/evaluation.jsonl",
+      "sha256": "822295a2c8bc143e5dbabc80185963face17ef32d9736c74a757dac221b1c5a1"
+    },
+    {
+      "bytes": 2535,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/C-20260912-s4640/run.json",
+      "sha256": "36226dd715ed9c67f3d0a843a76aec4df8d4b484fbef252732008e15e77b0020"
+    },
+    {
+      "bytes": 5185241,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260911-s3120/evaluation.jsonl",
+      "sha256": "98104529b769b066bb8b0e624a61020052bc56a0ee933a2c6df2c6bf6a49c470"
+    },
+    {
+      "bytes": 2534,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260911-s3120/run.json",
+      "sha256": "0b1287eaee36d28a594ad4c2b66928b52b194b4fe4ca5db14574ee0578e42ca5"
+    },
+    {
+      "bytes": 5144256,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260911-s4160/evaluation.jsonl",
+      "sha256": "ca21fa55132d3a014d9f740b3ead5d65da5e590d2996d90fa264eaac26367fe6"
+    },
+    {
+      "bytes": 2533,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260911-s4160/run.json",
+      "sha256": "7fbf74c7c276f3445714455e95e78027ec0eae1beb17c4acec05c24c2fb89688"
+    },
+    {
+      "bytes": 4926551,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260911-s4640/evaluation.jsonl",
+      "sha256": "53f064ffc313ba8375623217240651b85afe09e694a91da64afb8e6c03bd4a58"
+    },
+    {
+      "bytes": 2533,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260911-s4640/run.json",
+      "sha256": "0631e3298e85f4079374905da1304565bc35b1f4ad4d85cd9bc4948aa34baf76"
+    },
+    {
+      "bytes": 5074842,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260912-s3120/evaluation.jsonl",
+      "sha256": "cacbd771814ceedcf4ac082f883f00128fb8cfae561395af6e7814bec1a78154"
+    },
+    {
+      "bytes": 2535,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260912-s3120/run.json",
+      "sha256": "d347a15c9613b9c2285829b04a056f57cad72724bc92c00573e8f4b5ec146dc2"
+    },
+    {
+      "bytes": 4885472,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260912-s4160/evaluation.jsonl",
+      "sha256": "ed6044489776bd554aeaf022ba24c3d1134b743c4e930247e9b7e09f53f73064"
+    },
+    {
+      "bytes": 2534,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260912-s4160/run.json",
+      "sha256": "32783f536ba326e41b6d97c2bbd49ec9bc187e0c5ae07e405f293011a728ac47"
+    },
+    {
+      "bytes": 4891813,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260912-s4640/evaluation.jsonl",
+      "sha256": "5d500ca9037a8926284179729b1e7f004320ab855fa4db1334141579ee2a103d"
+    },
+    {
+      "bytes": 2535,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/D-20260912-s4640/run.json",
+      "sha256": "fb4a073bb2c0e6f15847d2308a1ef595151a0770b73131e9271a15c9600427fa"
+    },
+    {
+      "bytes": 4979343,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260911-s3120/evaluation.jsonl",
+      "sha256": "916dcb9aed1499c91551e04e3de9d4a64aedd7a6c30c29c8a28e091c8e067830"
+    },
+    {
+      "bytes": 2539,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260911-s3120/run.json",
+      "sha256": "147c383d6634865a1b7e9835496fa48b9d10c648101e4a963197ff3f0775a826"
+    },
+    {
+      "bytes": 5013340,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260911-s4160/evaluation.jsonl",
+      "sha256": "601e0ff88e5c876daf5ab34c48ec50185543834a9d8f2a98ee77e0dcd3642634"
+    },
+    {
+      "bytes": 2539,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260911-s4160/run.json",
+      "sha256": "bdad89b9989f1dd48947ff63b463373b2bd457d8d5148814c3a34fca38594481"
+    },
+    {
+      "bytes": 4881668,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260911-s4640/evaluation.jsonl",
+      "sha256": "bc32225474b388e5d1a8ec24c2c3b5e2ffac55a6922603e96e34bd51b5ebf37e"
+    },
+    {
+      "bytes": 2539,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260911-s4640/run.json",
+      "sha256": "ac5ef4d500bf1107f22451309230141ba8f84a972abe60a24c0a84dd35515746"
+    },
+    {
+      "bytes": 4940374,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260912-s3120/evaluation.jsonl",
+      "sha256": "62387d10aa0e1d26cbf4ddf0759e5cf6db4ea816e4258ac1ce7015da8a1dd6a1"
+    },
+    {
+      "bytes": 2540,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260912-s3120/run.json",
+      "sha256": "305c3aa6b59511311ecac973dd4d6e4e3b9836de5eda594161adf35f45c67693"
+    },
+    {
+      "bytes": 5024690,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260912-s4160/evaluation.jsonl",
+      "sha256": "15ae8df6f84dbe3729c16fb20c4fc49afee0963eae2153545e335b0bd1ca72f2"
+    },
+    {
+      "bytes": 2540,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260912-s4160/run.json",
+      "sha256": "32fb131cf22d9e267837805c4d4f211004fbb927fdaa7eb49def8f96a9aeb951"
+    },
+    {
+      "bytes": 4958104,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260912-s4640/evaluation.jsonl",
+      "sha256": "d0136ce7050defb5670464129f2b4a56b0cf4ef377bb50f99034df57327794fa"
+    },
+    {
+      "bytes": 2539,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/F-20260912-s4640/run.json",
+      "sha256": "95f2894338d29d7e7f2001313be16b8be2e31d53328e922e6966a1e209a7de4b"
+    },
+    {
+      "bytes": 5336404,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/H805/evaluation.jsonl",
+      "sha256": "f12be9dd04b317458c4d5e605e5226a103d026c7e12dc8a5288ada35edf89cba"
+    },
+    {
+      "bytes": 2542,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/H805/run.json",
+      "sha256": "dfc083aa881299254042b31adb601c1df05fa22e6d9af08dabce7a08db37b4ac"
+    },
+    {
+      "bytes": 5194151,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/I/evaluation.jsonl",
+      "sha256": "715eecb1be1cca61536b5af5ee639cecb65a97765022025b388413a5dd2f2664"
+    },
+    {
+      "bytes": 2498,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/I/run.json",
+      "sha256": "3cffdb7f987f77086962755db7db218ba7f0aad1a5801c052569af97ff6b908d"
+    },
+    {
+      "bytes": 5017923,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260911-s3120/evaluation.jsonl",
+      "sha256": "b28b4155973b8d95efceec9acbc944804e8a7b39f4129476e8c0b3aab3c14d63"
+    },
+    {
+      "bytes": 2539,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260911-s3120/run.json",
+      "sha256": "83954276962e6d66a34847c4dd394b993f7eac5787a63224ace647b6e9118bf5"
+    },
+    {
+      "bytes": 4936393,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260911-s4160/evaluation.jsonl",
+      "sha256": "b849d564398cfe7c81a79b0771454c962385030968fa34f6754aeee1547a2774"
+    },
+    {
+      "bytes": 2538,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260911-s4160/run.json",
+      "sha256": "8b08ee75f05432bf7ab7a13d5067aa88bee255ddd94ac1719438d654d203d405"
+    },
+    {
+      "bytes": 4918808,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260911-s4640/evaluation.jsonl",
+      "sha256": "f563ed796bec37f4e9f78cd79afed59c0858a44e34ed3f95d67eb8cff2815a62"
+    },
+    {
+      "bytes": 2540,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260911-s4640/run.json",
+      "sha256": "8830bcc3622c966c441d1d856b06bb4debd94308702c1f26fd371eef6303e454"
+    },
+    {
+      "bytes": 4930869,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260912-s3120/evaluation.jsonl",
+      "sha256": "a571ca5b1906ea71502e584f228e246bee58a2053a82401b1e1d6615ec3cdfbf"
+    },
+    {
+      "bytes": 2539,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260912-s3120/run.json",
+      "sha256": "358a659dbe3fcc777392aa4383141abb42590fcb8140645d9e1114f8f89e307f"
+    },
+    {
+      "bytes": 4907792,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260912-s4160/evaluation.jsonl",
+      "sha256": "23c9c4e25cbfd954e0f66aa1b0ac3625ebebdfa0bcde2055534e26ecbda064b8"
+    },
+    {
+      "bytes": 2540,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260912-s4160/run.json",
+      "sha256": "038f7e65d34c45730e8a0cd4aff44dffc8a58db009fcd97a2fb9b8b8f49bec9e"
+    },
+    {
+      "bytes": 4912037,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260912-s4640/evaluation.jsonl",
+      "sha256": "6c13c48b32d85ca4df007abc820aff1ca5981dc7c737a447345c981babc75d16"
+    },
+    {
+      "bytes": 2540,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/K-20260912-s4640/run.json",
+      "sha256": "6c2fab264750023e740987816edc3f68b72b72b7107149754326be32b5ccd173"
+    },
+    {
+      "bytes": 5078493,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260911-s3120/evaluation.jsonl",
+      "sha256": "cfcb1f93d3016d8894c718505196d0cad13416d1754735588e245694fba8df9d"
+    },
+    {
+      "bytes": 2535,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260911-s3120/run.json",
+      "sha256": "f36d09b424c225529d62459bfda68976291ad6b9597b3045676695987a00603f"
+    },
+    {
+      "bytes": 4961725,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260911-s4160/evaluation.jsonl",
+      "sha256": "e2bbff46d63adbd308ecbc8c125da9a0807534dc984e544169785df1160b8c99"
+    },
+    {
+      "bytes": 2535,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260911-s4160/run.json",
+      "sha256": "5297c4e1d11374d6fb6bfb0a25e7189ee8c73ae2e639f779cbc5021398cc8c9f"
+    },
+    {
+      "bytes": 4980265,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260911-s4640/evaluation.jsonl",
+      "sha256": "a8fb57c4beb269bfe67cdb910753ec26690c454a3b77cd6cc0c85852b95a511a"
+    },
+    {
+      "bytes": 2535,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260911-s4640/run.json",
+      "sha256": "4a77d5924080cf2ca48d19713a7a749c435567c08e5a4e38b2096e4766d0659f"
+    },
+    {
+      "bytes": 5021961,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260912-s3120/evaluation.jsonl",
+      "sha256": "5489aeb2ebbba61b6def157536df5e3eb0de11232e343efd4486783d1e874917"
+    },
+    {
+      "bytes": 2534,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260912-s3120/run.json",
+      "sha256": "4c648b58a85aa3a6bb64c0b78c886a64f6baf037740a4e4f6c0b749d0089a556"
+    },
+    {
+      "bytes": 5078615,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260912-s4160/evaluation.jsonl",
+      "sha256": "13badc40cf7f87566a65e79f70a6599deea507760b25dcb182a429e52cdb69f0"
+    },
+    {
+      "bytes": 2533,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260912-s4160/run.json",
+      "sha256": "3f8f114ff76b939d1630ead883f0a291447317023c3b6b9204f83093bb12c8ae"
+    },
+    {
+      "bytes": 4922199,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260912-s4640/evaluation.jsonl",
+      "sha256": "0d588139317e41d279ac9875f4cb0290205d628de8a5f0648f7300f63c745ee3"
+    },
+    {
+      "bytes": 2535,
+      "entry": "build/neural-trace-followup/v1/screen/block-1/T-20260912-s4640/run.json",
+      "sha256": "d9fe36cdc6d739d8fdd208d393e72b8b7d626ef999b81d5195c18dab8e330b72"
+    },
+    {
+      "bytes": 39408235,
+      "entry": "build/neural-trace-followup/v1/screen-analysis.json",
+      "sha256": "9807b24df5bfdf005e112bbd5fc380e099bfb2b195216b5ab590e8ab82cd8f16"
+    },
+    {
+      "bytes": 8862812,
+      "entry": "build/neural-trace-followup/v1/screen-case-evidence.jsonl",
+      "sha256": "ee060867d957fa71911419fc1608d9e1c892efdd3ed7ba0b983c12a3ef8aeae0"
+    },
+    {
+      "bytes": 492,
+      "entry": "build/neural-trace-followup/v1/screen-execution-lock.json",
+      "sha256": "90b2bb6caaf253eb9ca24d43fb4d3057e499a5bd3d6d028d849952138ff0519b"
+    },
+    {
+      "bytes": 1938520,
+      "entry": "build/neural-trace-followup/v1/screen-profile-evidence.jsonl",
+      "sha256": "c4da996c7bc59c539663349bc75b4907e2b0614fb4ba8e198d3127bfca15c06b"
+    },
+    {
+      "bytes": 95274,
+      "entry": "build/neural-trace-followup/v1/selection.json",
+      "sha256": "0f33cac385b5ac46fd977bbe602bd641351be2c184c7aa78d3a980d59e651bbd"
+    },
+    {
+      "bytes": 43153,
+      "entry": "build/neural-trace-followup/v1/training-plan.json",
+      "sha256": "03196a6fe431b3ba46844394ca24f537fbc2253e554baf97467285210f5b7d82"
+    },
+    {
+      "bytes": 26171112,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/C-20260911-s4160/evaluation.jsonl",
+      "sha256": "d222b34a874d84c00acf4512b7ee263171dfcfcd5e8e1695228f285c64bbccfa"
+    },
+    {
+      "bytes": 2542,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/C-20260911-s4160/run.json",
+      "sha256": "3ccb7f950303d3cbe0d3e686494a070560561c34788a110aa00931cb4e782d15"
+    },
+    {
+      "bytes": 25844992,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/C-20260911-s4640/evaluation.jsonl",
+      "sha256": "682f6669c2732497a922db53064be7d4149d229b8cde752407f60b38ce4ab7c6"
+    },
+    {
+      "bytes": 2542,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/C-20260911-s4640/run.json",
+      "sha256": "d24ee3a2621280e39e3eb4b6bd36d5587429e39fab3e10d6925b0c854aa7f524"
+    },
+    {
+      "bytes": 26274736,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/D-20260911-s3120/evaluation.jsonl",
+      "sha256": "ca523cfaf13489ca1b8b41988bab0cdb5ba7e80af13a3855b454a306877fe361"
+    },
+    {
+      "bytes": 2539,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/D-20260911-s3120/run.json",
+      "sha256": "6af77cd8145912231ca1d11fa8f1ebe7b502f852c18dbba5a2be513a6e3d89e7"
+    },
+    {
+      "bytes": 26098911,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/D-20260911-s4160/evaluation.jsonl",
+      "sha256": "394a6fc52c0e94d22c5872c740612449faafce5ee3971d4115de51a69f283aef"
+    },
+    {
+      "bytes": 2542,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/D-20260911-s4160/run.json",
+      "sha256": "e74a06856b1cc30e81e610cf12d021b80102bdb98431d49f66ffdc4b33a5ca2c"
+    },
+    {
+      "bytes": 25698187,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/D-20260911-s4640/evaluation.jsonl",
+      "sha256": "0ecb8300a2bc4cf0170e6caed9428393e711892e7b00e4c13db341d92bbf4923"
+    },
+    {
+      "bytes": 2541,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/D-20260911-s4640/run.json",
+      "sha256": "c51fcef38bfe54036286d0baa9b530a2501910c65d2f5528cbb5d7a1a7ec024f"
+    },
+    {
+      "bytes": 26451589,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/F-20260911-s4160/evaluation.jsonl",
+      "sha256": "feab16090cc1cf9e5ed48bf897af7a9c766883cf53f6128cb40da042d0fae770"
+    },
+    {
+      "bytes": 2546,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/F-20260911-s4160/run.json",
+      "sha256": "d0cf4917d88609ae9046fbb98d1770d585c7d71e0990d27ddcc7629446ef0749"
+    },
+    {
+      "bytes": 25150024,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/H805/evaluation.jsonl",
+      "sha256": "eabb07b561a1d0968850e944ecad35b538fa0577557c88b475cdd43a95c748a5"
+    },
+    {
+      "bytes": 2552,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/H805/run.json",
+      "sha256": "d1b99253107b8de980af490910975fa88a67429aae2cbaaf924defe1a03fbb79"
+    },
+    {
+      "bytes": 25783965,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/I/evaluation.jsonl",
+      "sha256": "4f5f918c5e91e6ae10466dd208436389cb88aa63e323b28933c6333291534bc4"
+    },
+    {
+      "bytes": 2504,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/I/run.json",
+      "sha256": "53a84f04154d4f9ae1be4f0011f32e4ded821cd3fb240a5db4b4248dafcd70f1"
+    },
+    {
+      "bytes": 26057027,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/K-20260911-s3120/evaluation.jsonl",
+      "sha256": "3cf7139b6f56f409402b3d7c86d60265d3acc7c180cf28ab9f9f6c1ea437f968"
+    },
+    {
+      "bytes": 2546,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/K-20260911-s3120/run.json",
+      "sha256": "190d074e5fc8393a83bd7694020114a922d7b27193b9d7f08c522a60e1e80926"
+    },
+    {
+      "bytes": 26128545,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/K-20260911-s4160/evaluation.jsonl",
+      "sha256": "40f82a30cec20734ec3abc48cb6ad9c001ebdd0ffe2098367c7bdeeade66e0bb"
+    },
+    {
+      "bytes": 2547,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/K-20260911-s4160/run.json",
+      "sha256": "fb32c733d5b8f39aba0f8f8b241f87e92437ffca94adf794335ec24aa15534a5"
+    },
+    {
+      "bytes": 25758890,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/T-20260911-s3120/evaluation.jsonl",
+      "sha256": "b4e862c49b9102431cd82c6e491bb377a8610a96d6617e42205a9b9f4f7c77ae"
+    },
+    {
+      "bytes": 2541,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/T-20260911-s3120/run.json",
+      "sha256": "29974fb9182d73ae8c8cd835d079f02e3c751d9dfd1ecb65188a3a45fd5105d2"
+    },
+    {
+      "bytes": 25881396,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/T-20260911-s4160/evaluation.jsonl",
+      "sha256": "1bb56ca50d84af1bd83d473922c75dff7144b3d98533c7576b13af2c8a29305f"
+    },
+    {
+      "bytes": 2542,
+      "entry": "build/neural-trace-followup/v1/validation/block-1/T-20260911-s4160/run.json",
+      "sha256": "dafc33dda4fc506cf23d3494d9fc9a0bb62ce2c157ce60cc30b04716f20ca9c9"
+    },
+    {
+      "bytes": 26218988,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/C-20260911-s4160/evaluation.jsonl",
+      "sha256": "6c50fcb5c71d2249992d546b58e8b7a40a96247ffdc0957be0b9d03c308a674f"
+    },
+    {
+      "bytes": 2542,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/C-20260911-s4160/run.json",
+      "sha256": "a4d31a48e9c9de141b0df73ae6ffc1e1d97d166367697fe1a528da0d664bb647"
+    },
+    {
+      "bytes": 25907549,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/C-20260911-s4640/evaluation.jsonl",
+      "sha256": "5fcd404acc287c316af2615c9baf9ecf8a6626b7f5ff5a1faf0a4c2442142fb0"
+    },
+    {
+      "bytes": 2542,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/C-20260911-s4640/run.json",
+      "sha256": "189f140bd1c17e0d5f3a489418964474800ca027a9d1395477fa79f56c1d09aa"
+    },
+    {
+      "bytes": 26266719,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/D-20260911-s3120/evaluation.jsonl",
+      "sha256": "d18a48ad328a70e993badb27516ca9a1f9ae6129d1ec9c333e8304f6d9b96005"
+    },
+    {
+      "bytes": 2543,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/D-20260911-s3120/run.json",
+      "sha256": "71ffcf41a9b0da8b68d317348da6ec205eeca384526651c33ba6f3376c91ffac"
+    },
+    {
+      "bytes": 26098645,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/D-20260911-s4160/evaluation.jsonl",
+      "sha256": "a944a8eecc81f71be9d30ba9026e939566b091ea01c7b2bc9426ec3fef332076"
+    },
+    {
+      "bytes": 2543,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/D-20260911-s4160/run.json",
+      "sha256": "935e92e0f1a4ef4d0e5ff3c3a885cab2c4dcda7003ed349bfc9d4c21171a7132"
+    },
+    {
+      "bytes": 25706782,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/D-20260911-s4640/evaluation.jsonl",
+      "sha256": "82a8e291a61a1e4a8e14ddf3c1dfc24f9147d67290bbc235b50c13de27ca8b54"
+    },
+    {
+      "bytes": 2541,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/D-20260911-s4640/run.json",
+      "sha256": "b2e393ebbc36ba16d972c50bce54d85dfb8f0b8735e7ac96c3c53080d2049494"
+    },
+    {
+      "bytes": 26459382,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/F-20260911-s4160/evaluation.jsonl",
+      "sha256": "710ad4dbe41e6a0f1fca1bdfddb37bce3bdffd4b3108d84e592c60eae1ebfc42"
+    },
+    {
+      "bytes": 2547,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/F-20260911-s4160/run.json",
+      "sha256": "cabf0c972dfc11c6302eccb49aedf45afc9b94de52d1a5c6f4fdf86ab4abd69a"
+    },
+    {
+      "bytes": 25144481,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/H805/evaluation.jsonl",
+      "sha256": "1fe3d051254d1f8fc1e5f9f5b1bf1f5c2c46bc06a6cd112a0616489d4a16be66"
+    },
+    {
+      "bytes": 2551,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/H805/run.json",
+      "sha256": "888be944a5b24e3967083fbb9652ca744bc70f57c4d03dee9059c8274bd5e91e"
+    },
+    {
+      "bytes": 25797404,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/I/evaluation.jsonl",
+      "sha256": "0aa84b3ebafc696c8ac05841980ff4619edeb910a15368bed5a5f053ea1f6bdf"
+    },
+    {
+      "bytes": 2504,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/I/run.json",
+      "sha256": "005093c68595fe8547d5a60395f3f1027cd931f94bc48b9a59e00c307f2cd0fd"
+    },
+    {
+      "bytes": 26047314,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/K-20260911-s3120/evaluation.jsonl",
+      "sha256": "7414c2f8b6e21439570ceea6f2027f495986215c64314c641635e1843327a814"
+    },
+    {
+      "bytes": 2545,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/K-20260911-s3120/run.json",
+      "sha256": "52518c321c6d09037422bc9e4a617aa1985acc41081e1ef807e46bb71ce26392"
+    },
+    {
+      "bytes": 26190014,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/K-20260911-s4160/evaluation.jsonl",
+      "sha256": "5bee13bad9f3da0db80a27c05c5f41c853a35f9cf7687cf232c203e9c5068401"
+    },
+    {
+      "bytes": 2548,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/K-20260911-s4160/run.json",
+      "sha256": "50d883acb6461fa695cc547f926d52f0fa14c30b0ad6a5be15acb12d5839c859"
+    },
+    {
+      "bytes": 25728156,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/T-20260911-s3120/evaluation.jsonl",
+      "sha256": "90fb2b9684217ce651fb317bf89c37240f5012f70aee159e58510c188b18c6c0"
+    },
+    {
+      "bytes": 2542,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/T-20260911-s3120/run.json",
+      "sha256": "002bdb4cbb624f942320e893a2ed5d35d92759524a85e77128cf2128a0420748"
+    },
+    {
+      "bytes": 25871738,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/T-20260911-s4160/evaluation.jsonl",
+      "sha256": "b7ef5041da5a7898681c7146bc69f10fa136e7b80ee4948d7ae4dc260ad8ec47"
+    },
+    {
+      "bytes": 2541,
+      "entry": "build/neural-trace-followup/v1/validation/block-2/T-20260911-s4160/run.json",
+      "sha256": "8690217e4bf92135519a60b7b29ee0798aafd7c80444a99deac870f0072025e0"
+    },
+    {
+      "bytes": 56694336,
+      "entry": "build/neural-trace-followup/v1/validation-analysis.json",
+      "sha256": "d8e76d685e87dc3c9a24c23181cb7e9c3289c42c49a1b48f1fb3ca1159b405a5"
+    },
+    {
+      "bytes": 39194325,
+      "entry": "build/neural-trace-followup/v1/validation-case-evidence.jsonl",
+      "sha256": "c547dc0a4311bd5e87168f097bcfa76802bcf3968979e2e96ff0bd13f25f947e"
+    },
+    {
+      "bytes": 513,
+      "entry": "build/neural-trace-followup/v1/validation-execution-lock.json",
+      "sha256": "5f8ac179806ca192de834953892b157d01627174c510520edea78ea09bb210e4"
+    },
+    {
+      "bytes": 1675220,
+      "entry": "build/neural-trace-followup/v1/validation-inputs.jsonl",
+      "sha256": "95d773b06126b1637492e07cc5e7ab62b819655f5ac221c98c961bff436a9a0a"
+    },
+    {
+      "bytes": 11708,
+      "entry": "build/neural-trace-followup/v1/validation-plan.json",
+      "sha256": "b765395ac20c659a03da218962ffd54c2faf9c4730cea1040052449c657e0b67"
+    },
+    {
+      "bytes": 5563016,
+      "entry": "build/neural-trace-followup/v1/validation-profile-evidence.jsonl",
+      "sha256": "51a3e935f1026ea5707bb97ef4df1c34e36761e5df237d6d6ffc06c149685cc0"
+    },
+    {
+      "bytes": 690,
+      "entry": "build/neural-trace-followup/v1/validation-reference-binding.json",
+      "sha256": "d13aa3c93e75179664367d931900eb69dffe33caa8aa38bf8f943869a44f5b7d"
+    },
+    {
+      "bytes": 6117642,
+      "entry": "build/neural-trace-followup/v1/validation-references.jsonl",
+      "sha256": "762502ded26a699c0ffdc6bdf6fb59b18c87b0cfdfe1c91189c2e928727560fe"
+    },
+    {
+      "bytes": 5359,
+      "entry": "build/neural-trace-followup/v1/verification.json",
+      "sha256": "3f8c04dbc13a0336ab19df400b32377a7085ba9094e6a5b29faf91734d7cf242"
+    },
+    {
+      "bytes": 50891,
+      "entry": "build/neural-trace-followup/validation-output.log",
+      "sha256": "8d4335a77f4c3e08560d784ff1bc6114fa1946fee4c9189f08fd0c790932442e"
+    },
+    {
+      "bytes": 10519,
+      "entry": "tools/trace-followup/analysis_common.py",
+      "sha256": "47eb2eed0b2e483195ec194d9affeb7f9271b5fa8770516590dc58e909428bca"
+    },
+    {
+      "bytes": 13287,
+      "entry": "tools/trace-followup/analyze_native.py",
+      "sha256": "d4fe231f7ab6a12f1c718c7f47533ad0ecd4c260fe97dc29870793adce1deaa8"
+    },
+    {
+      "bytes": 9064,
+      "entry": "tools/trace-followup/benchmark_followup.py",
+      "sha256": "784a94b2aa38b80c3a32dbd1906d58a43ca3375c5411bfba1301dd250606fe6b"
+    },
+    {
+      "bytes": 4057,
+      "entry": "tools/trace-followup/calibrate.py",
+      "sha256": "3e33cd34dbdf5623cff0a2084dbfa1f10af94dbda1c2dfa31c5db8c81d4467e9"
+    },
+    {
+      "bytes": 2769,
+      "entry": "tools/trace-followup/common.py",
+      "sha256": "ab1f266945163b8ea88d7748edeee5ef4b0ecad8b00916688ce3cf4cd89c4552"
+    },
+    {
+      "bytes": 4051,
+      "entry": "tools/trace-followup/export_models.py",
+      "sha256": "a149fae6f31ae6053518beb01bd871d56ee3a4187bd22be85a0fef22cabbc904"
+    },
+    {
+      "bytes": 5784,
+      "entry": "tools/trace-followup/fit_all.py",
+      "sha256": "c3db44656be2f283909aee2cb11ba9e28cb7af7959ffb031589bed7f32c7afce"
+    },
+    {
+      "bytes": 1197,
+      "entry": "tools/trace-followup/followup.gradle",
+      "sha256": "a162774679308aabb28d6c58ba6af5fa5935c764ed861ec291f261ab3d67e6ff"
+    },
+    {
+      "bytes": 14759,
+      "entry": "tools/trace-followup/followup_report.py",
+      "sha256": "37f7f9ab43e03858379b711042b859316de092cdb9124e268bebdd6f799876e8"
+    },
+    {
+      "bytes": 1914,
+      "entry": "tools/trace-followup/freeze_registration.py",
+      "sha256": "9b70c1dc24f274c7dfd4c9341ccd912746e08df7c346eae47f4bdeb8924d8ab2"
+    },
+    {
+      "bytes": 7050,
+      "entry": "tools/trace-followup/generate_native.py",
+      "sha256": "20818283659f58daddadf8c32fd53aa396d558101a43c507a5f95c497ed8451a"
+    },
+    {
+      "bytes": 3522,
+      "entry": "tools/trace-followup/initialization.py",
+      "sha256": "06bf66d991ee3e59c92bed8ba3ffabca605b2a2a3701f269ae1c061ab53f139d"
+    },
+    {
+      "bytes": 14990,
+      "entry": "tools/trace-followup/java/V3AnchorAugmentedInitializer.java",
+      "sha256": "dfbbf4a2a2037a1add4afecd293e2897476e4a5413ebcbd0f1e01cd80961cd37"
+    },
+    {
+      "bytes": 19759,
+      "entry": "tools/trace-followup/java/V3TraceEvaluationProbe.java",
+      "sha256": "6cbcb3769d1ff4d4583aee0683ba855992a13325350d67e4846cb8849ac598c7"
+    },
+    {
+      "bytes": 1649,
+      "entry": "tools/trace-followup/java/V3TraceModels.java",
+      "sha256": "021571e354b636133e91bf81e002ec84e35bf06d15131aab7c1e28c3a9b1d52d"
+    },
+    {
+      "bytes": 7703,
+      "entry": "tools/trace-followup/java/V3TraceParityCheck.java",
+      "sha256": "74441f4088db929de36e367fbf5deaada5d204e1c136144c3a4b2db9ec0a6103"
+    },
+    {
+      "bytes": 3898,
+      "entry": "tools/trace-followup/native.py",
+      "sha256": "79769d9939cb08a6b74528a43bac4f01cc18f70b1f026d18d523c4a283428f4c"
+    },
+    {
+      "bytes": 5243,
+      "entry": "tools/trace-followup/prepare_data.py",
+      "sha256": "d0d6c5a2dca6928357d5877fce3463e041b4e0e859a98e946ed5dda4859bf5bd"
+    },
+    {
+      "bytes": 10928,
+      "entry": "tools/trace-followup/protocol.md",
+      "sha256": "03d364f06b178477c215ac53c02cd42e4af863f3a58a1e3c9b17bb7a90f90174"
+    },
+    {
+      "bytes": 8290,
+      "entry": "tools/trace-followup/register_followup.py",
+      "sha256": "f67fd6b594b84277e69652ee3963a91cdf54e440498b99dbc6d2a7d67db2bb9f"
+    },
+    {
+      "bytes": 40813,
+      "entry": "tools/trace-followup/registration-manifest.json",
+      "sha256": "097d8904d3da005fee95a85e147036730cc4934a0cbc258c9842bef27202716b"
+    },
+    {
+      "bytes": 10140,
+      "entry": "tools/trace-followup/results.md",
+      "sha256": "7bacc2c1641e2cc0ac5084eaa3765d68c4be553100c59725483fcd5d42ebf838"
+    },
+    {
+      "bytes": 9133,
+      "entry": "tools/trace-followup/seal_results.py",
+      "sha256": "93eac804ba634415a0eb0dc076a71852ecd327de8ae758dbebc7bf1bf86a16a4"
+    },
+    {
+      "bytes": 2769,
+      "entry": "tools/trace-followup/test_analysis.py",
+      "sha256": "44cf7f7c33290f8b961892a0d1f9dffe6665b82364a0ec8e75d65ac30f49b863"
+    },
+    {
+      "bytes": 2630,
+      "entry": "tools/trace-followup/test_initialization.py",
+      "sha256": "d549943d8f136ec7d9c72d7b42b2391ab7d55e53b0428562fe43f06c6a77bde7"
+    },
+    {
+      "bytes": 3330,
+      "entry": "tools/trace-followup/test_objective.py",
+      "sha256": "f36bd5e99b0ed86982eea07b0706878f5552e670c7da3a48e00e4bd73d0a7454"
+    },
+    {
+      "bytes": 1283,
+      "entry": "tools/trace-followup/test_schedule.py",
+      "sha256": "01550528ba409578bfb4aa5ee366ffcbaa69322aaa22023b775fe3545dc230c5"
+    },
+    {
+      "bytes": 1135,
+      "entry": "tools/trace-followup/test_selection.py",
+      "sha256": "424ccb72a80248cff4ae79a0bd31022828d93bbdbaf6817dba1df0b7c849ebfa"
+    },
+    {
+      "bytes": 2187,
+      "entry": "tools/trace-followup/trace_objective.py",
+      "sha256": "6a68f58ee4f369057323321ceeae7fb4a714dd27db500d3b900840cb132a2cd1"
+    },
+    {
+      "bytes": 7979,
+      "entry": "tools/trace-followup/train.py",
+      "sha256": "0988c4838927bccd8955276cd3cf6217fb8db10f4050ac447fdb8eb5e3faf825"
+    }
+  ],
+  "predecessors": [
+    {
+      "archive": {
+        "path": ".neural-cache/training-curation-v1/study.zip",
+        "sha256": "1a09c13f5417f036327bf1d0ce7f6a0de462b008e32faa991384f7643716d512"
+      },
+      "manifest": {
+        "path": "tools/training-curation/cache-manifest.json",
+        "sha256": "b133288119401b43eb57f14246b9f6e2e6021445272cd6a257ec93b2bd4a69d1"
+      }
+    },
+    {
+      "archive": {
+        "path": ".neural-cache/hybrid-diagnosis-v1/study.zip",
+        "sha256": "f9c973d52f25bb00a3672ec5a42cfe6c9c7308abeec3f6db4ebbda8e4dec0242"
+      },
+      "manifest": {
+        "path": "tools/hybrid-diagnosis/cache-manifest.json",
+        "sha256": "1078c6b33c95728187bab977693b134a7a3cead3575888204a9c78b4433b51d0"
+      }
+    },
+    {
+      "archive": {
+        "path": ".neural-cache/hybrid-learning-v1/results.zip",
+        "sha256": "b012b545c7b5066bb3a58ac27f201e234a33d296d2a69ca208497960b83784bc"
+      },
+      "manifest": {
+        "path": "tools/hybrid-learning/results-cache-manifest.json",
+        "sha256": "3d2cbe97a1131c8c86cc017cc7c62854242af85fa7fadad065244a6aa859d1b6"
+      }
+    },
+    {
+      "archive": {
+        "path": ".neural-cache/transformer-accuracy-v1/study.zip",
+        "sha256": "30f5eeda47de3ad2d5d9656bb470f619eb5632f11658632fb8785f44582fdfb2"
+      },
+      "manifest": {
+        "path": "tools/neural/transformer-accuracy-cache-manifest.json",
+        "sha256": "86367608b3196a1c158dde70b2327357e8924b2d11df8d0753da7df8581f888d"
+      }
+    }
+  ],
+  "registrationArchive": {
+    "path": ".neural-cache/trace-followup-v1/registration.zip",
+    "sha256": "52e34bcc1971d5e3839e8c3165130b7143297485ec01faaec95f9cc1bc3a2a42"
+  },
+  "registrationManifest": {
+    "path": ".neural-cache/trace-followup-v1/registration-manifest.json",
+    "sha256": "097d8904d3da005fee95a85e147036730cc4934a0cbc258c9842bef27202716b"
+  },
+  "restore": "Restore registration.zip and results.zip at the repository root with base bad3346 plus the follow-up commits. Existing native/Gradle dependencies and the recorded Python environment are required. Historical archive bindings remain available separately.",
+  "revision": "trace-followup-results-cache-v1",
+  "summary": {
+    "path": "build/neural-trace-followup/v1/report-summary.json",
+    "sha256": "f2e617fcc63cf7b3f6b223efeb43e621e3f789c473953f04a3bd18f8beb173cf"
+  },
+  "verification": {
+    "path": "build/neural-trace-followup/v1/verification.json",
+    "sha256": "3f8c04dbc13a0336ab19df400b32377a7085ba9094e6a5b29faf91734d7cf242"
+  }
+}

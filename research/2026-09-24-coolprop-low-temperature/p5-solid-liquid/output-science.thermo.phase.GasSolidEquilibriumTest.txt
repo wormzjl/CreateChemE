@@ -1,0 +1,232 @@
+===== science.thermo.phase.GasSolidEquilibriumTest.xml tests="11" skipped="0" failures="0" errors="0"
+y | T K | P MPa | outcome | solid mol | |mu_V - mu_s|/RT | conservation | Newton | fluid-only answer
+0.001 | 130 | 0.1 | VAPOR_SOLID | 0.0006525248207 | 3.15e-11 | 0.0e+00 | 2 | SINGLE_FLUID
+0.001 | 130 | 0.5 | VAPOR_SOLID | 0.0009193886381 | 1.73e-10 | 0.0e+00 | 2 | SINGLE_FLUID
+0.001 | 130 | 1.0 | VAPOR_SOLID | 0.0009508915341 | 3.12e-10 | 0.0e+00 | 2 | VAPOR_LIQUID
+0.001 | 130 | 2.0 | VAPOR_SOLID | 0.0009614519343 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.001 | 130 | 5.0 | LIQUID_SOLID | 0.0007156059723 | | 0.0e+00 | 3 | SINGLE_FLUID
+0.001 | 150 | 2.0 | VAPOR_SOLID | 0.0002404399741 | 2.15e-12 | 0.0e+00 | 2 | SINGLE_FLUID
+0.001 | 150 | 5.0 | VAPOR_SOLID | 0.0001191864323 | 3.45e-12 | 0.0e+00 | 2 | SINGLE_FLUID
+0.010 | 130 | 0.1 | VAPOR_SOLID | 0.009655655228 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.010 | 130 | 0.5 | VAPOR_SOLID | 0.009920114867 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.010 | 130 | 1.0 | VAPOR_SOLID | 0.009951333953 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.010 | 130 | 2.0 | VAPOR_SOLID | 0.009961799214 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.010 | 130 | 5.0 | LIQUID_SOLID | 0.009718168081 | | 0.0e+00 | 4 | VAPOR_LIQUID
+0.010 | 150 | 0.1 | VAPOR_SOLID | 0.001115883835 | 2.14e-11 | 0.0e+00 | 2 | SINGLE_FLUID
+0.010 | 150 | 0.5 | VAPOR_SOLID | 0.008037378088 | 0.00e+00 | 0.0e+00 | 3 | SINGLE_FLUID
+0.010 | 150 | 1.0 | VAPOR_SOLID | 0.008875100538 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.010 | 150 | 2.0 | VAPOR_SOLID | 0.009247282857 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.010 | 150 | 5.0 | VAPOR_SOLID | 0.009127121690 | 5.60e-13 | 1.7e-16 | 3 | VAPOR_LIQUID
+0.010 | 170 | 2.0 | VAPOR_SOLID | 0.002432770261 | 0.00e+00 | 0.0e+00 | 3 | SINGLE_FLUID
+0.010 | 170 | 5.0 | VAPOR_SOLID | 0.004087033757 | 0.00e+00 | 0.0e+00 | 3 | SINGLE_FLUID
+0.050 | 130 | 0.1 | VAPOR_SOLID | 0.04966956815 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.050 | 130 | 0.5 | VAPOR_SOLID | 0.04992334255 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.050 | 130 | 1.0 | VAPOR_SOLID | 0.04995330026 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.050 | 130 | 2.0 | VAPOR_SOLID | 0.04996334268 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.050 | 130 | 5.0 | LIQUID_SOLID | 0.04972955523 | | 0.0e+00 | 4 | VAPOR_LIQUID
+0.050 | 150 | 0.1 | VAPOR_SOLID | 0.04147483802 | 5.13e-13 | 0.0e+00 | 3 | SINGLE_FLUID
+0.050 | 150 | 0.5 | VAPOR_SOLID | 0.04811667594 | 3.73e-13 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.050 | 150 | 1.0 | VAPOR_SOLID | 0.04892055102 | 3.73e-13 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.050 | 150 | 2.0 | VAPOR_SOLID | 0.04927769567 | 1.31e-12 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.050 | 150 | 5.0 | VAPOR_SOLID | 0.04916238950 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.050 | 170 | 0.5 | VAPOR_SOLID | 0.02835294328 | 4.12e-14 | 0.0e+00 | 3 | SINGLE_FLUID
+0.050 | 170 | 1.0 | VAPOR_SOLID | 0.03814721685 | 1.03e-12 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.050 | 170 | 2.0 | VAPOR_SOLID | 0.04273851692 | 5.44e-12 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.050 | 170 | 5.0 | VAPOR_SOLID | 0.04432594149 | 7.37e-10 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.050 | 190 | 2.0 | VAPOR_SOLID | 0.003457091875 | 7.09e-10 | 0.0e+00 | 2 | SINGLE_FLUID
+0.050 | 190 | 5.0 | VAPOR_SOLID | 0.02015699220 | 5.16e-13 | 0.0e+00 | 3 | SINGLE_FLUID
+0.100 | 130 | 0.1 | VAPOR_SOLID | 0.09968695930 | 2.69e-13 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 130 | 0.5 | VAPOR_SOLID | 0.09992737715 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 130 | 1.0 | VAPOR_SOLID | 0.09995575814 | 0.00e+00 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 130 | 2.0 | VAPOR_SOLID | 0.09996527201 | 2.15e-13 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 130 | 5.0 | LIQUID_SOLID | 0.09974378916 | | 0.0e+00 | 4 | LIQUID_LIQUID
+0.100 | 150 | 0.1 | VAPOR_SOLID | 0.09192353076 | 7.05e-11 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 150 | 0.5 | VAPOR_SOLID | 0.09821579826 | 1.57e-11 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 150 | 1.0 | VAPOR_SOLID | 0.09897736413 | 1.19e-11 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 150 | 2.0 | VAPOR_SOLID | 0.09931571169 | 3.56e-11 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 150 | 5.0 | VAPOR_SOLID | 0.09920647426 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.100 | 170 | 0.5 | VAPOR_SOLID | 0.07949226206 | 9.97e-11 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 170 | 1.0 | VAPOR_SOLID | 0.08877104754 | 2.14e-10 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 170 | 2.0 | VAPOR_SOLID | 0.09312070024 | 5.79e-10 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 170 | 5.0 | VAPOR_SOLID | 0.09462457614 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.100 | 190 | 1.0 | VAPOR_SOLID | 0.02198356901 | 0.00e+00 | 0.0e+00 | 3 | SINGLE_FLUID
+0.100 | 190 | 2.0 | VAPOR_SOLID | 0.05590671859 | 3.21e-11 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.100 | 190 | 5.0 | VAPOR_SOLID | 0.07172767683 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 130 | 0.1 | VAPOR_SOLID | 0.1997217416 | 3.93e-12 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.200 | 130 | 0.5 | VAPOR_SOLID | 0.1999354464 | 1.62e-13 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.200 | 130 | 1.0 | VAPOR_SOLID | 0.1999606739 | 1.08e-13 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.200 | 130 | 2.0 | VAPOR_SOLID | 0.1999691307 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 130 | 5.0 | LIQUID_SOLID | 0.1997722570 | | 0.0e+00 | 4 | LIQUID_LIQUID
+0.200 | 150 | 0.1 | VAPOR_SOLID | 0.1928209162 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 150 | 0.5 | VAPOR_SOLID | 0.1984140429 | 4.12e-10 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.200 | 150 | 1.0 | VAPOR_SOLID | 0.1990909903 | 2.28e-10 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.200 | 150 | 2.0 | VAPOR_SOLID | 0.1993917437 | 4.95e-10 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.200 | 150 | 5.0 | VAPOR_SOLID | 0.1992946438 | 2.99e-12 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 170 | 0.1 | VAPOR_SOLID | 0.1082510133 | 8.71e-10 | 0.0e+00 | 3 | SINGLE_FLUID
+0.200 | 170 | 0.5 | VAPOR_SOLID | 0.1817708996 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 170 | 1.0 | VAPOR_SOLID | 0.1900187089 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 170 | 2.0 | VAPOR_SOLID | 0.1938850669 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 170 | 5.0 | VAPOR_SOLID | 0.1952218455 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 190 | 0.5 | VAPOR_SOLID | 0.06149785058 | 1.06e-11 | 0.0e+00 | 3 | SINGLE_FLUID
+0.200 | 190 | 1.0 | VAPOR_SOLID | 0.1306520613 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 190 | 2.0 | VAPOR_SOLID | 0.1608059721 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 190 | 5.0 | VAPOR_SOLID | 0.1748690461 | 7.74e-13 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.200 | 210 | 5.0 | VAPOR_SOLID | 0.08972154545 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 130 | 0.1 | VAPOR_SOLID | 0.2997565239 | 1.24e-11 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.300 | 130 | 0.5 | VAPOR_SOLID | 0.2999435156 | 3.23e-13 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.300 | 130 | 1.0 | VAPOR_SOLID | 0.2999655897 | 1.62e-13 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.300 | 130 | 2.0 | VAPOR_SOLID | 0.2999729893 | 5.39e-14 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 130 | 5.0 | LIQUID_SOLID | 0.2998007249 | | 0.0e+00 | 5 | LIQUID_LIQUID
+0.300 | 150 | 0.1 | VAPOR_SOLID | 0.2937183017 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 150 | 0.5 | VAPOR_SOLID | 0.2986122875 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 150 | 1.0 | VAPOR_SOLID | 0.2992046165 | 7.84e-10 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.300 | 150 | 2.0 | VAPOR_SOLID | 0.2994677758 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 150 | 5.0 | VAPOR_SOLID | 0.2993828133 | 8.13e-10 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 170 | 0.1 | VAPOR_SOLID | 0.2197196365 | 0.00e+00 | 0.0e+00 | 4 | SINGLE_FLUID
+0.300 | 170 | 0.5 | VAPOR_SOLID | 0.2840495372 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 170 | 1.0 | VAPOR_SOLID | 0.2912663703 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 170 | 2.0 | VAPOR_SOLID | 0.2946494335 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 170 | 5.0 | VAPOR_SOLID | 0.2958191148 | 0.00e+00 | 0.0e+00 | 5 | VAPOR_LIQUID
+0.300 | 190 | 0.5 | VAPOR_SOLID | 0.1788106193 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 190 | 1.0 | VAPOR_SOLID | 0.2393205537 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 190 | 2.0 | VAPOR_SOLID | 0.2657052256 | 7.37e-14 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 190 | 5.0 | VAPOR_SOLID | 0.2780104153 | 3.30e-10 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 210 | 2.0 | VAPOR_SOLID | 0.1203928857 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.300 | 210 | 5.0 | VAPOR_SOLID | 0.2035063523 | 1.08e-11 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 130 | 0.1 | VAPOR_SOLID | 0.4998260885 | 2.28e-11 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.500 | 130 | 0.5 | VAPOR_SOLID | 0.4999596540 | 4.31e-13 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.500 | 130 | 1.0 | VAPOR_SOLID | 0.4999754212 | 1.62e-13 | 0.0e+00 | 3 | VAPOR_LIQUID
+0.500 | 130 | 2.0 | VAPOR_SOLID | 0.4999807067 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 130 | 5.0 | LIQUID_SOLID | 0.4998576606 | | 0.0e+00 | 5 | LIQUID_LIQUID
+0.500 | 150 | 0.1 | VAPOR_SOLID | 0.4955130726 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 150 | 0.5 | VAPOR_SOLID | 0.4990087768 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 150 | 1.0 | VAPOR_SOLID | 0.4994318690 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 150 | 2.0 | VAPOR_SOLID | 0.4996198398 | 4.12e-11 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 150 | 5.0 | VAPOR_SOLID | 0.4995591524 | 0.00e+00 | 0.0e+00 | 5 | VAPOR_LIQUID
+0.500 | 170 | 0.1 | VAPOR_SOLID | 0.4426568832 | 7.79e-11 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 170 | 0.5 | VAPOR_SOLID | 0.4886068123 | 1.65e-13 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 170 | 1.0 | VAPOR_SOLID | 0.4937616931 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 170 | 2.0 | VAPOR_SOLID | 0.4961781668 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 170 | 5.0 | VAPOR_SOLID | 0.4970136534 | 0.00e+00 | 0.0e+00 | 5 | VAPOR_LIQUID
+0.500 | 190 | 0.5 | VAPOR_SOLID | 0.4134361566 | 1.35e-10 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 190 | 1.0 | VAPOR_SOLID | 0.4566575383 | 9.79e-11 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 190 | 2.0 | VAPOR_SOLID | 0.4755037325 | 5.42e-11 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 190 | 5.0 | VAPOR_SOLID | 0.4842931538 | 1.57e-10 | 0.0e+00 | 5 | VAPOR_LIQUID
+0.500 | 210 | 1.0 | VAPOR_SOLID | 0.2204127039 | 0.00e+00 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 210 | 2.0 | VAPOR_SOLID | 0.3717092041 | 1.80e-10 | 0.0e+00 | 4 | VAPOR_LIQUID
+0.500 | 210 | 5.0 | VAPOR_SOLID | 0.4310759659 | 3.67e-13 | 0.0e+00 | 5 | VAPOR_LIQUID
+deposits 108, crystal beside a liquid (P5) 7, no solid 60, typed holds 0 ([]), complete depositions of pure CO2 5; deposits whose fluid-only answer held a (metastable) liquid 92
+worst conservation 1.73e-16 (bound 1e-13), worst |mu_V - mu_s|/RT 8.71e-10 (bound 1e-9), Newton steps at most 5, worst (G - G_fluid-only)/RT -7.687e-06
+pure CO2 at 0.1 MPa: T_sub 194.466712376 K (pure path 194.466712376 K), sublimation enthalpy 25200.6 J/mol (+0.003 % of 25.2 kJ/mol)
+beta 0.001: PH T 194.466712376 (5 TP calls), UV T 194.466712376 P 100000.000 Pa (46 TP calls)
+beta 0.250: PH T 194.466712376 (5 TP calls), UV T 194.466712376 P 100000.000 Pa (36 TP calls)
+beta 0.500: PH T 194.466712376 (5 TP calls), UV T 194.466712376 P 100000.000 Pa (37 TP calls)
+beta 0.750: PH T 194.466712376 (5 TP calls), UV T 194.466712376 P 100000.000 Pa (40 TP calls)
+beta 0.999: PH T 194.466712376 (2 TP calls), UV T 194.466712375 P 100000.000 Pa (46 TP calls)
+PH across the melting of pure CO2 at 1 MPa: EquilibriumResult[PH CONVERGED, LIQUID_SOLID, 2 phases, ESTIMATED_DECLARED_ERROR, converged; pure melting of CarbonDioxide at the equal-chemical-potential point (216.68976213163606 K, 1000000.0 Pa): liquid fraction 0.5344029950108456 from the energy balance]
+y | P MPa | onset T K (fugacity) | partial-pressure T K | approx - onset K | status
+0.001 | 0.1 | 135.8814 | 136.0713 | +0.1900 | SINGLE_FLUID
+0.001 | 0.5 | 145.2168 | 146.1769 | +0.9601 | SINGLE_FLUID
+0.001 | 1.0 | 149.0726 | 151.0303 | +1.9578 | SINGLE_FLUID
+0.001 | 2.0 | 152.1404 | 156.2343 | +4.0938 | SINGLE_FLUID
+0.001 | 5.0 | 151.2855 | 163.7214 | +12.4359 | SINGLE_FLUID
+0.010 | 0.1 | 150.8446 | 151.0303 | +0.1858 | SINGLE_FLUID
+0.010 | 0.5 | 162.7917 | 163.7214 | +0.9297 | SINGLE_FLUID
+0.010 | 1.0 | 168.0301 | 169.9066 | +1.8765 | SINGLE_FLUID
+0.010 | 2.0 | 172.7645 | 176.6020 | +3.8375 | SINGLE_FLUID
+0.010 | 5.0 | 176.0029 | 186.3419 | +10.3390 | SINGLE_FLUID
+0.050 | 0.1 | 163.5428 | 163.7214 | +0.1786 | SINGLE_FLUID
+0.050 | 0.5 | 177.9869 | 178.8761 | +0.8891 | SINGLE_FLUID
+0.050 | 1.0 | 184.5550 | 186.3419 | +1.7868 | SINGLE_FLUID
+0.050 | 2.0 | 190.8420 | 194.4667 | +3.6248 | SINGLE_FLUID
+0.050 | 5.0 | 196.8212 | 206.3133 | +9.4921 | SINGLE_FLUID
+0.100 | 0.1 | 169.7352 | 169.9066 | +0.1714 | SINGLE_FLUID
+0.100 | 0.5 | 185.4897 | 186.3419 | +0.8522 | SINGLE_FLUID
+0.100 | 1.0 | 192.7548 | 194.4667 | +1.7119 | SINGLE_FLUID
+0.100 | 2.0 | 199.8362 | 203.3085 | +3.4723 | SINGLE_FLUID
+0.100 | 5.0 | 207.0325 | 216.1280 | +9.0955 | SINGLE_FLUID
+0.200 | 0.1 | 176.4448 | 176.6020 | +0.1572 | SINGLE_FLUID
+0.200 | 0.5 | 193.6856 | 194.4667 | +0.7811 | SINGLE_FLUID
+0.200 | 1.0 | 201.7367 | 203.3085 | +1.5718 | SINGLE_FLUID
+0.200 | 2.0 | 209.6908 | 212.8919 | +3.2011 | SINGLE_FLUID
+0.200 | 5.0 | 214.7552 | n/a (y P above p_t) | | VAPOR_LIQUID
+0.300 | 0.1 | 180.6377 | 180.7796 | +0.1420 | SINGLE_FLUID
+0.300 | 0.5 | 198.8425 | 199.5490 | +0.7065 | SINGLE_FLUID
+0.300 | 1.0 | 207.4001 | 208.8256 | +1.4255 | SINGLE_FLUID
+0.300 | 2.0 | 215.8998 | n/a (y P above p_t) | | SINGLE_FLUID
+0.300 | 5.0 | 214.7552 | n/a (y P above p_t) | | VAPOR_LIQUID
+0.500 | 0.1 | 186.2339 | 186.3419 | +0.1080 | SINGLE_VAPOR
+0.500 | 0.5 | 205.7736 | 206.3133 | +0.5397 | SINGLE_FLUID
+0.500 | 1.0 | 215.0313 | 216.1280 | +1.0967 | SINGLE_FLUID
+0.500 | 2.0 | 215.9294 | n/a (y P above p_t) | | VAPOR_LIQUID
+0.500 | 5.0 | 214.7552 | n/a (y P above p_t) | | VAPOR_LIQUID
+onsets 30, holds 0, out of domain 0; |approx - onset| mean 2.594 K, worst 12.436 K
+crystal derivatives against central differences: worst relative 2.42e-07
+out of domain at 85.0 K, 100000.0 Pa: Thermo domain: CarbonDioxide at 85.00 K is below its valid range 90..300 K (package createcheme:pilot_cryogenic); the state cannot be evaluated
+out of domain at 310.0 K, 1000000.0 Pa: Thermo domain: CarbonDioxide at 310.00 K is above its valid range 90..300 K (package createcheme:pilot_cryogenic); the state cannot be evaluated
+out of domain at 150.0 K, 1.2E7 Pa: Thermo domain: Nitrogen at 12000000 Pa is above its valid range 100..10000000 Pa (package createcheme:pilot_cryogenic); the state cannot be evaluated
+answered (P4 hold): EquilibriumResult[TP CONVERGED, LIQUID_SOLID, 2 phases, ESTIMATED_DECLARED_ERROR, converged; createcheme:crystal_carbon_dioxide_i freezes 0.04817304039001649 mol of CarbonDioxide out of the liquid (feed (mu - mu_s)/RT = 2.962627671083953, |mu_i - mu_s|/RT = 0.0 after 4 re-flashes of the reduced feed); the fluid-only answer of the feed was LIQUID_LIQUID]
+answered (P4 hold): EquilibriumResult[TP CONVERGED, SINGLE_LIQUID, 1 phases, ESTIMATED_DECLARED_ERROR, converged; solids assessed: no crystal forms (createcheme:crystal_carbon_dioxide_i: (mu - mu_s)/RT = -0.64653083589306)]
+answered (P4 hold): EquilibriumResult[TP CONVERGED, SOLID_PRESENT, 1 phases, ESTIMATED_DECLARED_ERROR, converged; complete freezing: the pure CarbonDioxide is its crystal createcheme:crystal_carbon_dioxide_i (createcheme:crystal_carbon_dioxide_i: (mu - mu_s)/RT = 0.02468142881767427), the fluid vanishes]
+hold: CRYSTAL_PHASES: the fluid left by the crystal createcheme:crystal_carbon_dioxide_i is two liquids (createcheme:crystal_carbon_dioxide_i: (mu - mu_s)/RT = 7.986485815199563); that phase set beside a crystal is not implemented
+hold: CRYSTAL_PHASES: createcheme:crystal_carbon_dioxide_i forms and the fluid it leaves has three fluid phases (createcheme:crystal_carbon_dioxide_i: (mu - mu_s)/RT = 3.4775441050636413); that phase set beside a crystal is not implemented / UNSUPPORTED
+round trips: y | T K | P MPa | PH TP calls | UV TP calls | dT/T PH | dT/T UV | dP/P UV | d n_s / z_CO2
+0.001 | 130 | 0.1 | 5 | 6 | 1.0e-14 | -1.1e-12 | -8.6e-13 | 8.7e-12
+0.010 | 130 | 0.1 | 6 | 8 | -2.2e-16 | -3.4e-13 | -3.6e-13 | 2.8e-13
+0.010 | 150 | 1.0 | 6 | 8 | -4.5e-13 | -7.2e-13 | -1.4e-12 | 1.5e-12
+0.010 | 170 | 2.0 | 8 | 8 | 3.1e-15 | 1.9e-13 | 2.3e-13 | 2.3e-12
+0.100 | 130 | 0.1 | 6 | 10 | 7.9e-12 | -4.4e-14 | -4.1e-14 | 6.0e-13
+0.100 | 150 | 1.0 | 8 | 32 | 1.1e-14 | -9.3e-14 | -5.7e-14 | 2.0e-14
+0.100 | 170 | 0.5 | 11 | 14 | -4.6e-13 | 3.0e-14 | 2.8e-14 | 1.8e-12
+0.100 | 170 | 2.0 | 10 | 40 | 4.4e-16 | -3.0e-13 | -2.8e-13 | 3.5e-13
+0.300 | 130 | 0.1 | 7 | 10 | -3.1e-15 | 1.5e-14 | 1.4e-14 | 3.7e-16
+0.300 | 150 | 1.0 | 7 | 32 | -1.4e-12 | -1.0e-14 | -2.2e-15 | 7.6e-14
+0.300 | 170 | 0.5 | 11 | 13 | 5.9e-14 | -4.6e-13 | -4.8e-13 | 4.3e-13
+0.300 | 190 | 0.5 | 13 | 25 | -4.9e-15 | -1.1e-12 | -4.4e-13 | 8.1e-12
+0.300 | 170 | 2.0 | 10 | 39 | 6.0e-15 | 3.1e-13 | 7.5e-12 | 1.6e-14
+0.300 | 210 | 5.0 | 12 | 46 | -2.5e-13 | 5.3e-15 | 7.5e-15 | 1.2e-12
+0.500 | 130 | 0.1 | 7 | 10 | 1.0e-14 | -5.3e-13 | -5.0e-13 | 4.3e-15
+0.500 | 150 | 1.0 | 8 | 31 | -3.3e-16 | 2.7e-15 | 3.1e-15 | 1.1e-16
+0.500 | 170 | 0.5 | 10 | 12 | -6.9e-14 | -3.9e-13 | 6.3e-13 | 1.8e-13
+0.500 | 190 | 0.5 | 13 | 22 | -1.3e-15 | -8.3e-14 | -1.8e-14 | 2.7e-13
+0.500 | 170 | 2.0 | 9 | 35 | -3.7e-13 | 1.1e-12 | 7.3e-13 | 1.5e-13
+0.500 | 210 | 5.0 | 12 | 49 | -1.3e-14 | 7.5e-15 | 1.5e-14 | 4.0e-14
+20 round trips: worst dT/T 7.9e-12, dP/P 7.5e-12, d n_s/z_CO2 8.7e-12, |dH|/|H| 7.1e-13, |dU|/|U| 4.9e-13, |dH|/(RT) 3.1e-11; PH TP calls mean 9.0 max 13, UV mean 22.5 max 49
+reversibility: frost 192.754773 K; cooled by 3000 J at 1 MPa to 172.512279 K with 0.08539430 mol solid; at fixed V to 163.922352 K, 0.742346 MPa with 0.09265646 mol; warmed back to 200.000000000019 K (PH) and 200.000000000003 K, 1.000000000000 MPa (UV)
+exhaustion at 1 MPa: H - H_frost J | T K | solid mol
+-3000 | 169.058867 | 0.0898430641
+-2750 | 172.855394 | 0.0848684220
+-2500 | 176.053989 | 0.0790796507
+-2250 | 178.778717 | 0.0726424647
+-2000 | 181.129860 | 0.0656909857
+-1750 | 183.184259 | 0.0583282578
+-1500 | 184.999947 | 0.0506323637
+-1250 | 186.620877 | 0.0426626614
+-1000 | 188.080683 | 0.0344647543
+-750 | 189.405446 | 0.0260741514
+-500 | 190.615674 | 0.0175188956
+-250 | 191.727716 | 0.0088214403
++0 | 192.754773 | 0.0000000000
++250 | 200.787938 | 0.0000000000
++500 | 208.852235 | 0.0000000000
++750 | 216.942076 | 0.0000000000
++1000 | 225.052813 | 0.0000000000
+PH at the frost point's enthalpy: 192.754773274 K (onset 192.754773274 K), solid none
+P MPa | T pure path K | onset z_N2=1e-6 K | diff K | onset pure K | diff K | partial-pressure T K
+0.1 | 194.466712376 | 194.466699900 | -1.25e-05 | 194.466712376 | +5.97e-13 | 194.466700149
+0.3 | 208.825580613 | 208.825565947 | -1.47e-05 | 208.825580613 | +3.69e-13 | 208.825566694
+0.5 | 216.128018773 | 216.128002846 | -1.59e-05 | 216.128018773 | +4.26e-13 | 216.128004119
+worst |onset - pure| 1.593e-05 K (bound 1e-3 K)
+fluid-only requests compared bit for bit: 60
+T K | 100 dp/p x=0.999 | x=0.99 | x=0.95 | p x=0.95 kPa
+150 | +0.00003 | +0.00033 | +0.00168 | 0.912
+160 | +0.00010 | +0.00103 | +0.00531 | 3.376
+170 | +0.00028 | +0.00281 | +0.01449 | 10.634
+180 | +0.00067 | +0.00679 | +0.03497 | 29.331
+190 | +0.00148 | +0.01487 | +0.07665 | 72.492
+200 | +0.00301 | +0.03030 | +0.15617 | 163.781
+205 | +0.00421 | +0.04240 | +0.21860 | 239.397
+210 | +0.00584 | +0.05884 | +0.30347 | 344.504
+214 | +0.00757 | +0.07623 | +0.39331 | 456.525
+216 | +0.00862 | +0.08676 | +0.44772 | 524.083
+

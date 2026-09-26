@@ -1,0 +1,55 @@
+diff --git a/C:/Users/wormz/AppData/Local/Temp/orig.java b/build/diagnosis/patch-src/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index c418c56..f8c78c6 100644
+--- a/C:/Users/wormz/AppData/Local/Temp/orig.java
++++ b/build/diagnosis/patch-src/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -72,6 +72,13 @@ public final class PassiveStepSolver {
+      * capacity as having met it.
+      */
+     private static final double FILTER_CAPACITY_MARGIN=1e-12;
++    // ---- WP4 runtime diagnosis only (scratch copy under build/diagnosis, never tracked) ----
++    static final boolean DIAG_TRACE=Boolean.getBoolean("diag.pumpTrace");
++    /** suction: a pump edge's static column is always its suction's density (fix E2). */
++    static final boolean DIAG_SUCTION_COLUMN="suction".equals(System.getProperty("diag.pumpColumn"));
++    /** column: the pump's mode test reads the edge's own frozen column (fix E1). */
++    static final boolean DIAG_DEMAND_COLUMN="column".equals(System.getProperty("diag.pumpDemand"));
++    public static final long[] DIAG=new long[8];
+     private final FluidThermodynamics model;
+     private final SolverOwnership ownership;
+     private final Map<WorkspaceKey,SparseNewton.Workspace> workspaces=new LinkedHashMap<>();
+@@ -168,7 +175,8 @@ public final class PassiveStepSolver {
+             var a=graph.reservoirs().get(pipe.first());var b=graph.reservoirs().get(pipe.second());
+             double margin=riseLimit(pump,a.state())-(b.state().pressure()-a.state().pressure()
+                     +a.state().mass()/a.state().volume()*GRAVITY*(b.elevation()-a.elevation()));
+-            if(margin>shutoffBand(Math.max(a.state().pressure(),b.state().pressure()),1e-9))modes.set(i,FlowControl.Mode.PUMP_HEAD_LIMIT);
++            if(DIAG_TRACE)System.out.printf("    [solve start] carried CLOSED: reopen margin %.3f Pa -> %s (Pa=%.2f Pb=%.2f rho_a=%.4f)%n",margin,margin>shutoffBand(Math.max(a.state().pressure(),b.state().pressure()),1e-9)?"PUMP_HEAD_LIMIT":"stays CLOSED",a.state().pressure(),b.state().pressure(),a.state().mass()/a.state().volume());
++            if(margin>shutoffBand(Math.max(a.state().pressure(),b.state().pressure()),1e-9)){modes.set(i,FlowControl.Mode.PUMP_HEAD_LIMIT);DIAG[0]++;}
+             else atShutoff[i]=true;
+         }
+         // A connection closed to all transport before the solve starts is in the same active-set
+@@ -301,7 +309,7 @@ public final class PassiveStepSolver {
+                 if(!boundaryAllowed(graph,pipe,flows[i])&&Math.abs(flows[i])>1e-10){if(illegalDirection<0)illegalDirection=i;continue;}
+                 if(boundaryClosed[i])continue;
+                 if(pipe.control() instanceof FlowControl.Pump pump) {
+-                    double limit=riseLimit(pump,rho),margin=limit-demand(graph,pipe,states,rho);
++                    double limit=riseLimit(pump,rho),margin=limit-demand(graph,pipe,states,DIAG_DEMAND_COLUMN?equations.headDensities[i]:rho);
+                     double band=shutoffBand(equations.pressureScales[i],tolerance);
+                     if(pump.targetVolumeFlow()==0)next=FlowControl.Mode.CLOSED;
+                     else if(mode==FlowControl.Mode.PUMP_TARGET&&pump.targetVolumeFlow()>pipe.minimumArea()*model.velocityLimit(up)*(1+1e-8))next=FlowControl.Mode.PUMP_HEAD_LIMIT;
+@@ -310,6 +318,9 @@ public final class PassiveStepSolver {
+                     else if(mode==FlowControl.Mode.PUMP_HEAD_LIMIT&&flows[i]/rho>pump.targetVolumeFlow()*(1+1e-8))next=FlowControl.Mode.PUMP_TARGET;
+                     else if(mode==FlowControl.Mode.CLOSED&&!atShutoff[i]&&margin>band)next=FlowControl.Mode.PUMP_HEAD_LIMIT;
+                     work+=dt*Math.max(0,flows[i])/rho*Math.max(0,heads[i])/pump.efficiency();
++                    if(DIAG_TRACE&&next!=mode&&!changed)System.out.printf("    [pass %d dt=%.3e] %s -> %s: flow=%.5e head=%.2f limit=%.2f margin=%.3f band=%.3g rho_suction=%.4f column=%.4f Pa=%.2f Pb=%.2f%n",
++                            pass,dt,mode,next,flows[i],heads[i],limit,margin,band,rho,equations.headDensities[i],up.pressure(),states.get(pipe.second()).pressure());
++                    if(next==FlowControl.Mode.CLOSED&&mode==FlowControl.Mode.PUMP_HEAD_LIMIT&&!changed)DIAG[1]++;
+                 }else if(pipe.control() instanceof FlowControl.PressureValve valve) {
+                     if(mode==FlowControl.Mode.VALVE_REGULATING&&flows[i]<-1e-10)next=FlowControl.Mode.CLOSED;
+                     else if(mode==FlowControl.Mode.VALVE_REGULATING&&flows[i]>massFlowLimit(pipe,up)*(1+1e-8))next=FlowControl.Mode.VALVE_OPEN;
+@@ -1589,6 +1600,7 @@ public final class PassiveStepSolver {
+                 else if(drivingFirst<0)fromFirst=Math.abs(drivingFirst)<=Math.abs(drivingSecond);
+                 else fromFirst=initialPoint[edgeOffset+edge]>=0;
+                 headDensities[edge]=fromFirst?first:second;
++                if(DIAG_SUCTION_COLUMN&&pipe.control() instanceof FlowControl.Pump)headDensities[edge]=first;
+             }
+         }
+         private void buildSparsity() {

@@ -1,0 +1,2027 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandCoordinator.java b/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandCoordinator.java
+index 8ca6c6c..9cbc114 100644
+--- a/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandCoordinator.java
++++ b/src/main/java/com/wormzjl/createcheme/runtime/fluid/IslandCoordinator.java
+@@ -504,8 +504,6 @@ public final class IslandCoordinator {
+                 var slice=island.clock.nextSlice(request,island.fence(),island.maximumSliceTicks).orElseThrow();
+                 var attempt=new Attempt(island.id,island.revision,slice);
+                 var policy=island.anchor.isPresent()&&!island.fullOnly&&!com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(island.model,island.graph)?FluidFallbackPolicy.active(island.anchor.orElseThrow(),island.allowance,island.clock.snapshot().cadenceTicks(),settings.softBudgetNanos):FluidFallbackPolicy.disabled();
+-                // The job starts from the committed interval, not from the solver's history; see RetainedSolver.
+-                island.retained.committed(island.lastResult.orElse(null));
+                 var command=new ProcessSolveServices.FluidIslandCommand(island.model,island.graph,slice.seconds(),PassiveIntervalSolver.Settings.defaults(),settings.hardBudgetNanos,policy,island.retained);
+                 if(!dispatcher.submit(attempt,command)) {island.status="WAITING: shared worker capacity";island.touch();break;}
+                 island.clock.admitted(slice);island.status="SOLVING";island.touch();FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.solvesDispatched);
+diff --git a/src/main/java/com/wormzjl/createcheme/runtime/fluid/RetainedSolver.java b/src/main/java/com/wormzjl/createcheme/runtime/fluid/RetainedSolver.java
+index 31bc4b2..52d3cd9 100644
+--- a/src/main/java/com/wormzjl/createcheme/runtime/fluid/RetainedSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/runtime/fluid/RetainedSolver.java
+@@ -3,21 +3,20 @@ package com.wormzjl.createcheme.runtime.fluid;
+ import com.wormzjl.createcheme.science.fluid.SolverOwnership;
+ import com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver;
+ import com.wormzjl.createcheme.science.fluid.network.PassiveNetwork;
+-import com.wormzjl.createcheme.science.fluid.network.StageGuard;
++import com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver;
+ import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+ import java.util.Objects;
+ 
+ /**
+- * One interval solver kept for one island across its jobs, so the sparsity pattern, the colouring and the
+- * fill-reducing ordering survive between intervals instead of being rebuilt per job.
++ * One interval solver kept for one island across its jobs, so the sparsity pattern, the colouring,
++ * the fill-reducing ordering, the last factorization (the modified-Newton preconditioner) and the
++ * TR-BDF2 endpoint rate survive between intervals instead of being rebuilt per job.
+  *
+- * <p>Nothing numeric crosses a job boundary: at the start of every job the solver is reset to what a fresh solver would
+- * derive from the island's committed interval ({@link PassiveIntervalSolver#replayStart}; the coordinator hands the
+- * committed interval over at dispatch, {@link #committed}), and an ordinary interval starts at
+- * {@code min(initialStep, duration)}, a function of the interval alone. A certified island is woken with a new handle,
+- * and its replay must reproduce the island that solved every interval bit for bit; a factorization or a step estimate
+- * carried from an earlier job made them differ in the last digits (HANDOFF_REVIEW.md 8.9 of the mixed-gas junction
+- * batch). The cost is one fresh Jacobian per job, +8 % wall time at 5 s slices.
++ * <p>It also carries the adaptive controller's step estimate between intervals, so a quiet island
++ * stops rediscovering its step size from 1 s at every boundary. Like {@code maximumSliceTicks} in
++ * the coordinator this is an ephemeral cost hint and is deliberately not persisted: a restart
++ * rediscovers it from {@link #COLD_START_SECONDS} within a few substeps, while saved inventory,
++ * energy, cadence, debt and fences stay authoritative.
+  *
+  * <p>This is ephemeral cost state, never material state: dropping it costs one Jacobian build and a
+  * few substeps and changes nothing that is committed. The coordinator replaces the handle whenever
+@@ -30,41 +29,34 @@ import java.util.Objects;
+  * Workers therefore still touch only the immutable snapshot and this handle.
+  */
+ public final class RetainedSolver {
+-    /** Step a trial starts from: small enough that a transient does not begin with an oversized attempt, and the
+-     * controller doubles out of it within a few substeps. */
++    /** Step an island starts from with no history: after a revision change, a hold, or a restart.
++     * Small enough that a transient does not begin with an oversized attempt, and the controller
++     * doubles out of it within a few substeps. */
+     public static final double COLD_START_SECONDS=.05;
+ 
+     private final SolverOwnership ownership=SolverOwnership.released();
+     private PassiveIntervalSolver solver;
+     private FluidThermodynamics model;
+-    /** The island's committed interval (null for none), handed over at each dispatch, and whether the job in progress
+-     * has not yet reset the solver from it. */
+-    private PassiveIntervalSolver.Result committed;
+-    private boolean replayPending;
+-    /** Records the island's committed interval (null for none) for the next job's start. Called by the coordinator when
+-     * it dispatches, while no job holds this handle. */
+-    public void committed(PassiveIntervalSolver.Result result){this.committed=result;}
+-    private void begin(PassiveIntervalSolver solver,PassiveNetwork snapshot) {
+-        if(!replayPending)return;
+-        replayPending=false;solver.replayStart(snapshot,committed==null?null:committed.graph(),committed==null?null:committed.endpointModes());
+-    }
++    private double stepHint=COLD_START_SECONDS;
+ 
+     /** One job's exclusive use of this island's solver. A job may integrate its interval more than
+      * once - the module planner searches feasible transfer sizes - and every attempt then shares
+-     * the retained structure instead of rebuilding it per attempt. */
++     * the retained structure and preconditioner instead of rebuilding them per attempt. */
+     public interface Job {
+         PassiveIntervalSolver.Result solve(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint);
+         /** For an attempt that introduces a boundary change rather than continuing the island's
+-         * trajectory - a trial source or sink term. It starts from the cold step. The retained
+-         * pattern, colouring and ordering are still shared. */
++         * trajectory - a trial source or sink term. It starts from the cold step, because the
++         * island's carried estimate describes the undisturbed problem, and it leaves that estimate
++         * alone, because a trial that is never committed must not steer the next interval. The
++         * retained pattern, colouring, ordering and preconditioner are still shared. */
+         PassiveIntervalSolver.Result solveTrial(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint);
+         PassiveIntervalSolver.Result solveApproximate(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,
+-                                                      Runnable checkpoint,StageGuard guard);
++                                                      Runnable checkpoint,TrBdf2StepSolver.StageGuard guard);
+     }
+     /** Claims the latch for the whole job and returns it in a {@code finally}, including on
+      * cancellation and on the wall/soft deadlines. */
+     public <T>T run(FluidThermodynamics model,java.util.function.Function<Job,T> job) {
+-        Objects.requireNonNull(job);var solver=acquire(model);replayPending=true;
++        Objects.requireNonNull(job);var solver=acquire(model);
+         try{return job.apply(new Leased(solver));}
+         finally{ownership.release();}
+     }
+@@ -73,30 +65,32 @@ public final class RetainedSolver {
+         return run(model,job->job.solve(snapshot,duration,settings,checkpoint));
+     }
+     public PassiveIntervalSolver.Result solveApproximate(FluidThermodynamics model,PassiveNetwork snapshot,double duration,
+-                                                         PassiveIntervalSolver.Settings settings,Runnable checkpoint,StageGuard guard) {
++                                                         PassiveIntervalSolver.Settings settings,Runnable checkpoint,TrBdf2StepSolver.StageGuard guard) {
+         return run(model,job->job.solveApproximate(snapshot,duration,settings,checkpoint,guard));
+     }
+     private final class Leased implements Job {
+         private final PassiveIntervalSolver solver;
+         private Leased(PassiveIntervalSolver solver){this.solver=solver;}
+         @Override public PassiveIntervalSolver.Result solve(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint) {
+-            begin(solver,snapshot);
+-            return solver.solve(snapshot,duration,settings,checkpoint,Math.min(settings.initialStep(),duration));
++            try {
++                var result=solver.solve(snapshot,duration,settings,checkpoint,Math.min(stepHint,duration));
++                stepHint=solver.nextStepEstimate();return result;
++            }catch(RuntimeException|Error failure){stepHint=COLD_START_SECONDS;throw failure;}
+         }
+         @Override public PassiveIntervalSolver.Result solveTrial(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint) {
+-            begin(solver,snapshot);
+             return solver.solve(snapshot,duration,settings,checkpoint,Math.min(COLD_START_SECONDS,duration));
+         }
+         @Override public PassiveIntervalSolver.Result solveApproximate(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,
+-                                                                       Runnable checkpoint,StageGuard guard) {
+-            begin(solver,snapshot);
+-            return solver.solveApproximate(snapshot,duration,settings,checkpoint,guard);
++                                                                       Runnable checkpoint,TrBdf2StepSolver.StageGuard guard) {
++            // A degraded interval is evidence that this island is struggling: restart the next one small.
++            try{return solver.solveApproximate(snapshot,duration,settings,checkpoint,guard);}
++            finally{stepHint=COLD_START_SECONDS;}
+         }
+     }
+     private PassiveIntervalSolver acquire(FluidThermodynamics model) {
+         Objects.requireNonNull(model);ownership.acquire();
+         try {
+-            if(solver==null||this.model!=model){solver=new PassiveIntervalSolver(model,ownership);this.model=model;}
++            if(solver==null||this.model!=model){solver=new PassiveIntervalSolver(model,PassiveIntervalSolver.ErrorControl.EMBEDDED,ownership);this.model=model;}
+             return solver;
+         }catch(RuntimeException|Error failure){ownership.release();throw failure;}
+     }
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/SolverOwnership.java b/src/main/java/com/wormzjl/createcheme/science/fluid/SolverOwnership.java
+index 2b38164..2114596 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/SolverOwnership.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/SolverOwnership.java
+@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
+ 
+ /**
+  * Exclusive-use latch for solver workspaces that outlive a single job. Every workspace that caches
+- * numeric state (step solver caches, Newton workspaces, sparse
++ * numeric state (step solver caches, TR-BDF2 endpoint rates, Newton workspaces, sparse
+  * factorizations) holds one, and checks it wherever it used to compare against its creating thread.
+  *
+  * <p>A workspace built for one job keeps the old contract through {@link #confinedToCurrentThread()}:
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/diagnostics/SolverDiagnostics.java b/src/main/java/com/wormzjl/createcheme/science/fluid/diagnostics/SolverDiagnostics.java
+index 06963b4..1520865 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/diagnostics/SolverDiagnostics.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/diagnostics/SolverDiagnostics.java
+@@ -32,6 +32,13 @@ public final class SolverDiagnostics {
+     // ---- interval and step control ----
+     public static final LongAdder implicitSolves=new LongAdder();
+     public static final LongAdder activeSetPasses=new LongAdder();
++    /** TR-BDF2 companion defects answered by one linear filter, and by a complete nonlinear stage. */
++    public static final LongAdder companionFilters=new LongAdder();
++    public static final LongAdder companionSolves=new LongAdder();
++    /** Filtered defects already inside the stage solve's own Newton tolerance, whose estimate is zero. */
++    public static final LongAdder companionDefectsBelowTolerance=new LongAdder();
++    /** Linear filters whose point failed to solve the perturbed equations, handed to the nonlinear stage. */
++    public static final LongAdder companionFiltersRefused=new LongAdder();
+     // ---- Newton ----
+     public static final LongAdder newtonSolves=new LongAdder();
+     public static final LongAdder newtonIterations=new LongAdder();
+@@ -90,9 +97,11 @@ public final class SolverDiagnostics {
+     /**
+      * Residual evaluations that do not go through {@link com.wormzjl.createcheme.science.fluid.solver.SparseNewton}
+      * and are therefore absent from {@link #residualEvaluations}: the equation gate the conservative
+-     * reconstruction has to pass.
++     * reconstruction has to pass, and the check that the linearized companion point actually solves
++     * the perturbed equations.
+      */
+     public static final LongAdder verificationResiduals=new LongAdder();
++    public static final LongAdder companionFilterResiduals=new LongAdder();
+     // ---- properties ----
+     public static final LongAdder stateCalls=new LongAdder();
+     /** The subset of {@link #stateCalls} performed while building a Jacobian: the node decodes a
+@@ -137,6 +146,11 @@ public final class SolverDiagnostics {
+      * A cache key that accidentally varies per stage shows up here as zero reuse. */
+     public static final LongAdder workspaceReuses=new LongAdder();
+     public static final LongAdder workspaceBuilds=new LongAdder();
++    /** TR-BDF2 steps that found the previous step's endpoint rate already computed, and those that
++     * had to solve the algebraic port graph for it. A key that varies per step shows up here as
++     * zero reuse and one extra implicit solve per step. */
++    public static final LongAdder endpointRateReuses=new LongAdder();
++    public static final LongAdder endpointRateBuilds=new LongAdder();
+     // ---- adaptive step control ----
+     /** Every interval attempt, and the accepted subset; exact even when the attempt log is full. */
+     public static final LongAdder stepAttempts=new LongAdder();
+@@ -182,6 +196,9 @@ public final class SolverDiagnostics {
+     private static Map<String,LongAdder> counters() {
+         var map=new LinkedHashMap<String,LongAdder>();
+         map.put("implicitSolves",implicitSolves);map.put("activeSetPasses",activeSetPasses);
++        map.put("companionFilters",companionFilters);map.put("companionSolves",companionSolves);
++        map.put("companionDefectsBelowTolerance",companionDefectsBelowTolerance);
++        map.put("companionFiltersRefused",companionFiltersRefused);
+         map.put("newtonSolves",newtonSolves);map.put("newtonIterations",newtonIterations);map.put("newtonBacktracks",newtonBacktracks);
+         map.put("residualEvaluations",residualEvaluations);map.put("residualEvaluationsInJacobian",residualEvaluationsInJacobian);
+         map.put("jacobianBuilds",jacobianBuilds);map.put("jacobianColors",jacobianColors);map.put("jacobianNonzeros",jacobianNonzeros);
+@@ -194,7 +211,7 @@ public final class SolverDiagnostics {
+         map.put("newtonMeritProbes",newtonMeritProbes);
+         map.put("newtonRefreshesStalled",newtonRefreshesStalled);map.put("newtonRefreshesAged",newtonRefreshesAged);
+         map.put("newtonRefreshesFailed",newtonRefreshesFailed);
+-        map.put("verificationResiduals",verificationResiduals);
++        map.put("verificationResiduals",verificationResiduals);map.put("companionFilterResiduals",companionFilterResiduals);
+         map.put("luFactorizations",luFactorizations);map.put("luFactorNanos",luFactorNanos);
+         map.put("luSolves",luSolves);map.put("luSolveNanos",luSolveNanos);
+         map.put("luChecks",luChecks);map.put("luRefinements",luRefinements);
+@@ -212,6 +229,7 @@ public final class SolverDiagnostics {
+         map.put("solidMomentProjectionsAtAcceptedPoints",solidMomentProjectionsAtAcceptedPoints);
+         map.put("solidTransitionRejections",solidTransitionRejections);
+         map.put("workspaceReuses",workspaceReuses);map.put("workspaceBuilds",workspaceBuilds);
++        map.put("endpointRateReuses",endpointRateReuses);map.put("endpointRateBuilds",endpointRateBuilds);
+         map.put("stepAttempts",stepAttempts);map.put("stepAttemptsAccepted",stepAttemptsAccepted);
+         return Collections.unmodifiableMap(map);
+     }
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/ApproximationAnchor.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/ApproximationAnchor.java
+index 3e59206..dc71bef 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/ApproximationAnchor.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/ApproximationAnchor.java
+@@ -38,7 +38,7 @@ public record ApproximationAnchor(String propertyRevision,PassiveNetwork graph,L
+         if(full.acceptance()!=PassiveStepSolver.Acceptance.FULL)throw new IllegalArgumentException("Only a full result may renew the anchor");
+         return new ApproximationAnchor(revision(model),full.graph(),full.endpointModes());
+     }
+-    public StageGuard guard(FluidThermodynamics model,PassiveNetwork current) {
++    public TrBdf2StepSolver.StageGuard guard(FluidThermodynamics model,PassiveNetwork current) {
+         if(!propertyRevision.equals(revision(model)))throw new ApproximationRejected("Property or numerical revision changed");
+         if(!graph.scheduledTransfers().equals(current.scheduledTransfers()))throw new ApproximationRejected("Scheduled material boundary changed");
+         if(graph.reservoirs().size()!=current.reservoirs().size()||graph.pipes().size()!=current.pipes().size())throw new ApproximationRejected("Topology changed");
+@@ -60,7 +60,7 @@ public record ApproximationAnchor(String propertyRevision,PassiveNetwork graph,L
+                     ||graph.reservoirs().get(old.second()).id()!=current.reservoirs().get(pipe.second()).id())throw new ApproximationRejected("Pipe topology or control changed");
+             expectedModes.add(oldModes.get(pipe.id()));
+         }
+-        StageGuard guard=(states,actualModes)->{
++        TrBdf2StepSolver.StageGuard guard=(states,actualModes)->{
+             if(states.size()!=references.size()||!actualModes.equals(expectedModes))throw new ApproximationRejected("Device regime changed");
+             for(int i=0;i<states.size();i++) {
+                 var old=references.get(i).state();var state=states.get(i);
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/ConservativeTransport.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/ConservativeTransport.java
+index 91de8c1..2a04efd 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/ConservativeTransport.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/ConservativeTransport.java
+@@ -20,8 +20,8 @@ public final class ConservativeTransport {
+      * <p>Without it each reconstruction built its own {@link SparseLuSolver.Storage} - an EJML
+      * solver, a CSC copy, two dense vectors, a sorter and the scaling buffers - and its own
+      * ordering, three or four times per interval for the life of the island. The stage graphs
+-     * alternate (a step solve and a rate solve of the port graph do not share a sparsity
+-     * pattern), so the orderings are a small keyed cache while the storage, which
++     * alternate (the algebraic port solve, the two implicit stages and the endpoint rate do not
++     * share a sparsity pattern), so the orderings are a small keyed cache while the storage, which
+      * reshapes itself, is single and shared.
+      *
+      * <p>Reuse is bitwise: a {@link SparseLuSolver.Storage} clears every buffer it reads before
+@@ -92,9 +92,16 @@ public final class ConservativeTransport {
+      * dt is booked as a pseudo-boundary at the junction. */
+     public static Projection reconstruct(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
+                                          double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace,boolean frozenJunctions) {
+-        if(!SolverDiagnostics.ENABLED)return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint,workspace,frozenJunctions);
++        return reconstruct(graph,candidate,flows,heads,dt,model,checkpoint,workspace,frozenJunctions,0);
++    }
++    /** {@code relax} (frozen junctions only; TR-BDF2's stage-one booking): when positive, a junction's outflows over dt
++     * carry its stock advanced by backward Euler over {@code relax} seconds from its inventory with its booked inflow,
++     * instead of its inventory composition; 0 is the frozen booking above. */
++    public static Projection reconstruct(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
++                                         double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace,boolean frozenJunctions,double relax) {
++        if(!SolverDiagnostics.ENABLED)return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint,workspace,frozenJunctions,relax);
+         long started=System.nanoTime();boolean previous=SolverDiagnostics.enterReconstruct();
+-        try{return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint,workspace,frozenJunctions);}
++        try{return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint,workspace,frozenJunctions,relax);}
+         finally {
+             SolverDiagnostics.leaveReconstruct(previous);
+             SolverDiagnostics.reconstructNanos.add(System.nanoTime()-started);SolverDiagnostics.reconstructCalls.increment();
+@@ -128,8 +135,9 @@ public final class ConservativeTransport {
+         for(int c=0;c<populationKeys.size();c++)result[components+c]=scale*stored.mass(populationKeys.get(c))/state.mass();
+     }
+     private static Projection reconstruct0(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] solvedFlows,double[] heads,
+-                                         double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace,boolean frozen) {
++                                         double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace,boolean frozenJunctions,double relax) {
+         int nodes=graph.reservoirs().size(),components=model.hydrocarbon.componentCount()+1;
++        boolean frozen=frozenJunctions;
+         if(candidate.size()!=nodes||solvedFlows.length!=graph.pipes().size()||heads.length!=solvedFlows.length||!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Invalid transport reconstruction");
+         for(double q:solvedFlows)if(!Double.isFinite(q))throw new IllegalArgumentException("Nonfinite candidate flow/head");
+         // The flows this reconstruction books: the solved flows with every junction's mass held; see pinnedFlows.
+@@ -247,29 +255,90 @@ public final class ConservativeTransport {
+             boundaries.add(new BoundaryTransfer(transfer.id(),moved,movedEnergy,movedSolids,solidDirection));
+         }
+         var filters=new HashMap<Long,InlineFilter>();
+-        // A frozen booking tallies what each junction gains and loses over its connections, to form its pseudo-boundary
+-        // below, solids included.
+-        double[][] accMoles=frozen?new double[nodes][components]:null;SignedSolids[] accSolids=frozen?new SignedSolids[nodes]:null;
+-        if(frozen)for(int node=0;node<nodes;node++)accSolids[node]=new SignedSolids();
+-        for(int edge=0;edge<flows.length;edge++) {
++        // Relaxed booking of a frozen rate (TR-BDF2's stage one, review 7.9).
++        // Every junction with no scheduled transfer and not on a junction cycle (in flow direction) books each
++        // outflow e as its share |q_e|/Q_out of dt*Q_out*S1/m, where S1 is its owned stock advanced by backward
++        // Euler over relax seconds with everything its inflows delivered (species, solid populations, energy
++        // field, pump work). relax -> 0 is the frozen booking (the rate at the stock's own value); relax -> infinity
++        // is a pass-through (outflow = inflow). With relax = alpha*dt, TR-BDF2's stage-one base S0 + relax*(In - Out)
++        // is exactly S1 >= 0. Edges are visited donor-rank first so a junction's inflow is complete before its
++        // first outflow. The flows and states are not changed. Every frozen booking, relaxed or not (relax = 0 in a
++        // rate solve itself), forms the junction pseudo-boundary from these tallies, solids included.
++        boolean tally=frozen,pass=tally&&relax>0;
++        boolean[] through=new boolean[nodes];int[] order=null;double[][] inMoles=null,accMoles=null;double[] inField=null,inMass=null;
++        SignedSolids[] inSolids=null,accSolids=null;SolidInventory[] outSolidStock=null;double[][] outMoles=null;double[] outField=null,outMass=null;
++        if(tally) {
++            if(pass) {
++            for(int node=0;node<nodes;node++)through[node]=graph.reservoirs().get(node).junction();
++            for(var transfer:graph.scheduledTransfers())through[transfer.node()]=false;
++            int[] indegree=new int[nodes],rank=new int[nodes];
++            for(int edge=0;edge<flows.length;edge++){if(flows[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=flows[edge]>0?pipe.first():pipe.second(),receiver=flows[edge]>0?pipe.second():pipe.first();if(through[donor]&&through[receiver])indegree[receiver]++;}
++            var queue=new ArrayDeque<Integer>();for(int node=0;node<nodes;node++)if(through[node]&&indegree[node]==0)queue.add(node);
++            int next=1;
++            while(!queue.isEmpty()) {
++                int node=queue.poll();rank[node]=next++;
++                for(int edge=0;edge<flows.length;edge++){if(flows[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=flows[edge]>0?pipe.first():pipe.second(),receiver=flows[edge]>0?pipe.second():pipe.first();if(donor==node&&through[receiver]&&--indegree[receiver]==0)queue.add(receiver);}
++            }
++            for(int node=0;node<nodes;node++)if(through[node]&&rank[node]==0)through[node]=false;
++            var sorted=new ArrayList<Integer>();for(int edge=0;edge<flows.length;edge++)sorted.add(edge);
++            sorted.sort(Comparator.comparingInt(edge->{var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second();return through[donor]?rank[donor]:0;}));
++            order=new int[flows.length];for(int k=0;k<order.length;k++)order[k]=sorted.get(k);
++            }
++            inMoles=new double[nodes][components];accMoles=new double[nodes][components];inField=new double[nodes];inMass=new double[nodes];
++            inSolids=new SignedSolids[nodes];accSolids=new SignedSolids[nodes];outSolidStock=new SolidInventory[nodes];outMoles=new double[nodes][];outField=new double[nodes];outMass=new double[nodes];
++            for(int node=0;node<nodes;node++){inSolids[node]=new SignedSolids();accSolids[node]=new SignedSolids();}
++        }
++        // What each edge books, recorded for TR-BDF2's stage-two clip.
++        var recorded=BOOKINGS.get()!=null?new EdgeBooking[flows.length]:null;
++        for(int k=0;k<flows.length;k++) {
++            int edge=order==null?k:order[k];
+             checkpoint.run();var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();
+             var upstream=states.get(donor);double moved=dt*Math.abs(flows[edge]),upstreamZ=graph.reservoirs().get(donor).elevation();
+-            double movedEnergy=moved*(upstream.enthalpy()/upstream.mass()+PassiveStepSolver.GRAVITY*upstreamZ);
+-            energy[donor]-=movedEnergy-moved*PassiveStepSolver.GRAVITY*upstreamZ;
+-            double deliveredEnergy=movedEnergy,deliveredMass=moved;SolidInventory movedSolids=upstream.solids().scale(moved/upstream.mass());
+-            if(pipe.filter()!=null){double capturedEnergy=moved*(upstream.solidMoments().enthalpy(upstream.temperature(),upstream.pressure())/upstream.mass()+upstream.solidMoments().mass()/upstream.mass()*PassiveStepSolver.GRAVITY*upstreamZ);
++            double fieldBefore=energy[donor];
++            double[] carried=null;double movedEnergy,movedMass=moved;SolidInventory movedSolids;
++            if(pass&&through[donor]&&moved>0) {
++                if(outMoles[donor]==null) {
++                    // Backward Euler over relax from the owned stock S0 (mass m) with the booked inflow In (over dt):
++                    // S1 = (S0 + relax*In/dt)/(1 + relax*Q/m); the outflows over dt carry dt*Q*S1/m in total.
++                    var inventory=graph.reservoirs().get(donor).inventory();var held=inventory.moles();double m=inventory.solids().massKg();
++                    for(int c=0;c<components;c++)m+=held[c]*molecularWeight[c];
++                    double q=outgoing[donor],f=dt*q/(m+relax*q);
++                    outMoles[donor]=new double[components];for(int c=0;c<components;c++)outMoles[donor][c]=f*(held[c]+relax*inMoles[donor][c]/dt);
++                    outField[donor]=f*(inventory.internalEnergy()+relax*inField[donor]/dt);outMass[donor]=f*(m+relax*inMass[donor]/dt);
++                    var predicted=new SignedSolids();predicted.add(inventory.solids(),f);predicted.add(inSolids[donor].part(1),f*relax/dt);outSolidStock[donor]=predicted.part(1);
++                }
++                double share=moved/(dt*outgoing[donor]);
++                carried=new double[components];for(int c=0;c<components;c++)carried[c]=outMoles[donor][c]*share;
++                movedSolids=outSolidStock[donor].scale(share);movedMass=outMass[donor]*share;double field=outField[donor]*share;
++                movedEnergy=field+movedMass*PassiveStepSolver.GRAVITY*upstreamZ;energy[donor]-=field;
++            }else {
++                movedEnergy=moved*(upstream.enthalpy()/upstream.mass()+PassiveStepSolver.GRAVITY*upstreamZ);
++                energy[donor]-=movedEnergy-moved*PassiveStepSolver.GRAVITY*upstreamZ;
++                movedSolids=upstream.solids().scale(moved/upstream.mass());
++            }
++            double deliveredEnergy=movedEnergy,deliveredMass=movedMass;
++            if(recorded!=null) {
++                var species=new double[components];for(int c=0;c<components;c++)species[c]=carried!=null?carried[c]:moved*fractions[donor][c]/molecularWeight[c];
++                recorded[edge]=new EdgeBooking(donor,receiver,species,movedMass,fieldBefore-energy[donor],movedSolids,pipe.filter()!=null);
++            }
++            if(pipe.filter()!=null){double capturedEnergy=carried!=null?movedSolids.moments().enthalpy(upstream.temperature(),upstream.pressure())+movedSolids.massKg()*PassiveStepSolver.GRAVITY*upstreamZ
++                    :moved*(upstream.solidMoments().enthalpy(upstream.temperature(),upstream.pressure())/upstream.mass()+upstream.solidMoments().mass()/upstream.mass()*PassiveStepSolver.GRAVITY*upstreamZ);
+                 filters.put(pipe.id(),pipe.filter().add(movedSolids,capturedEnergy));deliveredEnergy-=capturedEnergy;deliveredMass-=movedSolids.massKg();}
+-            energy[receiver]+=deliveredEnergy-deliveredMass*PassiveStepSolver.GRAVITY*graph.reservoirs().get(receiver).elevation();
++            double receiverZ=graph.reservoirs().get(receiver).elevation();
++            energy[receiver]+=deliveredEnergy-deliveredMass*PassiveStepSolver.GRAVITY*receiverZ;
+             double work=0;
+             if(pipe.control() instanceof FlowControl.Pump pump&&flows[edge]>0){var suction=states.get(pipe.first());work=dt*flows[edge]*suction.volume()/suction.mass()*Math.max(0,heads[edge])/pump.efficiency();energy[receiver]+=work;pumpWork+=work;}
+-            if(frozen) {
+-                var species=new double[components];for(int c=0;c<components;c++)species[c]=moved*fractions[donor][c]/molecularWeight[c];
++            if(tally) {
++                double[] species=carried;
++                if(species==null){species=new double[components];for(int c=0;c<components;c++)species[c]=moved*fractions[donor][c]/molecularWeight[c];}
+                 var delivered=pipe.filter()==null?movedSolids:SolidInventory.EMPTY;
++                if(through[receiver]){for(int c=0;c<components;c++)inMoles[receiver][c]+=species[c];inSolids[receiver].add(delivered,1);
++                    inField[receiver]+=deliveredEnergy-deliveredMass*PassiveStepSolver.GRAVITY*receiverZ+work;inMass[receiver]+=deliveredMass;}
+                 if(graph.reservoirs().get(receiver).junction()){for(int c=0;c<components;c++)accMoles[receiver][c]+=species[c];accSolids[receiver].add(delivered,1);}
+                 if(graph.reservoirs().get(donor).junction()){for(int c=0;c<components;c++)accMoles[donor][c]-=species[c];accSolids[donor].add(movedSolids,-1);}
+             }
+             if(graph.reservoirs().get(donor).fixed()||graph.reservoirs().get(receiver).fixed()) {
+-                var transferred=new double[components];for(int c=0;c<components;c++)transferred[c]=moved*fractions[donor][c]/molecularWeight[c];
++                var transferred=new double[components];for(int c=0;c<components;c++)transferred[c]=carried!=null?carried[c]:moved*fractions[donor][c]/molecularWeight[c];
+                 if(graph.reservoirs().get(donor).fixed()){boundaries.add(new BoundaryTransfer(graph.reservoirs().get(donor).id(),transferred,movedEnergy,upstream.solids().scale(moved/upstream.mass()),1));for(int c=0;c<components;c++)external[c]+=transferred[c];externalEnergy+=movedEnergy;}
+                 if(graph.reservoirs().get(receiver).fixed()){var removed=transferred.clone();for(int c=0;c<components;c++){removed[c]=-removed[c];external[c]+=removed[c];}boundaries.add(new BoundaryTransfer(graph.reservoirs().get(receiver).id(),removed,-deliveredEnergy-work,pipe.filter()==null?movedSolids:SolidInventory.EMPTY,-1));externalEnergy-=deliveredEnergy+work;}
+             }
+@@ -279,7 +348,7 @@ public final class ConservativeTransport {
+         // booked, with solids: populations the junction gained leave the network into it (direction -1), any it lost
+         // enter from it (a second transfer, direction +1, no moles, no energy). The energy of the pair is
+         // -(field change + accumulated mass g z), so the ledger reads exactly the field change.
+-        if(frozen)for(int node=0;node<nodes;node++)if(graph.reservoirs().get(node).junction()) {
++        if(tally)for(int node=0;node<nodes;node++)if(graph.reservoirs().get(node).junction()) {
+             checkpoint.run();double accumulatedMass=0;var booked=accMoles[node].clone();
+             for(int c=0;c<components;c++){accumulatedMass+=booked[c]*molecularWeight[c];booked[c]=-booked[c];external[c]+=booked[c];}
+             var gained=accSolids[node].part(1);var lost=accSolids[node].part(-1);accumulatedMass+=gained.massKg()-lost.massKg();
+@@ -298,8 +367,21 @@ public final class ConservativeTransport {
+             if(oldNode.junction()){inventories.add(new PassiveNetwork.Inventory(oldNode.inventory().volume(),ownedMoles[node],energy[node],ownedSolids[node]));continue;}
+             inventories.add(oldNode.fixed()?oldNode.inventory():new PassiveNetwork.Inventory(oldNode.inventory().volume(),moles[node],energy[node],state.solids()));
+         }
++        if(recorded!=null)BOOKINGS.set(recorded);
+         return new Projection(inventories,states,boundaries,external,externalEnergy,pumpWork,filters);
+     }
++    /**
++     * One edge of a reconstruction as it was booked, for TR-BDF2's stage-two clip: donor and receiver node, the species moles leaving the donor (the receiver's vessel row and a fixed
++     * receiver's boundary read the same amounts), the booked mass and field (enthalpy form, potential energy
++     * excluded) leaving the donor, and the solids leaving the donor (on a filter edge they go to the cake, not the
++     * receiver). Amounts are over the reconstruction's own dt.
++     */
++    record EdgeBooking(int donor,int receiver,double[] species,double mass,double field,SolidInventory solids,boolean filter) {}
++    /** Non-null while a caller records: then every reconstruction on this thread replaces it with its own bookings. */
++    private static final ThreadLocal<EdgeBooking[]> BOOKINGS=new ThreadLocal<>();
++    /** Start recording on this thread; {@link #takeBookings()} returns the last reconstruction's edges and stops. */
++    static void recordBookings(){BOOKINGS.set(new EdgeBooking[0]);}
++    static EdgeBooking[] takeBookings(){var last=BOOKINGS.get();BOOKINGS.remove();return last;}
+     /**
+      * The flows a reconstruction books so that every junction keeps exactly the mass it owns, m_J (the mass of its
+      * inventory; {@link PassiveNetwork#sizeJunctionHoldups}). The Newton's net-mass row at a junction closes only to its
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/InlineFilter.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/InlineFilter.java
+index e1c1282..a516665 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/InlineFilter.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/InlineFilter.java
+@@ -17,4 +17,9 @@ public record InlineFilter(double capacity, double cleanResistance, SolidInvento
+     public InlineFilter stopped(){return new InlineFilter(capacity,cleanResistance,captured,energyJoule,true);}
+     public InlineFilter add(SolidInventory material,double energy){if(material.empty()&&energy==0)return this;return new InlineFilter(capacity,cleanResistance,captured.plus(material),energyJoule+energy,stoppedAtCapacity);}
+     public InlineFilter cleared(){return new InlineFilter(capacity,cleanResistance,SolidInventory.EMPTY,0);}
++    public static InlineFilter combine(InlineFilter first,double a,InlineFilter second,double b){
++        if(first.equals(second)&&a+b==1)return first;
++        if(first.capacity!=second.capacity||first.cleanResistance!=second.cleanResistance)throw new IllegalArgumentException("Filter settings changed during solve");
++        return new InlineFilter(first.capacity,first.cleanResistance,SolidInventory.combine(first.captured,a,second.captured,b),a*first.energyJoule+b*second.energyJoule,first.stoppedAtCapacity||second.stoppedAtCapacity);
++    }
+ }
+\ No newline at end of file
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java
+index 1452f16..09f8985 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java
+@@ -6,36 +6,22 @@ import com.wormzjl.createcheme.science.fluid.solver.SparseNewton;
+ import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+ import java.util.*;
+ 
+-/**
+- * Adaptive internal substeps. The requested simulated interval is independent of the caller's wall deadline.
+- *
+- * <p>Every step is one backward-Euler step, {@link PassiveStepSolver#solve}: one Newton with its active-set passes, one
+- * exact conservative reconstruction, the equation gate and the conservation audit. A converged step is accepted when no
+- * vessel's pressure or mass changed by more than {@link #STATE_CAP} of itself. The basis and its measurements are in
+- * documentation/2026-09-24-mixed-gas-junction/HANDOFF_REVIEW.md 8.4-8.9 and the batch's BE_INTEGRATOR_PLAN.md: against
+- * the second-order TR-BDF2 it replaced, one Newton solve per step instead of two plus an embedded companion, no rate
+- * solve per step, and zero nonconvergence on the mixed-gas junction matrices where TR-BDF2 failed on its rate solve;
+- * trajectories are first order (a decay lags by up to one 5 s cycle), which the owner accepted (decision D4).
+- */
++/** Adaptive internal substeps. The requested simulated interval is independent of the caller's wall deadline. */
+ public final class PassiveIntervalSolver {
+-    /**
+-     * The largest relative change of a vessel's (a {@code RESERVOIR} node's) pressure, over max(100 Pa, P0), or mass an
+-     * accepted step may make. Junctions are not in the measure: their pressure is algebraic (the Newton's net-mass row)
+-     * and their mass is pinned. 0.02 and 0.05 gave the same zero nonconvergence; 0.05 takes fewer steps (review 8.6 (e)).
+-     */
+-    static final double STATE_CAP=.05;
+-    private final PassiveStepSolver implicit;
++    private final TrBdf2StepSolver stepSolver;
+     private final FluidThermodynamics model;
+-    /** A converged step the state-change controller refused. */
+-    private static final class StateChangeRejection extends RuntimeException {
+-        private StateChangeRejection(String message){super(message);}
++    public enum ErrorControl { EMBEDDED, STEP_DOUBLING }
++    private static final class AccuracyRejection extends RuntimeException {
++        private final double error;
++        private AccuracyRejection(String message,double error){super(message);this.error=error;}
+     }
+-    public PassiveIntervalSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
++    private final ErrorControl errorControl;
++    public PassiveIntervalSolver(FluidThermodynamics model){this(model,ErrorControl.EMBEDDED);}
++    public PassiveIntervalSolver(FluidThermodynamics model,ErrorControl errorControl){this(model,errorControl,SolverOwnership.confinedToCurrentThread());}
+     /** Retained across island jobs: every nested workspace answers to the supplied latch. */
+-    public PassiveIntervalSolver(FluidThermodynamics model,SolverOwnership ownership) {
+-        this.model=Objects.requireNonNull(model);implicit=new PassiveStepSolver(model,Objects.requireNonNull(ownership));
++    public PassiveIntervalSolver(FluidThermodynamics model,ErrorControl errorControl,SolverOwnership ownership) {
++        this.model=Objects.requireNonNull(model);stepSolver=new TrBdf2StepSolver(model,ownership);this.errorControl=Objects.requireNonNull(errorControl);
+     }
+-    /** {@code relativeTolerance} is not read by the backward-Euler controller, whose step bound is {@link #STATE_CAP}. */
+     public record Settings(double initialStep,double maximumStep,double relativeTolerance,int maximumAttempts) {
+         public Settings {
+             if(!Double.isFinite(initialStep)||initialStep<=0||!Double.isFinite(maximumStep)||maximumStep<initialStep
+@@ -56,19 +42,19 @@ public final class PassiveIntervalSolver {
+     /**
+      * Starts the adaptive controller from {@code startingStep} instead of {@code initialStep},
+      * bounded by the interval and by {@code maximumStep}. A caller that solves the same island
+-     * repeatedly may pass {@link #nextStepEstimate()} of the previous interval. The island runtime
+-     * does not: it starts every ordinary interval at {@code min(initialStep, duration)}, a function
+-     * of the interval alone, so that a certified replay is bitwise (see {@link #replayStart}).
++     * repeatedly passes {@link #nextStepEstimate()} of the previous interval, so a quiet island
++     * stops rediscovering its step size from 1 s at every interval boundary. Tolerances, error
++     * criteria and the pipe term are unchanged.
+      */
+     public Result solve(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,double startingStep) {
+         initial=PassiveNetwork.sizeJunctionHoldups(initial,model);
+         if(com.wormzjl.createcheme.science.fluid.transport.SolidMobility.monitored(initial)||model.solidSettings.immobileViscosity()<.002&&initial.reservoirs().stream().anyMatch(n->n.state().waterVolume()>0))return new SolidEventIntegrator(model,this).solve(initial,duration,settings,checkpoint,startingStep);
+-        return integrate(initial,duration,settings,checkpoint,PassiveStepSolver.Acceptance.FULL,StageGuard.NONE,startingStep);
++        return integrate(initial,duration,settings,checkpoint,PassiveStepSolver.Acceptance.FULL,TrBdf2StepSolver.StageGuard.NONE,startingStep);
+     }
+-    public Result solveApproximate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,StageGuard guard) {
++    public Result solveApproximate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,TrBdf2StepSolver.StageGuard guard) {
+         initial=PassiveNetwork.sizeJunctionHoldups(initial,model);
+         if(com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(model,initial))throw new ApproximationRejected("Solid/filter intervals require a full solve");
+-        StageGuard checked=(states,modes)->{
++        TrBdf2StepSolver.StageGuard checked=(states,modes)->{
+             for(var state:states)if(state.solidMoments().mass()>0||com.wormzjl.createcheme.science.fluid.transport.SolidMobility.immobileLiquid(model,state))throw new ApproximationRejected("Solid transition requires a full solve");
+             guard.check(states,modes);
+         };
+@@ -93,10 +79,9 @@ public final class PassiveIntervalSolver {
+      * before the event is simply declared where the integration currently stands. */
+     private static final int MAXIMUM_TRANSITION_REJECTIONS=40;
+     private static final String TRANSITION_REJECTION="Solid transport transition inside the step";
+-    private static final String REOPEN_REJECTION="Backward-Euler boundary reopened";
+ 
+     Result integrate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,
+-                     StageGuard guard,double startingStep) {
++                     TrBdf2StepSolver.StageGuard guard,double startingStep) {
+         var prefix=run(initial,duration,settings,checkpoint,acceptance,guard,startingStep);
+         // No caller of the public contract can handle a prefix, so a guard that declares a
+         // transition on this path escapes exactly as it did before there was a prefix at all.
+@@ -105,46 +90,19 @@ public final class PassiveIntervalSolver {
+     }
+     /** {@link #integrate} with the prefix returned rather than thrown; see {@link Prefix}. */
+     Prefix integrateToTransition(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,
+-                                 StageGuard guard,double startingStep) {
++                                 TrBdf2StepSolver.StageGuard guard,double startingStep) {
+         return run(initial,duration,settings,checkpoint,acceptance,guard,startingStep);
+     }
+-    /**
+-     * The interval, stepped by backward Euler under the state-change controller.
+-     *
+-     * <ul>
+-     * <li><b>Acceptance.</b> A converged step is accepted when the largest relative change of a vessel's pressure (over
+-     * max(100 Pa, P0)) or mass (over m0) is at most {@link #STATE_CAP}; otherwise it is refused and the step halved. A
+-     * change that halving did not reduce - at least 0.9 of the refused change at twice the step - is an algebraic jump of
+-     * the node's state, not a trajectory error, and the step that shows it is accepted (water entering a dry gas tank
+-     * drops its pressure about 5 % at any step size, review 8.6 (b)). A step at or below the transition floor is accepted
+-     * whatever its change. There is no rule on accepted-mode transitions: a symmetric pair of void edges opens and closes
+-     * together, so a one-transition rule halved every event to the floor and drove a resting line into the rounding
+-     * floor of its rows (review 8.6 (c) and (f)).</li>
+-     * <li><b>Growth.</b> After an accepted step the estimate grows by {@code clamp(0.9 sqrt(cap/change), 0.5, 2)} (2 at
+-     * zero change), bounded by the maximum step. A Newton failure, an equation-gate or conservation failure halves.</li>
+-     * <li><b>Boundary reopen.</b> A converged step that holds a passive run closed although its own end states drive the
+-     * run in an allowed direction ({@link PassiveStepSolver#reopenable}) is refused and solved again with that run
+-     * exempt from the start-of-solve closures; each run at most once per attempted step (review 8.8 (c)).</li>
+-     * <li><b>Cold start.</b> While no step of this structure has been accepted (after compile, a topology change or a
+-     * job start with no committed interval on it), one rate solve of the port graph supplies the junctions' starting
+-     * states; the balanced pressure seed treats vessel neighbours as held (review 8.6 (b) additions 1 and 2).</li>
+-     * <li><b>Events.</b> The stage guard's {@code checkRate} runs at every step start, on the previous accepted endpoint,
+-     * else on the endpoint carried from the last interval while no connection's identity or closure changed, else (a
+-     * guard that can declare something, first step) on one rate solve of the port graph; {@code checkFilters} runs on
+-     * every step's end. A declared transition is searched onto by halving, exactly as before.</li>
+-     * <li><b>Limits.</b> The attempt cap and the twenty-consecutive-rejection limit; transition refusals have their own
+-     * bound. An exhausted interval states its rejection map (a domain approach ends on twenty rejections, review 8.8 (a)).</li>
+-     * </ul>
+-     */
+     private Prefix run(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,
+-                       StageGuard guard,double startingStep) {
++                             TrBdf2StepSolver.StageGuard guard,double startingStep) {
+         if(!Double.isFinite(duration)||duration<=0)throw new IllegalArgumentException("Positive finite interval required");
+         initial=PassiveNetwork.sizeJunctionHoldups(initial,model);
+         if(!Double.isFinite(startingStep)||startingStep<=0)throw new IllegalArgumentException("Positive finite starting step required");
+         PassiveNetwork accepted=acceptance==PassiveStepSolver.Acceptance.FULL?InventoryEquilibrium.refresh(initial,model,checkpoint):initial;
+-        // h is the controller's estimate; each attempt uses it truncated to the rest of the interval.
++        // h is the controller's estimate; each attempt uses it truncated to the rest of the interval,
++        // and that truncation must not be mistaken for a step the error controller chose.
+         double elapsed=0,h=Math.min(startingStep,settings.maximumStep);int acceptedCount=0,rejectedCount=0,consecutiveRejects=0;PassiveStepSolver.Result last=null;
+-        double[] transferred=new double[initial.pipes().size()];
++        double[] transferred=new double[initial.pipes().size()],grossTransferred=new double[initial.pipes().size()];
+         double work=0;var boundaries=new ArrayList<ConservativeTransport.BoundaryTransfer>();
+         var pipeTransfers=new PipeTransfer.Accumulator();
+         var rejectionReasons=new LinkedHashMap<String,Integer>();
+@@ -157,102 +115,91 @@ public final class PassiveIntervalSolver {
+         // about where the event is, not about what the trajectory can take: handing it to the next
+         // segment made every closure cost another twenty accepted substeps climbing back out.
+         int transitionRejects=0;double beforeTransition=0;SolidEventIntegrator.Transition declared=null;
+-        // The last refused state change and its step, for the algebraic-jump test.
+-        double previousStateChange=0,previousStateStep=0;
+-        // Runs already reopened for the attempted step (same t0 and step).
+-        var reopened=new HashSet<PassiveNetwork.Pipe.Identity>();double reopenElapsed=-1,reopenStep=-1;
+         // Rejections the property domain decided: the last one, how many, and whether the latest rejection was one.
+         com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation lastDomain=null;int domainRejections=0;boolean lastWasDomain=false;
+         for(int attempt=0;attempt<settings.maximumAttempts&&elapsed<duration&&declared==null;attempt++) {
+             checkpoint.run();double step=Math.min(h,duration-elapsed);
+             try {
+-                if(accepted.reservoirs().stream().anyMatch(n->n.kind()==PassiveNetwork.NodeKind.PORT))throw new IllegalArgumentException("Internal ports cannot be integrated");
+-                // The start-of-step guard reads the previous accepted endpoint, which is this step's t0.
+-                if(last!=null)guard.checkRate(liveFilters(accepted),last.states(),last.modes(),last.massFlows());
+-                // The first step of an interval or segment reads the endpoint the last accepted step left, carried
+-                // across the call while no connection's identity or closure changed: without it a cake left a hair
+-                // below capacity at an interval boundary was never declared clogged (review 8.6 (f), 8.8 (a)).
+-                else if(carriedFlows(accepted)!=null)guard.checkRate(liveFilters(accepted),accepted.reservoirs().stream().map(PassiveNetwork.Reservoir::state).toList(),carriedModes,carriedFlows.clone());
+-                // With nothing carried (a new segment whose closures changed, or a fresh solver) and a guard that can
+-                // declare something (the solid event integrator's), one rate solve of the port graph supplies the t0
+-                // flows; a failed rate solve skips the t0 check.
+-                else if(guard!=StageGuard.NONE&&attempt==0) {
+-                    var rate=portRate(accepted,checkpoint,acceptance);
+-                    if(rate!=null)guard.checkRate(liveFilters(accepted),rate.states(),rate.modes(),rate.massFlows());
+-                }
+-                PassiveNetwork start=accepted;
+-                if(implicit.backwardEulerCold(accepted)) {
+-                    if(coldSeedFor!=accepted){coldSeed=coldRateSeed(accepted,checkpoint,acceptance);coldSeedFor=accepted;}
+-                    start=coldSeed;
+-                }
+-                var result=implicit.solve(start,step,checkpoint,acceptance);
+-                if(elapsed!=reopenElapsed||step!=reopenStep){reopened.clear();reopenElapsed=elapsed;reopenStep=step;}
+-                var candidates=new LinkedHashSet<>(PassiveStepSolver.reopenable(start,result));candidates.removeAll(reopened);
+-                if(!candidates.isEmpty()) {
+-                    reopened.addAll(candidates);implicit.reopenNext(candidates);rejectedCount++;
+-                    SolverDiagnostics.attempt(attempt,step,false,"be-reopen",candidates.size());
+-                    count(rejectionReasons,REOPEN_REJECTION);
++                var regimes=new RegimeTrace(guard,accepted);
++                PassiveStepSolver.Result coarse=null;
++                if(errorControl==ErrorControl.EMBEDDED&&initial.pipes().stream().noneMatch(pipe->pipe.control() instanceof FlowControl.PressureValve)) {
++                    var trial=stepSolver.trial(accepted,step,checkpoint,acceptance,regimes);var full=trial.solution();coarse=full;
++                    if(regimes.smooth()) {
++                    double stateError=error(full.states(),trial.estimatedStates());
++                    double pipeError=flowError(accepted,full.massFlows(),trial.estimatedMassFlows(),trial.estimatedMassFlows(),step,grossTransferred,duration);
++                    double sourceError=initial.scheduledTransfers().isEmpty()?0:boundaryError(full.boundaries(),trial.estimatedBoundaries());
++                    double error=Math.max(Math.max(stateError,pipeError),sourceError);
++                    SolverDiagnostics.attempt(attempt,step,error<=settings.relativeTolerance,
++                            sourceError>=Math.max(stateError,pipeError)?"boundary":pipeError>=stateError?"pipe":"state",error);
++                    if(error>settings.relativeTolerance)throw new AccuracyRejection("Embedded "+(sourceError>=Math.max(stateError,pipeError)?"boundary":pipeError>=stateError?"pipe":"state")+" error "+error,error);
++                    accepted=replace(accepted,full);last=full;elapsed+=step;acceptedCount++;consecutiveRejects=0;
++                    work+=full.pumpWorkJoule();boundaries.addAll(full.boundaries());var flows=full.massFlows();
++                    pipeTransfers.add(full.pipeTransfers(),1);
++                    for(int i=0;i<transferred.length;i++){transferred[i]+=step*flows[i];grossTransferred[i]+=step*Math.abs(flows[i]);}
++                    h=grow(h,step,error,settings);
+                     continue;
++                    }
+                 }
+-                guard.checkFilters(result.filters(),result.states(),result.modes(),result.massFlows());
+-                double change=stateChange(accepted,result.states());
+-                boolean jump=change>STATE_CAP&&previousStateChange>0&&step<=.51*previousStateStep&&change>=.9*previousStateChange;
+-                boolean ok=step<=transitionFloor||change<=STATE_CAP||jump;
+-                SolverDiagnostics.attempt(attempt,step,ok,ok&&jump&&step>transitionFloor?"be-jump":ok&&step<=transitionFloor&&change>STATE_CAP?"be-floor":"be-state",change);
+-                if(!ok){previousStateChange=change;previousStateStep=step;throw new StateChangeRejection("Backward-Euler state change "+change);}
+-                accepted=replace(accepted,result);last=result;elapsed+=step;acceptedCount++;consecutiveRejects=0;previousStateChange=0;
+-                implicit.markBackwardEulerAccepted(accepted);
+-                carriedModes=result.modes();carriedFlows=result.massFlows();carriedKey=flowKey(accepted);
+-                // The cold-start graphs are read only while the structure is cold, and the step solver's last solve only
+-                // by a test of the Jacobian; a retained island keeps neither (review 8.7 (c) E2).
+-                coldSeed=null;coldSeedFor=null;implicit.releaseLastSolve();
+-                work+=result.pumpWorkJoule();boundaries.addAll(result.boundaries());pipeTransfers.add(result.pipeTransfers(),1);
+-                var flows=result.massFlows();for(int i=0;i<transferred.length;i++)transferred[i]+=step*flows[i];
+-                double factor=change>0?Math.clamp(.9*Math.sqrt(STATE_CAP/change),.5,2):2;
+-                h=Math.min(settings.maximumStep,Math.max(h,step)*factor);
++                var full=coarse!=null?coarse:stepSolver.solve(accepted,step,checkpoint,acceptance,regimes);
++                var first=stepSolver.solve(accepted,step/2,checkpoint,acceptance,regimes);var middle=replace(accepted,first);
++                var second=stepSolver.solve(middle,step/2,checkpoint,acceptance,regimes);
++                // Order-two Richardson scaling requires a smooth phase/device regime throughout.
++                // Across a transition, retain the entire coarse-versus-refined discrepancy.
++                double error=Math.max(error(full.states(),second.states()),flowError(accepted,full.massFlows(),first.massFlows(),second.massFlows(),step,grossTransferred,duration))/(regimes.smooth()?3:1);
++                if(!initial.scheduledTransfers().isEmpty())error=Math.max(error,boundaryError(full,first,second)/(regimes.smooth()?3:1));
++                SolverDiagnostics.attempt(attempt,step,error<=settings.relativeTolerance,"refinement",error);
++                if(error>settings.relativeTolerance)throw new AccuracyRejection("Step refinement error "+error,error);
++                accepted=replace(accepted,second);last=second;elapsed+=step;acceptedCount+=2;consecutiveRejects=0;
++                work+=first.pumpWorkJoule()+second.pumpWorkJoule();boundaries.addAll(first.boundaries());boundaries.addAll(second.boundaries());
++                pipeTransfers.add(first.pipeTransfers(),1);pipeTransfers.add(second.pipeTransfers(),1);
++                var q1=first.massFlows();var q2=second.massFlows();for(int i=0;i<transferred.length;i++){transferred[i]+=step*.5*(q1[i]+q2[i]);grossTransferred[i]+=step*.5*(Math.abs(q1[i])+Math.abs(q2[i]));}
++                h=grow(h,step,error,settings);
+             }catch(SolidEventIntegrator.Transition transition) {
+                 // A rejection kind of its own. The step is not accepted, so no accepted step ever
+-                // contains a state past the transition; the search is a plain halving onto the
+-                // event, and it is separate from the other rejections both in the substep counts and
+-                // in the consecutive-rejection limit, which answers for a step size the controller
+-                // could not make work rather than for a physical regime boundary.
++                // contains a stage past the transition; the search is a plain halving onto the
++                // event, and it is separate from the accuracy rejections both in the substep
++                // counts and in the consecutive-rejection limit, which answers for a step size the
++                // error controller could not make work rather than for a physical regime boundary.
+                 SolverDiagnostics.count(SolverDiagnostics.solidTransitionRejections);
+-                SolverDiagnostics.attempt(attempt,step,false,"transition",Double.NaN);
+                 if(transition.atStart||step<=transitionFloor||transitionRejects>=MAXIMUM_TRANSITION_REJECTIONS){declared=transition;break;}
+                 if(transitionRejects==0)beforeTransition=h;
+                 transitionRejects++;
+                 if(rejectionReasons.size()<8||rejectionReasons.containsKey(TRANSITION_REJECTION))rejectionReasons.merge(TRANSITION_REJECTION,1,Integer::sum);
+                 h=step*.5;
+-            }catch(SparseNewton.Nonconvergence|IllegalArgumentException|StateChangeRejection rejected) {
++            }catch(SparseNewton.Nonconvergence|IllegalArgumentException|AccuracyRejection rejected) {
+                 lastRejection=String.valueOf(rejected.getMessage());
+-                if(!(rejected instanceof StateChangeRejection))SolverDiagnostics.attempt(attempt,step,false,diagnosticReason(rejected),Double.NaN);
+                 // A trial the property domain refused - directly, or a Newton pass whose failing line search it
+                 // stopped - is counted under its own key (one per component, property and side, never folded into
+                 // "Other"), so a checkpoint, a view and the certificate's transition check all see it.
+                 var domain=SparseNewton.domainViolation(rejected);
+                 if(domain!=null){rejectionReasons.merge(domain.reasonKey(),1,Integer::sum);lastDomain=domain;domainRejections++;}
+-                else count(rejectionReasons,String.valueOf(rejected.getMessage()).replaceAll("[-+]?[0-9]+(?:\\.[0-9]+)?(?:[Ee][-+]?[0-9]+)?","#"));
++                else {
++                    String reason=String.valueOf(rejected.getMessage()).replaceAll("[-+]?[0-9]+(?:\\.[0-9]+)?(?:[Ee][-+]?[0-9]+)?","#");
++                    if(rejectionReasons.size()<8||rejectionReasons.containsKey(reason))rejectionReasons.merge(reason,1,Integer::sum);else rejectionReasons.merge("Other",1,Integer::sum);
++                }
+                 lastWasDomain=domain!=null;
+-                rejectedCount++;consecutiveRejects++;h=step*.5;
+-                if(consecutiveRejects>=20||elapsed+h==elapsed)throw new SparseNewton.Nonconvergence("Substep refinement exhausted: "+rejected.getMessage()+"; reasons="+rejectionReasons,null,domainCause(lastWasDomain,lastDomain,domainRejections,rejectedCount));
++                rejectedCount++;consecutiveRejects++;h=step*(rejected instanceof AccuracyRejection accuracy?stepFactor(accuracy.error,settings.relativeTolerance,true):.5);
++                // A short pipe can introduce the first liquid phase in less than a millisecond.
++                // Permit bounded refinement through that transition; every accepted step still
++                // meets the same error tolerance, attempt cap, and caller's wall deadline.
++                if(consecutiveRejects>=20||elapsed+h==elapsed)throw new SparseNewton.Nonconvergence("Substep refinement exhausted: "+rejected.getMessage(),null,domainCause(lastWasDomain,lastDomain,domainRejections,rejectedCount));
+             }
+         }
+         if(declared==null&&elapsed<duration)throw new SparseNewton.Nonconvergence("Interval substep limit; no partial interval may commit: advanced="+elapsed+" of "+duration+" s, accepted="+acceptedCount+", rejected="+rejectedCount+", reasons="+rejectionReasons+", last="+lastRejection,
+                 null,domainCause(lastWasDomain,lastDomain,domainRejections,rejectedCount));
+         // A segment that ended on a declared transition hands the next one the estimate it held
+-        // before the search, not the micro-step the search finished on.
++        // before the search, not the micro-step the search finished on. The error controller still
++        // rejects and halves if the post-closure transient needs it, and it does so from a step the
++        // island had already qualified rather than from 1e-6 s.
+         nextStepEstimate=declared!=null&&transitionRejects>0?beforeTransition:h;
+         if(last==null)return new Prefix(null,Objects.requireNonNull(declared,"A completed interval always has a last substep"));
+-        // An unbroken interval advanced exactly what was requested and normalizes by it; a prefix
+-        // normalizes by what it did advance, so the caller's advanced*averageMassFlows is still the
+-        // transported mass.
++        // An unbroken interval advanced exactly what was requested and normalizes by it, bit for
++        // bit as before; a prefix normalizes by what it did advance, so the caller's
++        // advanced*averageMassFlows is still the transported mass.
+         double normalizer=declared==null?duration:elapsed;
+         for(int i=0;i<transferred.length;i++)transferred[i]/=normalizer;
+         return new Prefix(new Result(accepted,elapsed,transferred,acceptedCount,rejectedCount,work,boundaries,rejectionReasons,last.modes(),last.devicePressureChanges(),acceptance,pipeTransfers.snapshot()),declared);
+     }
+-    private static void count(Map<String,Integer> reasons,String reason) {
+-        if(reasons.size()<8||reasons.containsKey(reason))reasons.merge(reason,1,Integer::sum);else reasons.merge("Other",1,Integer::sum);
+-    }
+     /**
+      * The domain violation an interval that could not commit failed on, or null: its last rejection was a domain
+      * refusal, or domain refusals were the dominant reason (more than half of the interval's rejections). An interval
+@@ -262,85 +209,16 @@ public final class PassiveIntervalSolver {
+             com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation lastDomain,int domainRejections,int rejected) {
+         return lastWasDomain||2*domainRejections>rejected?lastDomain:null;
+     }
+-    /** The diagnostic reason of an attempt that threw ("newton|message" with numbers masked). */
+-    private static String diagnosticReason(RuntimeException rejected) {
+-        String message=String.valueOf(rejected.getMessage()).replaceAll("[-+]?[0-9]+(?:\\.[0-9]+)?(?:[Ee][-+]?[0-9]+)?","#");
+-        if(message.length()>90)message=message.substring(0,90);
+-        return (rejected instanceof SparseNewton.Nonconvergence?"newton":"other")+"|"+message;
+-    }
+-    /** The cold-start graph with its junction states replaced by one rate solve's, and the graph it was built for. */
+-    private PassiveNetwork coldSeed,coldSeedFor;
+-    /** One rate solve of the graph with its vessels held as ports (dt = 1), or null if it fails. */
+-    private PassiveStepSolver.Result portRate(PassiveNetwork graph,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance) {
+-        if(graph.pipes().isEmpty())return null;
+-        var ports=new ArrayList<PassiveNetwork.Reservoir>();
+-        for(var node:graph.reservoirs())ports.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),node.state(),
+-                node.kind()==PassiveNetwork.NodeKind.RESERVOIR?PassiveNetwork.NodeKind.PORT:node.kind(),node.inventory()));
+-        try{return implicit.solveRate(new PassiveNetwork(ports,graph.pipes()),checkpoint,acceptance);}
+-        catch(SparseNewton.Nonconvergence|IllegalArgumentException|ApproximationRejected failed){return null;}
+-    }
+-    /**
+-     * The cold-start graph: the junctions' states replaced by one rate solve's of the port graph, whose flows the step
+-     * solver's warm start then carries into the first steps; the graph unchanged if it has no junction or the rate solve
+-     * fails. From the compiled property guess alone a pumped line into a dry tank, with three liquid junctions, failed
+-     * at every step size (review 8.6 (b), run 88d).
+-     */
+-    private PassiveNetwork coldRateSeed(PassiveNetwork graph,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance) {
+-        if(graph.pipes().isEmpty()||graph.reservoirs().stream().noneMatch(PassiveNetwork.Reservoir::junction))return graph;
+-        var rate=portRate(graph,checkpoint,acceptance);
+-        if(rate==null)return graph;
+-        var nodes=new ArrayList<PassiveNetwork.Reservoir>();
+-        for(int i=0;i<graph.reservoirs().size();i++){var node=graph.reservoirs().get(i);
+-            nodes.add(node.junction()?new PassiveNetwork.Reservoir(node.id(),node.elevation(),rate.states().get(i),node.kind(),node.inventory()):node);}
+-        return new PassiveNetwork(nodes,graph.pipes(),graph.scheduledTransfers());
+-    }
+-    /**
+-     * The start of an island job ({@code graph}, the island's committed state) given the island's committed interval
+-     * ({@code committedGraph} and its endpoint modes; null for an island with none). Afterwards this solver holds
+-     * nothing an earlier job left that a fresh solver would not also derive from the committed interval: the carried
+-     * endpoint (modes and flows) and the cold-start seed graphs are dropped, and the step solver is reset by
+-     * {@link PassiveStepSolver#replayStart}.
+-     *
+-     * <p>Why: a certified island is woken with a fresh solver, and its replay must reproduce the island that solved
+-     * every interval bit for bit. A Newton workspace carried across a job boundary opened the next job's first solve on
+-     * an older factorization, the converged pressures differed in the last digits, and through the controller's step
+-     * growth (a continuous function of the change) the difference reached the committed inventories (review 8.9 (c),
+-     * decision D8).
+-     */
+-    public void replayStart(PassiveNetwork graph,PassiveNetwork committedGraph,List<FlowControl.Mode> committedModes) {
+-        graph=PassiveNetwork.sizeJunctionHoldups(graph,model);
+-        carriedModes=null;carriedFlows=null;carriedKey=List.of();coldSeed=null;coldSeedFor=null;
+-        boolean committed=committedGraph!=null&&PassiveStepSolver.sameStructure(graph,committedGraph);
+-        implicit.replayStart(graph,committed,committed?committedModes:null);
+-    }
+-    /** The accepted modes and flows of the last accepted step, carried across intervals for the first step's guard;
+-     * used only while no connection's identity or closure changed ({@link #flowKey}). */
+-    private List<FlowControl.Mode> carriedModes;
+-    private double[] carriedFlows;
+-    private List<Long> carriedKey=List.of();
+-    private static List<Long> flowKey(PassiveNetwork graph) {
+-        var key=new ArrayList<Long>();for(var pipe:graph.pipes()){key.add(pipe.id());key.add((long)pipe.blockedDirections());}
+-        return key;
++    /** An interval boundary truncating an attempt is not evidence about the step size, so growth
++     * applies to the controller's own estimate whenever the attempt was the truncated one. */
++    private static double grow(double estimate,double step,double error,Settings settings) {
++        return Math.min(settings.maximumStep,Math.max(estimate,step)*stepFactor(error,settings.relativeTolerance,false));
+     }
+-    private double[] carriedFlows(PassiveNetwork graph) {
+-        return carriedFlows!=null&&carriedModes!=null&&carriedKey.equals(flowKey(graph))?carriedFlows:null;
+-    }
+-    /** The largest relative pressure or mass change of a vessel (a RESERVOIR node). */
+-    private static double stateChange(PassiveNetwork before,List<FluidThermodynamics.State> after) {
+-        double change=0;
+-        for(int i=0;i<after.size();i++) {
+-            var node=before.reservoirs().get(i);if(node.kind()!=PassiveNetwork.NodeKind.RESERVOIR)continue;
+-            var a=node.state();var b=after.get(i);
+-            change=Math.max(change,Math.abs(b.pressure()-a.pressure())/Math.max(100,a.pressure()));
+-            change=Math.max(change,Math.abs(b.mass()-a.mass())/Math.max(1e-12,a.mass()));
+-        }
+-        return change;
+-    }
+-    /** The cake each filter edge of this graph carries right now, for the start-of-step guard. */
+-    private static Map<Long,InlineFilter> liveFilters(PassiveNetwork graph) {
+-        Map<Long,InlineFilter> filters=null;
+-        for(var pipe:graph.pipes())if(pipe.filter()!=null){if(filters==null)filters=new HashMap<>();filters.put(pipe.id(),pipe.filter());}
+-        return filters==null?Map.of():filters;
++    /** Average-flow defects are order two; use the measured error to approach the same
++     * tolerance with a safety margin instead of repeatedly doubling and rejecting. */
++    private static double stepFactor(double error,double tolerance,boolean rejected) {
++        if(error==0)return rejected?.5:2;
++        return Math.clamp(.8*Math.sqrt(tolerance/error),rejected?.1:.5,rejected?.8:2);
+     }
+     public static PassiveNetwork replace(PassiveNetwork graph,PassiveStepSolver.Result result) {
+         var states=result.states();
+@@ -349,4 +227,73 @@ public final class PassiveIntervalSolver {
+         for(int i=0;i<states.size();i++){var old=graph.reservoirs().get(i);reservoirs.add(new PassiveNetwork.Reservoir(old.id(),old.elevation(),states.get(i),old.kind(),result.inventories().get(i)));}
+         return new PassiveNetwork(reservoirs,graph.pipes().stream().map(p->result.filters().containsKey(p.id())?p.withFilter(result.filters().get(p.id())):p).toList(),graph.scheduledTransfers());
+     }
++    private static double error(List<FluidThermodynamics.State> first,List<FluidThermodynamics.State> refined) {
++        double error=0;
++        for(int i=0;i<first.size();i++) {
++            var a=first.get(i);var b=refined.get(i);
++            error=Math.max(error,Math.abs(a.pressure()-b.pressure())/Math.max(100,b.pressure()));
++            error=Math.max(error,Math.abs(a.temperature()-b.temperature())/Math.max(1,b.temperature()));
++            error=Math.max(error,Math.abs(a.mass()-b.mass())/Math.max(1e-12,b.mass()));
++            error=Math.max(error,Math.abs(a.vaporVolume()/a.volume()-b.vaporVolume()/b.volume()));
++            error=Math.max(error,Math.abs(a.waterVolume()/a.volume()-b.waterVolume()/b.volume()));
++            error=Math.max(error,Math.abs(a.liquidVolume()/a.volume()-b.liquidVolume()/b.volume()));
++            error=Math.max(error,Math.abs(a.solidMoments().volume()/a.volume()-b.solidMoments().volume()/b.volume()));
++            var populations=new java.util.HashSet<com.wormzjl.createcheme.science.fluid.state.SolidInventory.Key>();for(var p:a.solids().populations())populations.add(p.key());for(var p:b.solids().populations())populations.add(p.key());
++            for(var key:populations){double firstMass=a.solids().mass(key),secondMass=b.solids().mass(key);error=Math.max(error,Math.max(0,Math.abs(firstMass-secondMass)-1e-10)/Math.max(1e-12,Math.max(firstMass,secondMass)));}
++        }
++        return error;
++    }
++    private static double flowError(PassiveNetwork graph,double[] full,double[] first,double[] second,double duration,double[] previousGross,double intervalDuration) {
++        double maximum=0;
++        for(int i=0;i<full.length;i++) {
++            var edge=graph.pipes().get(i);double mean=.5*(first[i]+second[i]),gross=.5*(Math.abs(first[i])+Math.abs(second[i]));
++            // A declared absolute allowance covers equation/roundoff noise near zero transfer.
++            // It is below the BAL inventory-relative tolerance and does not relax conservation.
++            double numericalFloor=1e-9+2e-9*(graph.reservoirs().get(edge.first()).state().mass()+graph.reservoirs().get(edge.second()).state().mass())/duration;
++            // Scale by significant throughput over the requested interval as flow approaches zero.
++            // Integral(max(q, priorGross/interval)) <= 2*totalGross, so this contributes at most
++            // 2*tolerance of gross throughput, subject to reference qualification of the estimator.
++            double scale=Math.max(gross,previousGross[i]/intervalDuration);
++            maximum=Math.max(maximum,Math.max(0,Math.abs(full[i]-mean)-numericalFloor)/Math.max(1e-9,scale));
++        }
++        return maximum;
++    }
++    private static final class RegimeTrace implements TrBdf2StepSolver.StageGuard {
++        private final TrBdf2StepSolver.StageGuard delegate;
++        private final List<String> phases;
++        private List<FlowControl.Mode> modes;
++        private boolean smooth=true;
++        private RegimeTrace(TrBdf2StepSolver.StageGuard delegate,PassiveNetwork initial) {
++            this.delegate=delegate;
++            phases=initial.reservoirs().stream().map(n->InventoryEquilibrium.regime(n.state())).toList();
++        }
++        @Override public void check(List<FluidThermodynamics.State> states,List<FlowControl.Mode> actualModes) {
++            delegate.check(states,actualModes);
++            if(modes==null)modes=List.copyOf(actualModes);else if(!modes.equals(actualModes))smooth=false;
++            for(int i=0;i<states.size();i++)if(!phases.get(i).equals(InventoryEquilibrium.regime(states.get(i))))smooth=false;
++        }
++        @Override public void checkFlow(List<FluidThermodynamics.State> states,List<FlowControl.Mode> actualModes,double[] flows){check(states,actualModes);delegate.checkFlow(states,actualModes,flows);}
++        @Override public void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> actualModes,double[] flows){check(states,actualModes);delegate.checkFilters(filters,states,actualModes,flows);}
++        @Override public void checkRate(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> actualModes,double[] flows){check(states,actualModes);delegate.checkRate(filters,states,actualModes,flows);}
++        private boolean smooth(){return smooth;}
++    }
++    private static double boundaryError(PassiveStepSolver.Result full,PassiveStepSolver.Result first,PassiveStepSolver.Result second) {
++        var all=new ArrayList<>(first.boundaries());all.addAll(second.boundaries());return boundaryError(full.boundaries(),all);
++    }
++    private static double boundaryError(List<ConservativeTransport.BoundaryTransfer> full,List<ConservativeTransport.BoundaryTransfer> refined) {
++        var coarse=boundaryTotals(full);var fine=boundaryTotals(refined);double maximum=0;var ids=new HashSet<>(coarse.keySet());ids.addAll(fine.keySet());
++        for(long id:ids) {
++            int length=coarse.containsKey(id)?coarse.get(id).length:fine.get(id).length;var b=fine.getOrDefault(id,new double[length]);var a=coarse.getOrDefault(id,new double[length]);
++            for(int c=0;c<b.length;c++) {
++                double floor=c==b.length-1?1e-4:1e-10;
++                maximum=Math.max(maximum,Math.max(0,Math.abs(a[c]-b[c])-floor)/Math.max(floor,Math.abs(b[c])));
++            }
++        }
++        return maximum;
++    }
++    private static Map<Long,double[]> boundaryTotals(List<ConservativeTransport.BoundaryTransfer> values) {
++        var result=new HashMap<Long,double[]>();
++        for(var value:values){var n=value.moles();var sum=result.computeIfAbsent(value.nodeId(),ignored->new double[n.length+1]);for(int c=0;c<n.length;c++)sum[c]+=n[c];sum[n.length]+=value.totalEnergyJoule();}
++        return result;
++    }
+ }
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveNetwork.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveNetwork.java
+index eba9ccb..cf7a1fc 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveNetwork.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveNetwork.java
+@@ -116,11 +116,11 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
+          * Everything about this connection that decides the shape and the coefficients of the
+          * equations it contributes, and nothing that only moves their right-hand side.
+          *
+-         * <p>The captured cake is exactly that right-hand side: each step rebuilds the pipe list with
+-         * the cake it left, so a retained Newton workspace, sparsity pattern,
++         * <p>The captured cake is exactly that right-hand side: TR-BDF2 rebuilds the pipe list with
++         * a re-weighted cake at every stage, so a retained Newton workspace, sparsity pattern,
+          * fill-reducing ordering or warm flow keyed on the whole {@link Pipe} record would miss on
+-         * every step of any island that has a filter in it - a fresh factorization per step, no
+-         * preconditioner to fork, and the previous step's flows thrown away. The filter's own
++         * every stage of any island that has a filter in it - a fresh factorization per stage, no
++         * preconditioner to fork, and the previous stage's flows thrown away. The filter's own
+          * settings do belong here, because its clean resistance and capacity are coefficients.
+          */
+         public record Identity(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index 5dc7821..b43943d 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -191,60 +191,24 @@ public final class PassiveStepSolver {
+     /** The structure of the last solve this solver accepted; {@link #closeIllegalStarts} acts only on it. */
+     private List<PassiveNetwork.Pipe.Identity> acceptedPipes=List.of();
+     private long[] acceptedNodeIds=new long[0];
+-    /** The structure of the last step the interval solver's controller accepted (a converged solve it refused does not
+-     * count): the cold start ({@link #backwardEulerCold}) lasts until then. */
+-    private List<PassiveNetwork.Pipe.Identity> beAcceptedPipes=List.of();
+-    private long[] beAcceptedNodeIds=new long[0];
+-    /** The interval solver accepted a step of this structure. */
+-    void markBackwardEulerAccepted(PassiveNetwork graph){beAcceptedPipes=identities(graph);beAcceptedNodeIds=nodeIds(graph);}
+-    /** Whether no step of this structure has been accepted yet: the cold start after compile, a topology change, or a job
+-     * start with no committed interval on this structure. */
+-    boolean backwardEulerCold(PassiveNetwork graph){return !(beAcceptedPipes.equals(identities(graph))&&Arrays.equals(beAcceptedNodeIds,nodeIds(graph)));}
+-    /**
+-     * Puts this solver, at the start of an island job, in the state a fresh solver would be in given only the island's
+-     * committed state, so a job's solves depend on the accepted state and the interval and not on what this solver did in
+-     * earlier jobs (see {@link PassiveIntervalSolver#replayStart}).
+-     * <ul>
+-     * <li>No Newton opens on a factorization from an earlier job: every retained workspace's numeric Jacobian and LU are
+-     * dropped. The sparsity pattern, colouring and fill-reducing ordering stay: they are functions of the structure only.</li>
+-     * <li>No warm start: the flows, heads and input states of the last solve are forgotten, so the first solve starts from
+-     * {@code initialMassFlows} of the committed states, as a fresh solver does.</li>
+-     * <li>The pump active-set carry ({@link #previousModes}) is restated from the committed interval's endpoint modes (a pump
+-     * on its head limit or CLOSED there opens there), not from the last pass of whatever this solver solved last (a refused
+-     * step, an uncommitted planner trial).</li>
+-     * <li>"This structure has been accepted" (the cold start and the void-start history gate) is true exactly when the
+-     * island has a committed interval on this structure.</li>
+-     * <li>The reopen exemption and the retained last solve are dropped.</li>
+-     * </ul>
+-     */
+-    void replayStart(PassiveNetwork graph,boolean committedStructure,List<FlowControl.Mode> committedModes) {
+-        ownership.check("Each executing island job needs its own step workspace");
+-        for(var workspace:workspaces.values())workspace.invalidate();
+-        for(var workspace:structures.values())workspace.invalidate();
+-        previousFlows=new double[0];previousHeads=new double[0];previousInputStates=List.of();inputStates=List.of();
+-        previousPipes=List.of();previousNodeIds=new long[0];previousModes=List.of();
+-        keepOpen=Set.of();lastSolve=null;
+-        if(committedStructure) {
+-            var ids=identities(graph);long[] nodes=nodeIds(graph);
+-            beAcceptedPipes=ids;beAcceptedNodeIds=nodes;acceptedPipes=ids;acceptedNodeIds=nodes;
+-            if(committedModes!=null&&committedModes.size()==graph.pipes().size()){previousPipes=ids;previousNodeIds=nodes;previousModes=List.copyOf(committedModes);}
+-        } else {beAcceptedPipes=List.of();beAcceptedNodeIds=new long[0];acceptedPipes=List.of();acceptedNodeIds=new long[0];}
+-    }
+-    /** The same pipe identities and node ids. */
+-    static boolean sameStructure(PassiveNetwork a,PassiveNetwork b){return identities(a).equals(identities(b))&&Arrays.equals(nodeIds(a),nodeIds(b));}
+-    /** The last successful solve, for the block Jacobian check; see {@link #acceptedEquations}. */
+-    record LastSolve(Equations equations,double[] variables) {}
++    /** The last successful solve, together with the Newton tolerance it converged under: the
++     * companion filter may not claim to resolve a defect the solve itself could not. */
++    record LastSolve(Equations equations,double[] variables,SparseNewton.Workspace workspace,double newtonTolerance) {}
+     private LastSolve lastSolve;
+     private boolean rateOnly;
+     /** Owned by this solver, which the ownership latch confines to one worker at a time. */
+     private final com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity.Workspace viscosities=
+             new com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity.Workspace();
+-    /** The island's retained transport linear algebra; an island holds exactly one. */
++    /** The island's retained transport linear algebra; the TR-BDF2 solver hands the same one to both
++     * of its stage solvers and uses it for the endpoint rate, so an island holds exactly one. */
+     private final ConservativeTransport.Workspace transport;
+     public PassiveStepSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
+     public PassiveStepSolver(FluidThermodynamics model,SolverOwnership ownership) {
++        this(model,ownership,new ConservativeTransport.Workspace(Objects.requireNonNull(ownership)));
++    }
++    PassiveStepSolver(FluidThermodynamics model,SolverOwnership ownership,ConservativeTransport.Workspace transport) {
+         this.model=Objects.requireNonNull(model);this.ownership=Objects.requireNonNull(ownership);
+-        transport=new ConservativeTransport.Workspace(ownership);
++        this.transport=Objects.requireNonNull(transport);
+     }
+     public record Result(List<FluidThermodynamics.State> states,double[] massFlows,double deltaTime,SparseNewton.Result numerical,
+                          List<FlowControl.Mode> modes,double[] devicePressureChanges,double pumpWorkJoule,double[] externalMoles,double externalEnergyJoule,
+@@ -492,7 +456,7 @@ public final class PassiveStepSolver {
+             }
+             if(SolverDiagnostics.ENABLED)SolverDiagnostics.count(SolverDiagnostics.solidMomentProjectionsAtAcceptedPoints,
+                     equations.negativeSolidUnknowns(x)+equations.negativeSolidUnknowns(reconstructed));
+-            lastSolve=new LastSolve(equations,x);
++            lastSolve=new LastSolve(equations,x,workspace,tolerance);
+             var accepted=new Result(projection.states(),flows,dt,numerical,acceptedModes,heads,projection.pumpWork(),projection.externalMoles(),projection.externalEnergy(),projection.inventories(),projection.boundaries(),PipeTransfer.sample(graph,projection.states(),flows,dt),projection.filters());
+             // The retained last solve keeps its equations and point, not their per-node decode caches (states, transport
+             // rows, prepared temperature workspaces): a later reader re-decodes (review 8.7 (c) E2).
+@@ -501,6 +465,80 @@ public final class PassiveStepSolver {
+         }
+         throw new SparseNewton.Nonconvergence("Device active-set limit");
+     }
++    /** A linearized companion stage: reconstructed states, edge mass flows and boundary ledger. */
++    record Companion(List<FluidThermodynamics.State> states,double[] massFlows,List<ConservativeTransport.BoundaryTransfer> boundaries) {}
++    /**
++     * Filters a change of reservoir target inventories through the last successful solve instead of
++     * re-solving it. TR-BDF2's embedded companion stage is exactly that: the same equations at the
++     * same step, with the stage-two targets shifted by the order-three defect. The residual
++     * subtracts the target on a reservoir's component and energy rows only, so shifting it by
++     * {@code delta} moves those rows by {@code delta/scale} and leaves the volume, equilibrium,
++     * hydraulic and junction rows alone. The base point is the converged solution, where the
++     * residual is already inside the Newton tolerance, so the step to the perturbed root is
++     * {@code J*dx = delta/scale}; the endpoint is then decoded from {@code x+dx} and reconstructed
++     * on {@code corrected} exactly as an ordinary solve would be.
++     *
++     * <p>The factorization may be the chord an earlier stage built; that is a first-order
++     * linearization either way, and the result is an error estimate that is never committed.
++     * Returns {@code null} - and the caller must then run the full nonlinear stage - when there is
++     * no matching last solve, when its factorization is gone or singular, when the linearized point
++     * leaves the property domain, or when the reconstruction refuses it.
++     *
++     * <p>Two rules keep the filter inside what the engine can actually resolve, because unlike the
++     * nonlinear stage it has no residual of its own to answer to:
++     *
++     * <ul>
++     * <li>A defect whose scaled right-hand side is already inside the Newton tolerance that solve
++     *     converged under is not filtered at all: the correction is zero, because the engine cannot
++     *     resolve a target shift its own stage solve treats as converged. That is what the
++     *     nonlinear stage did - its Newton exited at iteration 0 and returned the stage-two point.</li>
++     * <li>Otherwise the filtered point must actually solve the perturbed equations: the residual it
++     *     leaves, {@code f(x+dx) - delta/scale}, may not exceed the solve's own tolerance or the
++     *     defect it was handed. The factorization may be a chord inherited from another step size -
++     *     {@link SparseNewton.Workspace#forkPreconditioner} carries it across substeps and intervals
++     *     - and such a chord is a fine search direction, which the nonlinear residual corrects, but
++     *     it is the implicit operator of <em>that</em> step, so as an error filter it can overshoot
++     *     severalfold. A quiescent island holds one chord for whole intervals, and the overshoot
++     *     lands in the flow unknowns, where it is many times the controller's own numerical
++     *     allowance and rejects steps that need no refinement. The check costs one residual
++     *     assembly and shares its node decode with the endpoint below.</li>
++     * </ul>
++     */
++    Companion companion(PassiveNetwork solved,PassiveNetwork corrected,double[][] deltaMoles,double[] deltaEnergy,
++                        double[][] deltaSolidMoments,double[] heads,double dt,Runnable checkpoint) {
++        ownership.check("Each executing island job needs its own step workspace");
++        var last=lastSolve;
++        if(last==null||last.equations.graph!=solved||last.equations.dt!=dt)return null;
++        var equations=last.equations;
++        double[] rows=new double[equations.size];
++        for(int node=0;node<equations.layout.length;node++) {
++            if(equations.layout[node]==null||solved.reservoirs().get(node).junction())continue;
++            equations.layout[node].targetRows(deltaMoles[node],deltaEnergy[node],
++                    deltaSolidMoments==null?null:deltaSolidMoments[node],rows,equations.offsets[node]);
++        }
++        double defect=0;for(double row:rows)defect=Math.max(defect,Math.abs(row));
++        List<FluidThermodynamics.State> states;double[] flows=new double[solved.pipes().size()];
++        try {
++            double[] x;
++            if(defect<=last.newtonTolerance) {
++                SolverDiagnostics.count(SolverDiagnostics.companionDefectsBelowTolerance);x=last.variables.clone();
++            }else {
++                x=SparseNewton.applyFactorization(last.workspace,last.variables,rows);
++                if(x==null)return null;
++                SolverDiagnostics.count(SolverDiagnostics.companionFilterResiduals);
++                double left=0;double[] perturbed=equations.residual(x);
++                for(int row=0;row<perturbed.length;row++)left=Math.max(left,Math.abs(perturbed[row]-rows[row]));
++                if(left>Math.max(last.newtonTolerance,defect)) {
++                    SolverDiagnostics.count(SolverDiagnostics.companionFiltersRefused);return null;
++                }
++            }
++            states=equations.states(x);
++            for(int edge=0;edge<flows.length;edge++)flows[edge]=equations.boundaryClosed[edge]||equations.modes.get(edge)==FlowControl.Mode.CLOSED
++                    ?0:x[equations.edgeOffset+edge];
++            var projection=ConservativeTransport.reconstruct(corrected,states,flows,heads,dt,model,checkpoint,transport);
++            return new Companion(projection.states(),flows,projection.boundaries());
++        }catch(SparseLuSolver.SolveFailure|SparseNewton.Nonconvergence|IllegalArgumentException outsideTheLinearization){return null;}
++    }
+     /** Value key over compact codes instead of rendered strings and boxed lists; the arrays belong
+      * to the key from construction on, so a caller must hand over a snapshot of anything it mutates.
+      * {@code supports} is the per-node, per-component phase support flattened in node order: it
+@@ -740,12 +778,7 @@ public final class PassiveStepSolver {
+             double low=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY;int degree=0;boolean eligible=true;
+             for(var pipe:graph.pipes())if(pipe.first()==node||pipe.second()==node) {
+                 degree++;int other=pipe.first()==node?pipe.second():pipe.first();
+-                // A vessel neighbour counts as held while this structure is cold: with no rate solve per step, a step is the
+-                // only solve a cold junction ever sees, and a vessel's pressure moves by at most the state cap over it (review
+-                // 8.6 (b), run 85d). Only until a step of the structure has been accepted: at a hydrostatic rest the junction
+-                // pressure lies outside its neighbours' range and the seed would fire at every step (run 85b: 480 seeds,
+-                // 119040 flashes in one case).
+-                boolean held=graph.reservoirs().get(other).fixed()||graph.reservoirs().get(other).kind()==PassiveNetwork.NodeKind.RESERVOIR&&backwardEulerCold(graph);
++                boolean held=graph.reservoirs().get(other).fixed();
+                 if(!held||!(pipe.control() instanceof FlowControl.Passive)
+                         ||pipe.filter()!=null||pipe.blockedDirections()!=0){eligible=false;break;}
+                 double pressure=graph.reservoirs().get(other).state().pressure();
+@@ -1357,8 +1390,6 @@ public final class PassiveStepSolver {
+     /** The equations of the last accepted solve, for the check that the block Jacobian sweep and an
+      * independent column-by-column difference of {@link Equations#residual} produce the same entries;
+      * {@code null} until a solve has been accepted. Nothing in production reads it. */
+-    /** Drops the retained last solve; the interval solver does after every accepted step. */
+-    void releaseLastSolve(){lastSolve=null;}
+     Equations acceptedEquations(){return lastSolve==null?null:lastSolve.equations();}
+     /** The point {@link #acceptedEquations} converged to. */
+     double[] acceptedPoint(){return lastSolve==null?null:lastSolve.variables().clone();}
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeTransfer.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeTransfer.java
+index 07f173d..d6356e7 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeTransfer.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeTransfer.java
+@@ -47,6 +47,58 @@ public record PipeTransfer(long pipeId, Stream forward, Stream reverse) {
+         return List.copyOf(result);
+     }
+ 
++    /**
++     * TR-BDF2's stage one (review 7.9): the gross history of a frozen rate
++     * evaluation booked with a relaxed junction, matching {@code ConservativeTransport.reconstruct(..., relax)}.
++     * Every junction that is not on a junction cycle in flow direction gets, on each outflow, a*sampled + b*share*In:
++     * its own frozen sample weighted a = m/(m + relax Q_out) plus its share |q_e|/Q_out of the streams its inflows
++     * delivered (a filter edge delivers its stream without the solids) weighted b = relax Q_out/(m + relax Q_out),
++     * in junction flow order. The rate graph of TR-BDF2 carries no scheduled transfers, so none is excluded here.
++     */
++    static List<PipeTransfer> relaxed(PassiveNetwork graph,List<PipeTransfer> sampled,double[] rates,double relax,double[] molecularWeight) {
++        int nodes=graph.reservoirs().size();boolean[] through=new boolean[nodes];
++        for(int node=0;node<nodes;node++)through[node]=graph.reservoirs().get(node).junction();
++        for(var transfer:graph.scheduledTransfers())through[transfer.node()]=false;
++        int[] indegree=new int[nodes];var order=new ArrayList<Integer>();
++        for(int edge=0;edge<rates.length;edge++){if(rates[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=rates[edge]>0?pipe.first():pipe.second(),receiver=rates[edge]>0?pipe.second():pipe.first();if(through[donor]&&through[receiver])indegree[receiver]++;}
++        var queue=new ArrayDeque<Integer>();for(int node=0;node<nodes;node++)if(through[node]&&indegree[node]==0)queue.add(node);
++        while(!queue.isEmpty()) {
++            int node=queue.poll();order.add(node);
++            for(int edge=0;edge<rates.length;edge++){if(rates[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=rates[edge]>0?pipe.first():pipe.second(),receiver=rates[edge]>0?pipe.second():pipe.first();if(donor==node&&through[receiver]&&--indegree[receiver]==0)queue.add(receiver);}
++        }
++        var streams=new ArrayList<Stream>();
++        for(int edge=0;edge<rates.length;edge++){var t=sampled.get(edge);if(t.pipeId()!=graph.pipes().get(edge).id())throw new IllegalStateException("Pipe history order");streams.add(rates[edge]>=0?t.forward():t.reverse());}
++        int count=streams.isEmpty()?0:streams.getFirst().phaseMoles[0].length;
++        for(int node:order) {
++            double outgoing=0;for(int edge=0;edge<rates.length;edge++){var pipe=graph.pipes().get(edge);if((rates[edge]>=0?pipe.first():pipe.second())==node)outgoing+=Math.abs(rates[edge]);}
++            double mass=0;double[][] n=new double[3][count];double[] volumes=new double[3];var solids=new SolidInventory.Accumulator();
++            for(int edge=0;edge<rates.length;edge++) {
++                var pipe=graph.pipes().get(edge);if((rates[edge]>=0?pipe.second():pipe.first())!=node||rates[edge]==0)continue;
++                var in=streams.get(edge);boolean filtered=pipe.filter()!=null;
++                mass+=in.massKg-(filtered?in.solids.massKg():0);if(!filtered)solids.add(in.solids,1);
++                for(int p=0;p<3;p++){volumes[p]+=in.phaseVolumes[p];for(int c=0;c<count;c++)n[p][c]+=in.phaseMoles[p][c];}
++            }
++            var inflow=solids.finish();
++            var inventory=graph.reservoirs().get(node).inventory();var held=inventory.moles();double stock=inventory.solids().massKg();
++            for(int c=0;c<held.length;c++)stock+=held[c]*molecularWeight[c];
++            double a=stock/(stock+relax*outgoing),b=relax*outgoing/(stock+relax*outgoing);
++            for(int edge=0;edge<rates.length;edge++) {
++                var pipe=graph.pipes().get(edge);if((rates[edge]>=0?pipe.first():pipe.second())!=node||rates[edge]==0)continue;
++                double share=Math.abs(rates[edge])/outgoing;double[][] m=new double[3][count];double[] v=new double[3];
++                var own=rates[edge]>=0?sampled.get(edge).forward():sampled.get(edge).reverse();
++                for(int p=0;p<3;p++){v[p]=a*own.phaseVolumes[p]+b*share*volumes[p];for(int c=0;c<count;c++)m[p][c]=a*own.phaseMoles[p][c]+b*share*n[p][c];}
++                var solidPart=new SolidInventory.Accumulator();solidPart.add(own.solids,a);solidPart.add(inflow,b*share);
++                streams.set(edge,new Stream(a*own.massKg+b*share*mass,m,v,solidPart.finish()));
++            }
++        }
++        var result=new ArrayList<PipeTransfer>();
++        for(int edge=0;edge<rates.length;edge++) {
++            var t=sampled.get(edge);
++            result.add(rates[edge]>=0?new PipeTransfer(t.pipeId(),streams.get(edge),t.reverse()):new PipeTransfer(t.pipeId(),t.forward(),streams.get(edge)));
++        }
++        return List.copyOf(result);
++    }
++
+     /** Bounded accumulator: one record per compiled pipe, regardless of accepted substep count. */
+     static final class Accumulator {
+         private final Map<Long,Mutable> pipes=new LinkedHashMap<>();
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/SolidEventIntegrator.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/SolidEventIntegrator.java
+index 2f4edb6..4652d50 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/SolidEventIntegrator.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/SolidEventIntegrator.java
+@@ -48,7 +48,7 @@ final class SolidEventIntegrator {
+          * a position in one graph and means nothing outside it. */
+         final long pipeId;
+         final SolidMobility.Check check;
+-        /** Seen on the state at the start of a step: the event is at the accepted state
++        /** Seen on the endpoint rate at the start of a step: the event is at the accepted state
+          * itself, so it needs no refinement and is declared where the integration stands. */
+         final boolean atStart;
+         Transition(int edge,long pipeId,int direction,SolidMobility.Check check,boolean atStart) {
+@@ -216,8 +216,8 @@ final class SolidEventIntegrator {
+     private static boolean atCapacity(InlineFilter state) {
+         return state.clogged()||state.captured().volume()>=state.capacity()*(1-1e-9);
+     }
+-    private StageGuard guard(PassiveNetwork graph) {
+-        return new StageGuard() {
++    private TrBdf2StepSolver.StageGuard guard(PassiveNetwork graph) {
++        return new TrBdf2StepSolver.StageGuard() {
+             public void check(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes) {}
+             @Override public void checkRate(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows) {
+                 // The graph this guard closes over is the one the segment started from, so its own
+@@ -226,10 +226,10 @@ final class SolidEventIntegrator {
+                 var failure=failed(graph,states,flows);if(failure!=null)throw failure.atStart();
+             }
+             @Override public void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows) {
+-                // A step may not reach capacity: the exact test, so the saturated inlet law's own
++                // A stage may not reach capacity: the exact test, so the saturated inlet law's own
+                 // landing a relative hair below it is an accepted step whose closure the next
+                 // step's t0 guard declares, while a step that overshot the remaining room - by
+-                // more than rounding absorbs, or on an island where the law is
++                // more than the stage-two extrapolation absorbs, or on an island where the law is
+                 // not applied at all - is refused and the controller halves onto the fill.
+                 var over=overfilledFilter(filters);if(over!=null)throw over;
+                 checkFlow(states,modes,flows);
+@@ -271,11 +271,6 @@ final class SolidEventIntegrator {
+             var candidate=rate(graph,checkpoint);var failure=failed(graph,candidate.states(),candidate.massFlows());
+             if(failure==null)break;
+             blocked[failure.edge]|=failure.direction;
+-            // A cake the last interval's final step left at capacity is declared here, at the next interval's t0, and
+-            // not by an in-interval guard: under backward Euler a 5 s interval is often a single step, so the saturated
+-            // inlet's landing is the interval's last step. Stop the filter exactly as a declared FILTER_CLOGGED
+-            // transition does below, so the stopped state (status, checkpoint) is the same either way (review 8.8 (a)).
+-            if(failure.reason()==SolidMobility.Reason.FILTER_CLOGGED&&graph.pipes().get(failure.edge).filter()!=null)graph=stopFilter(graph,failure.edge);
+             reasons.merge(failure.getMessage()+"; t="+elapsed,1,Integer::sum);
+             if(attempt==2*blocked.length)throw new SparseNewton.Nonconvergence("Solid closure active set did not settle");
+         }
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/StageGuard.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/StageGuard.java
+deleted file mode 100644
+index b6bc9be..0000000
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/StageGuard.java
++++ /dev/null
+@@ -1,25 +0,0 @@
+-package com.wormzjl.createcheme.science.fluid.network;
+-
+-import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+-import java.util.List;
+-import java.util.Map;
+-
+-/**
+- * A check the interval solver runs on every step it takes: {@link #checkRate} on the state a step starts from,
+- * {@link #checkFilters} on the step's converged end. It throws to refuse the step: a
+- * {@link SolidEventIntegrator.Transition} to declare a solid transport event (the interval solver then searches the
+- * step onto it), an {@link ApproximationRejected} to send an approximate interval back to a full solve.
+- */
+-@FunctionalInterface public interface StageGuard {
+-    StageGuard NONE=(states,modes)->{};
+-    void check(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes);
+-    default void checkFlow(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){check(states,modes);}
+-    default void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){checkFlow(states,modes,flows);}
+-    /**
+-     * The state at the start of a step - the previous accepted step's end, the end carried from the last interval, or
+-     * one rate solve of the port graph when nothing is carried - together with the live cake of the graph being stepped.
+-     * A transition seen here is at the step's own t0 and is therefore already exactly located: the interval solver
+-     * declares it at the current elapsed time instead of refining the step towards it.
+-     */
+-    default void checkRate(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){checkFlow(states,modes,flows);}
+-}
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/TrBdf2StepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/TrBdf2StepSolver.java
+new file mode 100644
+index 0000000..c439b8a
+--- /dev/null
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/TrBdf2StepSolver.java
+@@ -0,0 +1,433 @@
++package com.wormzjl.createcheme.science.fluid.network;
++
++import com.wormzjl.createcheme.science.fluid.SolverOwnership;
++import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
++import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
++import java.util.*;
++import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
++
++/** Second-order, L-stable TR-BDF2, using two simultaneous implicit stages with equal diagonal coefficient.
++ * Inventories are stage right-hand sides, not new physical initializations. No stage may commit independently.
++ */
++public final class TrBdf2StepSolver {
++    private static final double GAMMA=2-Math.sqrt(2), ALPHA=GAMMA/2, A=1/(GAMMA*(2-GAMMA));
++    /** The embedded order-three companion's weights on the endpoint rate and the two stages. They
++     * are constants of the tableau, hoisted so that the solid stock of the corrected reservoirs can
++     * be accumulated where the endpoint rate is read rather than reconstructed from it later. */
++    private static final double W=A*ALPHA, E0=(1-W)/3-W, E1=(3*W+1)/3-W, E2=ALPHA/3-ALPHA;
++    private final FluidThermodynamics model;
++    private final PassiveStepSolver implicit,algebraic;
++    private record RateKey(PassiveNetwork graph,PassiveStepSolver.Acceptance acceptance) {}
++    private record Rate(ConservativeTransport.Projection properties,double[] flows,List<FlowControl.Mode> modes,double[] heads) {
++        private Rate{flows=flows.clone();modes=List.copyOf(modes);heads=heads.clone();}
++    }
++    private final Map<RateKey,Rate> endpointRates=new LinkedHashMap<>();
++    private final SolverOwnership ownership;
++    /** One per island: both stage solvers and the endpoint rate below refill the same EJML storage. */
++    private final ConservativeTransport.Workspace transport;
++    public TrBdf2StepSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
++    public TrBdf2StepSolver(FluidThermodynamics model,SolverOwnership ownership) {
++        this.model=Objects.requireNonNull(model);this.ownership=Objects.requireNonNull(ownership);
++        transport=new ConservativeTransport.Workspace(ownership);
++        implicit=new PassiveStepSolver(model,ownership,transport);algebraic=new PassiveStepSolver(model,ownership,transport);
++    }
++
++    public record Trial(PassiveStepSolver.Result solution,List<FluidThermodynamics.State> estimatedStates,double[] estimatedMassFlows,List<ConservativeTransport.BoundaryTransfer> estimatedBoundaries) {
++        public Trial(PassiveStepSolver.Result solution,List<FluidThermodynamics.State> estimatedStates,double[] estimatedMassFlows){this(solution,estimatedStates,estimatedMassFlows,solution.boundaries());}
++        public Trial{estimatedStates=List.copyOf(estimatedStates);estimatedMassFlows=estimatedMassFlows.clone();estimatedBoundaries=List.copyOf(estimatedBoundaries);}
++        @Override public double[] estimatedMassFlows(){return estimatedMassFlows.clone();}
++    }
++    @FunctionalInterface public interface StageGuard {
++        StageGuard NONE=(states,modes)->{};
++        void check(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes);
++        default void checkFlow(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){check(states,modes);}
++        default void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){checkFlow(states,modes,flows);}
++        /**
++         * The endpoint rate at the start of a step, evaluated before any stage is solved, together
++         * with the live cake of the graph being stepped. A transition seen here is at the step's own
++         * t0 and is therefore already exactly located: the interval solver declares it at the
++         * current elapsed time instead of refining the step towards it.
++         */
++        default void checkRate(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){checkFlow(states,modes,flows);}
++    }
++    public Trial trial(PassiveNetwork initial,double dt,Runnable checkpoint){return trial(initial,dt,checkpoint,PassiveStepSolver.Acceptance.FULL,StageGuard.NONE);}
++    public Trial trial(PassiveNetwork initial,double dt,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,StageGuard guard){return integrate(initial,dt,checkpoint,true,acceptance,guard);}
++
++    /** massFlows is the quadrature average over dt; state, modes and heads describe the endpoint. */
++    public PassiveStepSolver.Result solve(PassiveNetwork initial,double dt,Runnable checkpoint) {
++        return solve(initial,dt,checkpoint,PassiveStepSolver.Acceptance.FULL,StageGuard.NONE);
++    }
++    public PassiveStepSolver.Result solve(PassiveNetwork initial,double dt,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,StageGuard guard){return integrate(initial,dt,checkpoint,false,acceptance,guard).solution();}
++    private Trial integrate(PassiveNetwork initial,double dt,Runnable checkpoint,boolean estimate,PassiveStepSolver.Acceptance acceptance,StageGuard guard) {
++        Objects.requireNonNull(acceptance);Objects.requireNonNull(guard);
++        ownership.check("TR-BDF2 workspace belongs to the worker holding its solver latch");
++        initial=PassiveNetwork.sizeJunctionHoldups(initial,model);
++        if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
++        if(initial.reservoirs().stream().anyMatch(n->n.kind()==PassiveNetwork.NodeKind.PORT))throw new IllegalArgumentException("Internal ports cannot be integrated");
++        if(initial.pipes().isEmpty()&&initial.scheduledTransfers().isEmpty()){checkpoint.run();var unchanged=implicit.solve(initial,dt,checkpoint,acceptance);guard.check(unchanged.states(),unchanged.modes());return new Trial(unchanged,unchanged.states(),unchanged.massFlows());}
++        if(initial.reservoirs().stream().anyMatch(PassiveNetwork.Reservoir::empty))throw new IllegalArgumentException("Evacuated reservoir has no fluid temperature; connected filling requires a supported initialization state");
++        var ports=new ArrayList<PassiveNetwork.Reservoir>();
++        for(var node:initial.reservoirs())ports.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),node.state(),
++                node.kind()==PassiveNetwork.NodeKind.RESERVOIR?PassiveNetwork.NodeKind.PORT:node.kind(),node.inventory()));
++        // Algebraic junction compositions and device flows must be consistent at the start of the interval.
++        var portGraph=new PassiveNetwork(ports,initial.pipes());
++        var cached=endpointRates.get(new RateKey(initial,PassiveStepSolver.Acceptance.FULL));
++        if(cached==null&&acceptance==PassiveStepSolver.Acceptance.APPROXIMATE)cached=endpointRates.get(new RateKey(initial,acceptance));
++        double[] initialFlows,initialHeads;ConservativeTransport.Projection rate;List<FlowControl.Mode> initialModes;
++        SolverDiagnostics.count(cached==null?SolverDiagnostics.endpointRateBuilds:SolverDiagnostics.endpointRateReuses);
++        if(cached==null) {
++            var solved=algebraic.solveRate(portGraph,checkpoint,acceptance);initialFlows=solved.massFlows();initialModes=solved.modes();initialHeads=solved.devicePressureChanges();
++            rate=new ConservativeTransport.Projection(solved.inventories(),solved.states(),solved.boundaries(),solved.externalMoles(),solved.externalEnergyJoule(),solved.pumpWorkJoule(),solved.filters());
++            cache(initial,rate,initialFlows,initialModes,initialHeads,acceptance);
++        }else {initialFlows=cached.flows.clone();rate=cached.properties;initialModes=cached.modes;initialHeads=cached.heads.clone();}
++        // Review 7.9 (junction.stageForm=implicit): re-book the cached rate's flows for this step, each owned
++        // junction's outflows carrying its stock advanced by backward Euler over alpha*dt; see STAGE_IMPLICIT.
++        boolean relaxed=true;
++        // Review 7.11 (junction.stageClip=on): the stage-two clip re-books on the edges exactly as the relaxed rate
++        // booking and the stage-one reconstruction booked them, so both record their per-edge bookings.
++        boolean clip=true;ConservativeTransport.EdgeBooking[] rateBook=null,firstBook=null;
++        if(relaxed) {
++            if(clip)ConservativeTransport.recordBookings();
++            try{rate=ConservativeTransport.reconstruct(portGraph,rate.states(),initialFlows,initialHeads,1,model,checkpoint,transport,true,ALPHA*dt);}
++            finally{if(clip)rateBook=ConservativeTransport.takeBookings();}
++        }
++        guard.checkRate(liveFilters(initial),rate.states(),initialModes,initialFlows);
++        var byId=new HashMap<Long,Integer>();for(int i=0;i<ports.size();i++)byId.put(ports.get(i).id(),i);
++        double[][] dn=new double[ports.size()][model.hydrocarbon.componentCount()+1];double[] du=new double[ports.size()];
++        var firstSolids=new SolidInventory.Accumulator[ports.size()];for(int i=0;i<ports.size();i++){firstSolids[i]=new SolidInventory.Accumulator();firstSolids[i].add(initial.reservoirs().get(i).inventory().solids(),1);}
++        // The companion's corrected solid stock. Its endpoint-rate term is the same source and sink
++        // stream the stage-one base reads below, at the companion's own weight instead of alpha*dt,
++        // so it is accumulated here rather than divided back out of a finished stage inventory,
++        // which a node losing solids would have had to hold as a negative population.
++        var companionSolids=estimate?new SolidInventory.Accumulator[ports.size()]:null;
++        if(estimate)for(int i=0;i<ports.size();i++)companionSolids[i]=new SolidInventory.Accumulator();
++        var physicalBoundaries=new ArrayList<ConservativeTransport.BoundaryTransfer>();
++        for(var boundary:rate.boundaries()) {
++            int i=byId.get(boundary.nodeId());var node=initial.reservoirs().get(i);
++            // Owned-holdup prototype, frozen rate form: a junction's pseudo-boundary is its rate, read like a port's.
++            if(node.kind()!=PassiveNetwork.NodeKind.RESERVOIR&&!node.junction()){physicalBoundaries.add(boundary);continue;}
++            var n=boundary.moles();double mass=0;
++            for(int c=0;c<n.length;c++){dn[i][c]-=n[c];mass+=n[c]*model.molecularWeight(c);}
++            mass+=boundary.solidDirection()*boundary.solids().massKg();
++            firstSolids[i].add(boundary.solids(),-ALPHA*dt*boundary.solidDirection());
++            if(estimate)companionSolids[i].add(boundary.solids(),-E0*dt*boundary.solidDirection());
++            du[i]-=boundary.totalEnergyJoule()-mass*PassiveStepSolver.GRAVITY*node.elevation();
++        }
++        for(var transfer:initial.scheduledTransfers()) {
++            int i=transfer.node();var node=initial.reservoirs().get(i);var state=rate.states().get(i);double[] n;double energy,mass=0;
++            if(transfer instanceof ScheduledTransfer.Withdrawal out) {
++                mass=-out.massKgPerSecond();n=com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(state);
++                for(int c=0;c<n.length;c++)n[c]*=mass/state.mass();
++                energy=mass*(state.enthalpy()/state.mass()+PassiveStepSolver.GRAVITY*node.elevation());
++            } else {
++                var in=(ScheduledTransfer.Injection)transfer;n=in.molesPerSecond();energy=in.totalEnergyPerSecond();
++                for(int c=0;c<n.length;c++)mass+=n[c]*model.molecularWeight(c);
++            }
++            for(int c=0;c<n.length;c++)dn[i][c]+=n[c];du[i]+=energy-mass*PassiveStepSolver.GRAVITY*node.elevation();
++            SolidInventory moved;int direction;
++            if(transfer instanceof ScheduledTransfer.Withdrawal out){moved=state.solids().scale(out.massKgPerSecond()/state.mass());direction=-1;}
++            else{moved=((ScheduledTransfer.Injection)transfer).solidsPerSecond();direction=1;du[i]-=moved.massKg()*PassiveStepSolver.GRAVITY*node.elevation();}
++            firstSolids[i].add(moved,ALPHA*dt*direction);
++            if(estimate)companionSolids[i].add(moved,E0*dt*direction);
++            physicalBoundaries.add(new ConservativeTransport.BoundaryTransfer(transfer.id(),n,energy,moved,direction));
++        }
++        // Owned-holdup prototype: a junction has no boundary and no scheduled transfer, so dn/du above are
++        // zero for it. But its owned stock changes during the rate solve (the regularised row at dt = 1,
++        // eps = m_J/1 s), and the ports' boundaries balance that change, not zero: its rate is that change
++        // per second, read off the same conservative projection the port boundaries came from.
++        boolean owned=true;
++        if(owned)for(int i=0;i<ports.size();i++)if(initial.reservoirs().get(i).junction()) {
++            var was=initial.reservoirs().get(i).inventory();var now=rate.inventories().get(i);var a=was.moles();var b=now.moles();
++            for(int c=0;c<a.length;c++)dn[i][c]+=b[c]-a[c];du[i]+=now.internalEnergy()-was.internalEnergy();
++        }
++        var firstBase=new ArrayList<PassiveNetwork.Reservoir>();
++        // Review 7.9 (junction.stageForm=implicit): the re-booked rate gives a junction dn = In - Q S1/m, so its
++        // stage-one base n0 + alpha dt dn is exactly its backward-Euler stock S1 over alpha dt (non-negative).
++        // The stage-two base below is the same A-blend as a vessel's, n0 + A (n1 - n0) with A = 1.2071 > 1.
++        for(int i=0;i<ports.size();i++) {
++            var node=initial.reservoirs().get(i);var inventory=node.inventory();
++            if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR||owned&&node.junction()) {
++                var n=inventory.moles();for(int c=0;c<n.length;c++)n[c]+=ALPHA*dt*dn[i][c];
++                inventory=new PassiveNetwork.Inventory(inventory.volume(),n,inventory.internalEnergy()+ALPHA*dt*du[i],firstSolids[i].finish());
++            }
++            firstBase.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),rate.states().get(i),node.kind(),inventory));
++        }
++        if(clip)ConservativeTransport.recordBookings();
++        PassiveStepSolver.Result first;
++        try{first=implicit.solve(new PassiveNetwork(firstBase,filterStage(initial,rate.filters(),ALPHA*dt),initial.scheduledTransfers()),ALPHA*dt,checkpoint,acceptance);}
++        finally{if(clip)firstBook=ConservativeTransport.takeBookings();}
++        guard.checkFilters(first.filters(),first.states(),first.modes(),first.massFlows());
++        var secondBase=new ArrayList<PassiveNetwork.Reservoir>();
++        List<ConservativeTransport.BoundaryTransfer> clipBoundaries=List.of();
++        if(clip)clipBoundaries=clippedSecondBase(initial,firstBase,first,rateBook,firstBook,dt,secondBase);
++        else for(int i=0;i<ports.size();i++) {
++            var node=initial.reservoirs().get(i);var inventory=node.inventory();
++            if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR||owned&&node.junction()) {
++                var n=inventory.moles();var stage=first.inventories().get(i);var ns=stage.moles();
++                for(int c=0;c<n.length;c++)n[c]+=A*(ns[c]-n[c]);
++                inventory=new PassiveNetwork.Inventory(inventory.volume(),n,inventory.internalEnergy()+A*(stage.internalEnergy()-inventory.internalEnergy()),SolidInventory.combine(inventory.solids(),1-A,stage.solids(),A));
++            }
++            secondBase.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),first.states().get(i),node.kind(),inventory));
++        }
++        var secondGraph=new PassiveNetwork(secondBase,filterStage(initial,first.filters(),A),initial.scheduledTransfers());
++        var second=implicit.solve(secondGraph,ALPHA*dt,checkpoint,acceptance);guard.checkFilters(second.filters(),second.states(),second.modes(),second.massFlows());
++        var boundaries=new ArrayList<ConservativeTransport.BoundaryTransfer>();
++        append(boundaries,physicalBoundaries,A*ALPHA*dt);append(boundaries,first.boundaries(),A);append(boundaries,second.boundaries(),1);
++        boundaries.addAll(clipBoundaries); // Review 7.11: already weighted; only at fixed nodes that already book this step.
++        double[] external=new double[dn[0].length];double energy=0;
++        for(var boundary:boundaries){var n=boundary.moles();for(int c=0;c<n.length;c++)external[c]+=n[c];energy+=boundary.totalEnergyJoule();}
++        double work=A*ALPHA*dt*rate.pumpWork()+A*first.pumpWorkJoule()+second.pumpWorkJoule();
++        var projection=new ConservativeTransport.Projection(second.inventories(),second.states(),boundaries,external,energy,work,second.filters());
++        implicit.checkConservation(initial,projection);
++        var endpoint=PassiveIntervalSolver.replace(initial,second);var endpointPorts=new ArrayList<PassiveNetwork.Reservoir>();
++        for(var node:endpoint.reservoirs())endpointPorts.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),node.state(),
++                node.kind()==PassiveNetwork.NodeKind.RESERVOIR?PassiveNetwork.NodeKind.PORT:node.kind(),node.inventory()));
++        var endpointRate=ConservativeTransport.reconstruct(new PassiveNetwork(endpointPorts,endpoint.pipes()),second.states(),second.massFlows(),second.devicePressureChanges(),1,model,checkpoint,transport,true);
++        cache(endpoint,endpointRate,second.massFlows(),second.modes(),second.devicePressureChanges(),acceptance);
++        var q=initialFlows.clone();var q1=first.massFlows();var q2=second.massFlows();
++        for(int i=0;i<q.length;i++)q[i]=A*ALPHA*(q[i]+q1[i])+ALPHA*q2[i];
++        var pipeTransfers=new PipeTransfer.Accumulator();
++        var rateTransfers=PipeTransfer.sample(initial,rate.states(),initialFlows,1);
++        // Review 7.9: the explicit history matches the pass-through booking of the frozen rate (rate graph = portGraph).
++        if(relaxed)rateTransfers=PipeTransfer.relaxed(portGraph,rateTransfers,initialFlows,ALPHA*dt,model.molecularWeights());
++        pipeTransfers.add(rateTransfers,A*ALPHA*dt);
++        pipeTransfers.add(first.pipeTransfers(),A);pipeTransfers.add(second.pipeTransfers(),1);
++        var solution=new PassiveStepSolver.Result(second.states(),q,dt,second.numerical(),second.modes(),second.devicePressureChanges(),work,external,energy,second.inventories(),boundaries,pipeTransfers.snapshot(),second.filters());
++        if(!estimate)return new Trial(solution,second.states(),q);
++        // Embedded order-three companion. Its defect is smoothed through the same implicit operator,
++        // which extends the usual (I-alpha*h*J)^-1 filter to our constrained states. The correction
++        // is only an error estimate and its material/energy ledger is never committed.
++        double e0=E0,e1=E1,e2=E2;
++        double[][] deltaMoles=new double[ports.size()][dn[0].length];double[] deltaEnergy=new double[ports.size()];
++        double[][] deltaSolids=new double[ports.size()][3];
++        var correctedBase=new ArrayList<PassiveNetwork.Reservoir>();
++        // Owned-holdup prototype: a junction's owned stock is left out of the estimate - it keeps its
++        // stage-two base inventory and gets no defect (a small quantity; the companion skips junction rows).
++        for(int i=0;i<ports.size();i++) {
++            var node=secondBase.get(i);var inventory=node.inventory();
++            if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR) {
++                var n=inventory.moles();var base=n.clone();var n0=firstBase.get(i).inventory().moles();var n1=first.inventories().get(i).moles();var n2=second.inventories().get(i).moles();
++                for(int c=0;c<n.length;c++){deltaMoles[i][c]=e0*dt*dn[i][c]+e1/ALPHA*(n1[c]-n0[c])+e2/ALPHA*(n2[c]-base[c]);n[c]+=deltaMoles[i][c];}
++                deltaEnergy[i]=e0*dt*du[i]+e1/ALPHA*(first.inventories().get(i).internalEnergy()-firstBase.get(i).inventory().internalEnergy())
++                        +e2/ALPHA*(second.inventories().get(i).internalEnergy()-inventory.internalEnergy());
++                // The same combination on the conserved populations, whose aggregate moments are
++                // the companion's targets for the three solid rows. The endpoint-rate term is
++                // already in the accumulator; the rest is the stage-two base plus the two stage
++                // differences, at the weights the amounts above use.
++                var baseSolids=inventory.solids();
++                companionSolids[i].add(baseSolids,1);
++                companionSolids[i].add(first.inventories().get(i).solids(),e1/ALPHA);
++                companionSolids[i].add(firstBase.get(i).inventory().solids(),-e1/ALPHA);
++                companionSolids[i].add(second.inventories().get(i).solids(),e2/ALPHA);
++                companionSolids[i].add(baseSolids,-e2/ALPHA);
++                var solids=companionSolids[i].finishNonNegative();
++                double[] before=baseSolids.moments().values(),after=solids.moments().values();
++                for(int c=0;c<3;c++)deltaSolids[i][c]=after[c]-before[c];
++                inventory=new PassiveNetwork.Inventory(inventory.volume(),n,inventory.internalEnergy()+deltaEnergy[i],solids);
++            }
++            correctedBase.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),second.states().get(i),node.kind(),inventory));
++        }
++        // The stage-two cakes, not the interval's: the companion reconstructs the same step the
++        // stage-two solve did, so the material it hands a filter has to land on the same base.
++        var correctedGraph=new PassiveNetwork(correctedBase,secondGraph.pipes(),initial.scheduledTransfers());
++        // The companion stage changes nothing but those targets, so one solve of the stage-two
++        // Jacobian answers it. The complete nonlinear stage stays the fallback and the reference.
++        var filtered=implicit.companion(secondGraph,correctedGraph,deltaMoles,deltaEnergy,deltaSolids,second.devicePressureChanges(),ALPHA*dt,checkpoint);
++        List<FluidThermodynamics.State> correctedStates;double[] qc;List<ConservativeTransport.BoundaryTransfer> correctedBoundaries;
++        if(filtered!=null) {
++            SolverDiagnostics.count(SolverDiagnostics.companionFilters);
++            correctedStates=filtered.states();qc=filtered.massFlows();correctedBoundaries=filtered.boundaries();
++            guard.check(correctedStates,second.modes());
++        }else {
++            SolverDiagnostics.count(SolverDiagnostics.companionSolves);
++            var corrected=implicit.solve(correctedGraph,ALPHA*dt,checkpoint,acceptance);guard.check(corrected.states(),corrected.modes());
++            correctedStates=corrected.states();qc=corrected.massFlows();correctedBoundaries=corrected.boundaries();
++        }
++        var estimated=q.clone();
++        // The transfer integral is an extra differential variable, so its defect uses the same filter.
++        for(int i=0;i<estimated.length;i++)estimated[i]+=e0*initialFlows[i]+e1*q1[i]+e2*q2[i]+ALPHA*(qc[i]-q2[i]);
++        // Source/sink integrals are additional differential variables too. Include their
++        // companion defect and the same implicit endpoint correction; this ledger is never
++        // committed. It lets smooth module intervals qualify boundary accuracy without three
++        // complete integrations. Phase/device transitions still use conservative step doubling.
++        var estimatedBoundaries=new ArrayList<>(solution.boundaries());
++        append(estimatedBoundaries,physicalBoundaries,e0*dt);append(estimatedBoundaries,first.boundaries(),e1/ALPHA);append(estimatedBoundaries,second.boundaries(),e2/ALPHA);
++        append(estimatedBoundaries,correctedBoundaries,1);append(estimatedBoundaries,second.boundaries(),-1);
++        return new Trial(solution,correctedStates,estimated,estimatedBoundaries);
++    }
++    /**
++     * The
++     * stage-two bases, with every owned junction's base clipped at zero per species and solid population, the
++     * clipped amount booked back on the junction's own outflows at both ends of each edge, the way
++     * {@code ConservativeTransport.pinnedFlows} books the mass pin. Fills {@code secondBase} and returns the
++     * boundary transfers the clip books at fixed nodes.
++     *
++     * <p><b>Why a junction's base can be negative.</b> {@code base2 = (1 - A) n0 + A n1} with A = 1.2071 > 1. A species
++     * the inflow lacks leaves the junction as {@code n1 = n0/(1 + r)^2}, r = alpha dt Q/m_J, and base2 < 0 once
++     * r > sqrt 2 (review 7.9 (b)). Every node's stage-two base is {@code base2_i = n0_i + A (alpha dt r_i + T1_i)}:
++     * the rate booking (per second, weight A alpha dt) and the stage-one booking (weight A) of every edge at
++     * that node. The A weight credits the receivers of the junction's flush with {@code (A - 1)(n0 - n1)} more
++     * than the junction held.
++     *
++     * <p><b>The clip and its identity.</b> For an owned junction J and a species c (the same for a solid population)
++     * with {@code d = -base2_J,c > 0}, let {@code net_e} be the A-weighted amount of c the two bookings moved out of J
++     * over edge e (out minus in, as they were booked: pinned flows, relaxed compositions; recorded by
++     * {@code ConservativeTransport.recordBookings}). Then {@code sum_e net_e = n0_J,c - base2_J,c = n0_J,c + d >= d},
++     * so the positive part {@code S = sum_{net_e > 0} net_e >= d}, and each such edge takes back
++     * {@code d_e = d net_e/S <= net_e}. The clip is a <em>composition swap</em> on the edge: it returns d_e of c and
++     * sends the same mass {@code dm_e = d_e M_c} of the junction's own admissible mixture y (mol/kg of its positive
++     * species, taken once before the junction's swaps) the other way:
++     * <pre>
++     *   base2'_J = base2_J + sum_e (d_e e_c - dm_e y)       (c -> 0; every other species stays >= 0, see below)
++     *   base2'_k = base2_k - d_e e_c + dm_e y               (k = the edge's other end, a vessel or an owned junction)
++     *   B'       = B + {+d_e e_c - dm_e y at k}            (k fixed: one boundary transfer at k's own id)
++     * </pre>
++     * Per component and solid population {@code sum_i base2'_i - sum_i base2_i = sum_{k fixed} (d_e e_c - dm_e y)},
++     * so the step's ledger {@code sum_i [n_i(dt) - n_i(0)] = A alpha dt B_rate + A B1 + B2 + B_clip} (review 7.9 (a))
++     * holds exactly: each edge still books one amount at both ends. Every edge keeps its booked mass, so no node's
++     * mass changes, the mass pin and the junction's algebraic mass (the Newton's net-mass row) see nothing, and no
++     * energy is re-booked. The junction's positive species lose {@code D/(m + D)} of themselves at most
++     * (D = the clipped mass, m + D = their mass, m = the junction's mass >= 0), so they stay non-negative. The
++     * receiver keeps {@code net_e - d_e >= 0} of the c it got over that edge: after the clip the junction delivers
++     * exactly the c it held and received, and the rest of the edge's mass is its current mixture, which is what a
++     * flush delivers; before it, the A-blend delivered (A - 1)(n0 - n1) more c than the junction ever held.
++     *
++     * <p><b>Energy.</b> The enthalpy field has no sign bound (enthalpy reference), so it is never clipped; the swap
++     * moves no mass, so it moves no energy either (a per-species enthalpy is not available; the junction keeps its
++     * specific field and the receivers theirs).
++     *
++     * <p><b>Solids.</b> Per population, on edges without a filter only (a filter edge's solids went to the cake,
++     * which is not re-booked); an uncovered remainder is left and traced. The mass returned is replaced by the
++     * junction's fluid mixture.
++     *
++     * <p>Junctions are clipped repeatedly (a swap lowers a downstream junction's species) up to junctions + 2
++     * passes. A clipped value within rounding of zero is set to 0. The recorded bookings are checked against the
++     * junction's own stage changes first (rate: base1 - n0; stage one: n1 - base1); a junction whose check fails
++     * is left unclipped and a STAGECLIP MISMATCH line is printed. A first form that returned the mass without the
++     * swap (energy at the edge's specific field) was superseded by run 75: under the pin the junction's surplus
++     * mass was pinned out through stage two's outflows, which the Newton had not solved, and the stage-two solve
++     * failed its equation gate (7.2e-6).
++     */
++    private List<ConservativeTransport.BoundaryTransfer> clippedSecondBase(PassiveNetwork initial,List<PassiveNetwork.Reservoir> firstBase,PassiveStepSolver.Result first,
++            ConservativeTransport.EdgeBooking[] rateBook,ConservativeTransport.EdgeBooking[] firstBook,double dt,List<PassiveNetwork.Reservoir> secondBase) {
++        int nodes=initial.reservoirs().size(),edges=initial.pipes().size(),components=model.hydrocarbon.componentCount()+1;double[] mw=model.molecularWeights();
++        boolean[] stock=new boolean[nodes];double[][] moles=new double[nodes][];double[] field=new double[nodes];
++        var basis=new TreeMap<SolidInventory.Key,SolidInventory.Population>();var solids=new ArrayList<TreeMap<SolidInventory.Key,Double>>();
++        for(int i=0;i<nodes;i++) {
++            var node=initial.reservoirs().get(i);var inventory=node.inventory();var map=new TreeMap<SolidInventory.Key,Double>();solids.add(map);
++            stock[i]=node.kind()==PassiveNetwork.NodeKind.RESERVOIR||node.junction();
++            if(!stock[i])continue;
++            var n=inventory.moles();var stage=first.inventories().get(i);var ns=stage.moles();
++            for(int c=0;c<n.length;c++)n[c]+=A*(ns[c]-n[c]);
++            moles[i]=n;field[i]=inventory.internalEnergy()+A*(stage.internalEnergy()-inventory.internalEnergy());
++            for(var p:inventory.solids().populations()){basis.putIfAbsent(p.key(),p);map.merge(p.key(),(1-A)*p.massKg(),Double::sum);}
++            for(var p:stage.solids().populations()){basis.putIfAbsent(p.key(),p);map.merge(p.key(),A*p.massKg(),Double::sum);}
++        }
++        var books=new ConservativeTransport.EdgeBooking[][]{rateBook,firstBook};double[] weights={A*ALPHA*dt,A};
++        boolean usable=rateBook!=null&&firstBook!=null&&rateBook.length==edges&&firstBook.length==edges;
++        var boundaryMoles=new TreeMap<Integer,double[]>();var boundarySolids=new TreeMap<Integer,SolidInventory.Accumulator>();
++        if(usable) {
++            // Check: the recorded bookings reproduce each junction's own changes (rate: base1 - n0 over alpha dt; stage one: n1 - base1).
++            boolean[] trusted=new boolean[nodes];int junctions=0;
++            for(int j=0;j<nodes;j++)if(initial.reservoirs().get(j).junction()) {
++                trusted[j]=true;
++                double[] n0=initial.reservoirs().get(j).inventory().moles(),b1=firstBase.get(j).inventory().moles(),n1=first.inventories().get(j).moles();
++                for(int b=0;b<2&&trusted[j];b++)for(int c=0;c<components&&trusted[j];c++) {
++                    double sum=0,scale=0;
++                    for(int e=0;e<edges;e++){var k=books[b][e];if(k==null)continue;double a=(b==0?ALPHA*dt:1)*k.species()[c];if(k.receiver()==j){sum+=a;scale+=Math.abs(a);}else if(k.donor()==j){sum-=a;scale+=Math.abs(a);}}
++                    double target=b==0?b1[c]-n0[c]:n1[c]-b1[c];scale=Math.max(scale,Math.max(Math.abs(b==0?n0[c]:b1[c]),Math.abs(b==0?b1[c]:n1[c])));
++                    if(Math.abs(sum-target)>1e-9*scale+1e-300){trusted[j]=false;}
++                }
++                if(trusted[j])junctions++;
++            }
++            for(int pass=0;pass<junctions+2;pass++) {
++                boolean clipped=false;
++                for(int j=0;j<nodes;j++) {
++                    if(!trusted[j])continue;
++                    boolean negative=false;for(int c=0;c<components;c++)negative|=moles[j][c]<0;for(double m:solids.get(j).values())negative|=m<0;
++                    if(!negative)continue;
++                    clipped=true;
++                    // The junction's admissible mixture, mol per kg of its positive fluid species.
++                    double positiveMass=0;double[] mixture=new double[components];
++                    for(int c=0;c<components;c++)if(moles[j][c]>0)positiveMass+=moles[j][c]*mw[c];
++                    if(!(positiveMass>0))continue;
++                    for(int c=0;c<components;c++)if(moles[j][c]>0)mixture[c]=moles[j][c]/positiveMass;
++                    for(int c=0;c<components;c++)if(moles[j][c]<0) {
++                        double d=-moles[j][c];double[] net=new double[edges];double positive=0;
++                        for(int e=0;e<edges;e++){for(int b=0;b<2;b++){var k=books[b][e];if(k==null)continue;double a=weights[b]*k.species()[c];if(k.donor()==j)net[e]+=a;else if(k.receiver()==j)net[e]-=a;}if(net[e]>0)positive+=net[e];}
++                        if(!(positive>0))continue;
++                        double fraction=Math.min(1,d/positive);
++                        for(int e=0;e<edges;e++)if(net[e]>0) {
++                            double taken=fraction*net[e];var returned=new double[components];returned[c]=taken;
++                            swap(initial,j,e,returned,null,taken*mw[c],mixture,stock,moles,solids,boundaryMoles,boundarySolids);
++                        }
++                        if(fraction<1||moles[j][c]>-1e-12*d)moles[j][c]=Math.max(0,moles[j][c]);
++                    }
++                    for(var key:new ArrayList<>(solids.get(j).keySet()))if(solids.get(j).get(key)<0) {
++                        double d=-solids.get(j).get(key);double[] net=new double[edges];double positive=0;
++                        for(int e=0;e<edges;e++){if(initial.pipes().get(e).filter()!=null)continue;for(int b=0;b<2;b++){var k=books[b][e];if(k==null)continue;double a=weights[b]*k.solids().mass(key);if(k.donor()==j)net[e]+=a;else if(k.receiver()==j)net[e]-=a;}if(net[e]>0)positive+=net[e];}
++                        if(!(positive>0))continue;
++                        double fraction=Math.min(1,d/positive);var population=basis.get(key);
++                        for(int e=0;e<edges;e++)if(net[e]>0) {
++                            double taken=fraction*net[e];
++                            swap(initial,j,e,new double[components],new SolidInventory(List.of(new SolidInventory.Population(population.material(),population.size(),taken))),taken,mixture,stock,moles,solids,boundaryMoles,boundarySolids);
++                        }
++                        if(fraction<1||solids.get(j).get(key)>-1e-12*d)solids.get(j).put(key,Math.max(0,solids.get(j).get(key)));
++                    }
++                    // The mixture's species lost at most D/(m + D) of themselves; only rounding can take one below zero.
++                    for(int c=0;c<components;c++)if(moles[j][c]<0&&moles[j][c]>-1e-12*positiveMass/mw[c])moles[j][c]=0;
++                }
++                if(!clipped)break;
++            }
++        }
++        for(int i=0;i<nodes;i++) {
++            var node=initial.reservoirs().get(i);var inventory=node.inventory();
++            if(stock[i]) {
++                var populations=new ArrayList<SolidInventory.Population>();
++                for(var entry:solids.get(i).entrySet()){var p=basis.get(entry.getKey());populations.add(new SolidInventory.Population(p.material(),p.size(),entry.getValue()));}
++                inventory=new PassiveNetwork.Inventory(inventory.volume(),moles[i],field[i],new SolidInventory(populations));
++            }
++            secondBase.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),first.states().get(i),node.kind(),inventory));
++        }
++        var result=new ArrayList<ConservativeTransport.BoundaryTransfer>();
++        for(var entry:boundaryMoles.entrySet()) {
++            int k=entry.getKey();var returned=boundarySolids.get(k).finish();
++            result.add(new ConservativeTransport.BoundaryTransfer(initial.reservoirs().get(k).id(),entry.getValue(),0,returned,returned.empty()?0:1));
++        }
++        return result;
++    }
++    /** Review 7.11: on edge e, return {@code returned} species and {@code returnedSolids} from the edge's other end into
++     * junction j and send the same mass {@code mass} of j's mixture (mol/kg) the other way; no energy moves. */
++    private static void swap(PassiveNetwork initial,int j,int e,double[] returned,SolidInventory returnedSolids,double mass,double[] mixture,
++            boolean[] stock,double[][] moles,List<TreeMap<SolidInventory.Key,Double>> solids,Map<Integer,double[]> boundaryMoles,Map<Integer,SolidInventory.Accumulator> boundarySolids) {
++        var pipe=initial.pipes().get(e);int k=pipe.first()==j?pipe.second():pipe.first();
++        var delta=new double[returned.length];for(int c=0;c<delta.length;c++)delta[c]=returned[c]-mass*mixture[c];
++        for(int c=0;c<delta.length;c++)moles[j][c]+=delta[c];
++        if(returnedSolids!=null)for(var p:returnedSolids.populations())solids.get(j).merge(p.key(),p.massKg(),Double::sum);
++        if(stock[k]) {
++            for(int c=0;c<delta.length;c++)if(delta[c]!=0){moles[k][c]-=delta[c];if(moles[k][c]<0&&moles[k][c]>-1e-12*Math.abs(delta[c]))moles[k][c]=0;}
++            if(returnedSolids!=null)for(var p:returnedSolids.populations()){double left=solids.get(k).merge(p.key(),-p.massKg(),Double::sum);if(left<0&&left>-1e-12*p.massKg())solids.get(k).put(p.key(),0.0);}
++        }else {
++            var n=boundaryMoles.computeIfAbsent(k,x->new double[delta.length]);for(int c=0;c<delta.length;c++)n[c]+=delta[c];
++            var s=boundarySolids.computeIfAbsent(k,x->new SolidInventory.Accumulator());if(returnedSolids!=null)s.add(returnedSolids,1);
++        }
++    }
++    /** The cake each filter edge of this graph carries right now, for the start-of-step guard. */
++    private static Map<Long,InlineFilter> liveFilters(PassiveNetwork graph) {
++        Map<Long,InlineFilter> filters=null;
++        for(var pipe:graph.pipes())if(pipe.filter()!=null){if(filters==null)filters=new HashMap<>();filters.put(pipe.id(),pipe.filter());}
++        return filters==null?Map.of():filters;
++    }
++    private static List<PassiveNetwork.Pipe> filterStage(PassiveNetwork graph,Map<Long,InlineFilter> result,double weight) {
++        return graph.pipes().stream().map(p->p.filter()==null?p:p.withFilter(InlineFilter.combine(p.filter(),1-weight,result.getOrDefault(p.id(),p.filter()),weight))).toList();
++    }
++    private void cache(PassiveNetwork graph,ConservativeTransport.Projection rate,double[] flows,List<FlowControl.Mode> modes,double[] heads,PassiveStepSolver.Acceptance acceptance) {
++        // A valve reaching its setpoint has a nonsmooth endpoint rate; reevaluate its algebraic regime.
++        if(graph.pipes().stream().anyMatch(pipe->pipe.control() instanceof FlowControl.PressureValve))return;
++        if(endpointRates.size()>=8)endpointRates.remove(endpointRates.keySet().iterator().next());
++        endpointRates.put(new RateKey(graph,acceptance),new Rate(rate,flows,modes,heads));
++    }
++    private static void append(List<ConservativeTransport.BoundaryTransfer> target,List<ConservativeTransport.BoundaryTransfer> source,double scale) {
++        for(var transfer:source){var n=transfer.moles();for(int c=0;c<n.length;c++)n[c]*=scale;target.add(new ConservativeTransport.BoundaryTransfer(transfer.nodeId(),n,transfer.totalEnergyJoule()*scale,transfer.solids().scale(Math.abs(scale)),scale<0?-transfer.solidDirection():transfer.solidDirection()));}
++    }
++}
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/solver/PhaseLayout.java b/src/main/java/com/wormzjl/createcheme/science/fluid/solver/PhaseLayout.java
+index a829e39..7679192 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/solver/PhaseLayout.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/solver/PhaseLayout.java
+@@ -238,24 +238,55 @@ public final class PhaseLayout {
+         return row;
+     }
+     /**
+-     * A junction's rows: M-1 mass-fraction equations, continuity, enthalpy, and amount normalization, then its phase
+-     * equilibrium rows. {@code weight} multiplies the mixing and enthalpy rows: an owned junction states them in amount
+-     * form over its holdup, {@code (dt/m)(m/dt + Q)} times the difference (see
+-     * {@code PassiveStepSolver.Equations.junctionInflow}).
++     * The change {@link #residual} would show if this node's target amounts and internal energy
++     * moved by the given amounts, at a fixed state: the component rows carry it divided by their
++     * own component scale and the energy row by the energy scale, in the same row order, while the
++     * volume and equilibrium rows carry no target at all. A Newton step for that perturbation is
++     * therefore {@code J*dx = +delta/scale}, because the residual subtracts the target.
+      */
++    public void targetRows(double[] deltaAmounts,double deltaEnergy,double[] rows,int offset) {
++        targetRows(deltaAmounts,deltaEnergy,null,rows,offset);
++    }
++    /**
++     * {@code deltaSolidMoments} is the matching shift of the three aggregate solid targets, which
++     * {@link #solidRows} subtracts in the same way and divides by {@link #solidScale}. A layout
++     * that carries no solid unknowns ignores it; one that does requires it, because leaving those
++     * rows at zero would claim the companion stage holds the solid inventory fixed while its own
++     * corrected graph moves it.
++     */
++    public void targetRows(double[] deltaAmounts,double deltaEnergy,double[] deltaSolidMoments,double[] rows,int offset) {
++        if(deltaAmounts.length!=componentScales.length)throw new IllegalArgumentException("Balance basis mismatch");
++        int row=offset,water=componentScales.length-1;
++        for(int i:components)rows[row++]=deltaAmounts[i]/componentScales[i];
++        if(waterLiquidIndex>=0||waterVaporIndex>=0)rows[row++]=deltaAmounts[water]/componentScales[water];
++        rows[row]=deltaEnergy/energyScale;
++        if(solidIndex<0)return;
++        if(deltaSolidMoments==null||deltaSolidMoments.length!=3)throw new IllegalArgumentException("Solid target basis mismatch");
++        int solidRow=offset+componentBalanceCount()+2;
++        for(int i=0;i<3;i++)rows[solidRow+i]=deltaSolidMoments[i]/solidScale[i];
++    }
++    /** Zero-holdup mixing: M-1 mass-fraction equations, continuity, enthalpy, and amount normalization. */
+     public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
+-                                 double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared,double weight) {
+-        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables,weight);
+-        equilibriumResidual(state,state.liquidView(),state.vaporView(),result,row,offset,variables,prepared);
++                                 double netMassFlow,double[] result,int offset,double[] variables) {
++        junctionResidual(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,0,result,offset,variables,null);
++    }
++    public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
++                                 double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared) {
++        double[] l=state.liquidView(),v=state.vaporView();
++        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables);
++        equilibriumResidual(state,l,v,result,row,offset,variables,prepared);
++    }
++    /** The mixing block of {@link #junctionResidual}: everything the inflow and the net flow move,
++     * and nothing the equilibrium rows below it read. Returns the first row after this block. */
++    public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
++                            double netMassFlow,double[] result,int offset,double[] variables) {
++        return junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,0,result,offset,variables);
+     }
+     /**
+-     * The mixing block of {@link #junctionResidual}: everything the inflow and the net flow move, and nothing the
+-     * equilibrium rows below it read. Returns the first row after this block.
+-     *
+-     * <p>{@code retainedPressure} is positive only for a junction no open connection reaches, and is
++     * {@code retainedPressure} is positive only for a junction no open connection reaches, and is
+      * then the pressure it keeps.
+      *
+-     * <p>Nothing but the hydraulics decides a junction's pressure: the net
++     * <p>A junction owns no volume, so nothing but the hydraulics decides its pressure: the net
+      * mass flow row below balances what arrives against what leaves, and the connected pressure
+      * drops relate that to the pressure here. Close every connection and both halves of that
+      * disappear at once. Each closed connection already has a row of its own stating that its flow
+@@ -265,8 +296,22 @@ public final class PhaseLayout {
+      * shut pumps, or two connections a transport closure has taken in both directions produces.
+      *
+      * <p>So an isolated junction keeps the pressure it had, exactly as it keeps the composition it
+-     * holds: nothing arrives to move it.
++     * had: the remaining rows already pin its mass fractions, its specific enthalpy and its total
++     * amount to the stored guess, because nothing arrives to say otherwise. It is the same rule
++     * reachability already applies when it says that a junction nothing can reach retains only its
++     * arbitrary property guess.
+      */
++    public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
++                            double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables) {
++        return junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables,1);
++    }
++    /** {@code weight} multiplies the mixing and enthalpy rows: an owned junction states them in amount form over its
++     * holdup, {@code (dt/m)(m/dt + Q)} times the difference (see {@code PassiveStepSolver.Equations.junctionInflow}). */
++    public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
++                                 double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared,double weight) {
++        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables,weight);
++        equilibriumResidual(state,state.liquidView(),state.vaporView(),result,row,offset,variables,prepared);
++    }
+     public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
+                             double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,double weight) {
+         var n=totalAmounts(state,state.liquidView(),state.vaporView());
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java b/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
+index 12d9666..ea59905 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
+@@ -209,6 +209,19 @@ public final class SparseNewton {
+         workspace.invalidate();
+         throw new Nonconvergence("Newton iteration limit at residual "+norm,x,domain);
+     }
++    /**
++     * One linearized correction on the factorization the workspace already holds:
++     * {@code point + J^-1 * rightHandSide}, with the backward-error check skipped because the
++     * result is an error estimate that is never committed. {@code null} when the workspace has no
++     * usable factorization; a numerically failed solve throws {@link SparseLuSolver.SolveFailure}.
++     */
++    public static double[] applyFactorization(Workspace workspace,double[] point,double[] rightHandSide) {
++        Objects.requireNonNull(workspace).owned();
++        if(!workspace.preconditioned())return null;
++        var correction=workspace.factorization.solve(rightHandSide,SparseLuSolver.Verification.NONE);
++        double[] result=point.clone();for(int i=0;i<result.length;i++)result[i]+=correction[i];
++        return result;
++    }
+     public record CorrectionEstimate(double[] probe,double initialResidual,double probeResidual) {
+         public CorrectionEstimate{probe=probe.clone();}
+         @Override public double[] probe(){return probe.clone();}
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/state/SolidInventory.java b/src/main/java/com/wormzjl/createcheme/science/fluid/state/SolidInventory.java
+index 696c845..5bb7792 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/state/SolidInventory.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/state/SolidInventory.java
+@@ -79,6 +79,23 @@ public record SolidInventory(List<Population> populations) {
+             for(var p:stock.populations){var old=basis.putIfAbsent(p.key(),p);if(old!=null&&!old.material().equals(p.material()))throw new IllegalArgumentException("Incompatible solid properties");masses.merge(p.key(),factor*p.massKg(),Double::sum);}
+         }
+         public SolidInventory finish() {var result=new ArrayList<Population>();for(var entry:masses.entrySet()){var p=basis.get(entry.getKey());result.add(new Population(p.material(),p.size(),entry.getValue()));}return new SolidInventory(result);}
++        /**
++         * The completed stock with each population floored at zero, for a weighted combination that
++         * is an uncommitted estimate rather than owned material.
++         *
++         * <p>TR-BDF2's embedded order-three companion is such a combination: two of its three
++         * weights are negative, and a population whose stage differences are of the same size as
++         * the stock they are differences of lands below zero. That is every node far enough down a
++         * chain from a solid source, where backward Euler leaves 1e-30 to 1e-70 of the source, and
++         * any node draining its last particles. Neither is a reason to refuse the step the estimate
++         * is about, and neither can reach an inventory: the companion's ledger is never committed,
++         * and the interval's own population comparison carries an absolute floor far above these
++         * masses. Owned material uses {@link #finish()}, which refuses a negative population.
++         */
++        public SolidInventory finishNonNegative() {var result=new ArrayList<Population>();for(var entry:masses.entrySet()){var p=basis.get(entry.getKey());result.add(new Population(p.material(),p.size(),Math.max(0,entry.getValue())));}return new SolidInventory(result);}
++    }
++    public static SolidInventory combine(SolidInventory first,double firstWeight,SolidInventory second,double secondWeight) {
++        var total=new Accumulator();total.add(first,firstWeight);total.add(second,secondWeight);return total.finish();
+     }
+     public record Portion(SolidInventory delivered, SolidInventory remaining) {}
+     public Portion takeFraction(double fraction) {
+diff --git a/src/test/java/com/wormzjl/createcheme/runtime/fluid/CadenceTrajectoryQualificationTest.java b/src/test/java/com/wormzjl/createcheme/runtime/fluid/CadenceTrajectoryQualificationTest.java
+index d36f221..522e944 100644
+--- a/src/test/java/com/wormzjl/createcheme/runtime/fluid/CadenceTrajectoryQualificationTest.java
++++ b/src/test/java/com/wormzjl/createcheme/runtime/fluid/CadenceTrajectoryQualificationTest.java
+@@ -59,7 +59,7 @@ class CadenceTrajectoryQualificationTest {
+         var graph=initial;double moved=0;var frames=new ArrayList<Frame>();
+         var settings=new PassiveIntervalSolver.Settings(maximumStep,maximumStep,1e-5,8192);
+         for(int tick=400;tick<=1600;tick+=400) {
+-            var result=new PassiveIntervalSolver(model).solve(graph,20,settings,()->{});
++            var result=new PassiveIntervalSolver(model,PassiveIntervalSolver.ErrorControl.STEP_DOUBLING).solve(graph,20,settings,()->{});
+             graph=result.graph();assertClosed(initial,graph);moved+=20*result.averageMassFlows()[0];frames.add(new Frame(tick,graph,moved));
+         }
+         return new Trajectory(frames,Set.of(),4);
+diff --git a/src/test/java/com/wormzjl/createcheme/runtime/fluid/McpGameplayRegressionTest.java b/src/test/java/com/wormzjl/createcheme/runtime/fluid/McpGameplayRegressionTest.java
+index c7908be..d588e54 100644
+--- a/src/test/java/com/wormzjl/createcheme/runtime/fluid/McpGameplayRegressionTest.java
++++ b/src/test/java/com/wormzjl/createcheme/runtime/fluid/McpGameplayRegressionTest.java
+@@ -36,7 +36,7 @@ class McpGameplayRegressionTest {
+         var graph=archivedGraph(archivedIsland("/fluid/mcp-clamped-liquid-full-checkpoint.json"),model);
+         var result=new PassiveIntervalSolver(model).solve(graph,1,PassiveIntervalSolver.Settings.defaults(),()->{});
+         assertEquals(1,result.advancedSeconds());assertTrue(result.graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]>0);
+-        var refined=new PassiveIntervalSolver(model).solve(graph,1,new PassiveIntervalSolver.Settings(.005,.02,.0001,4096),()->{});
++        var refined=new PassiveIntervalSolver(model,PassiveIntervalSolver.ErrorControl.STEP_DOUBLING).solve(graph,1,new PassiveIntervalSolver.Settings(.005,.02,.0001,4096),()->{});
+         for(int i=0;i<graph.reservoirs().size();i++) {
+             var actual=result.graph().reservoirs().get(i);var expected=refined.graph().reservoirs().get(i);
+             assertEquals(expected.state().pressure(),actual.state().pressure(),1+.001*expected.state().pressure());
+@@ -80,7 +80,7 @@ class McpGameplayRegressionTest {
+         var result=solver.solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
+         assertTrue(result.graph().reservoirs().getFirst().state().waterLiquid()>0);
+         assertEquals(nitrogen.vapor()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN],result.graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN],1e-8);
+-        var refined=new PassiveIntervalSolver(model).solve(graph,5,new PassiveIntervalSolver.Settings(.00005,.02,.0001,4096),()->{});
++        var refined=new PassiveIntervalSolver(model,PassiveIntervalSolver.ErrorControl.STEP_DOUBLING).solve(graph,5,new PassiveIntervalSolver.Settings(.00005,.02,.0001,4096),()->{});
+         var actual=result.graph().reservoirs().getFirst().state();var expected=refined.graph().reservoirs().getFirst().state();
+         assertEquals(expected.pressure(),actual.pressure(),.001*expected.pressure());
+         assertEquals(expected.temperature(),actual.temperature(),.1);
+diff --git a/src/test/java/com/wormzjl/createcheme/science/fluid/network/EmptyNetworkTest.java b/src/test/java/com/wormzjl/createcheme/science/fluid/network/EmptyNetworkTest.java
+index 95f99bd..c204054 100644
+--- a/src/test/java/com/wormzjl/createcheme/science/fluid/network/EmptyNetworkTest.java
++++ b/src/test/java/com/wormzjl/createcheme/science/fluid/network/EmptyNetworkTest.java
+@@ -23,7 +23,7 @@ class EmptyNetworkTest {
+     @Test void unsupportedVacuumFillingIsExplicitAndCannotPublishOutflowFromTheRetainedGuess() {
+         var empty=empty();var source=new PassiveNetwork.Reservoir(2,0,model.initialNitrogenCharge(1,298.15,200000,()->{}),PassiveNetwork.NodeKind.GENERATOR);
+         var graph=new PassiveNetwork(List.of(empty,source),List.of(new PassiveNetwork.Pipe(3,0,1,new PipeResistance.Geometry(1,.05,0,0))));
+-        var failure=assertThrows(IllegalArgumentException.class,()->new PassiveStepSolver(model).solve(graph,1,()->{}));assertTrue(failure.getMessage().contains("no fluid temperature"));
++        var failure=assertThrows(IllegalArgumentException.class,()->new TrBdf2StepSolver(model).solve(graph,1,()->{}));assertTrue(failure.getMessage().contains("no fluid temperature"));
+         assertArrayEquals(new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],empty.inventory().moles());assertEquals(0,empty.inventory().internalEnergy());
+     }
+ }
+diff --git a/src/test/java/com/wormzjl/createcheme/science/fluid/network/HydraulicMatrixQualificationTest.java b/src/test/java/com/wormzjl/createcheme/science/fluid/network/HydraulicMatrixQualificationTest.java
+index 0420b39..0fc032c 100644
+--- a/src/test/java/com/wormzjl/createcheme/science/fluid/network/HydraulicMatrixQualificationTest.java
++++ b/src/test/java/com/wormzjl/createcheme/science/fluid/network/HydraulicMatrixQualificationTest.java
+@@ -31,7 +31,7 @@ class HydraulicMatrixQualificationTest {
+             double mu=water?model.viscosity.waterLiquid(350):model.viscosity.vapor(350,source.vapor(),0);
+             var sections=List.of(new PipeResistance.Geometry(100,.01,0,0),new PipeResistance.Geometry(200,.012,0,0));
+             var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,source,PassiveNetwork.NodeKind.GENERATOR),new PassiveNetwork.Reservoir(2,0,sink,PassiveNetwork.NodeKind.VOID)),List.of(new PassiveNetwork.Pipe(3,0,1,sections.get(0)),new PassiveNetwork.Pipe(4,0,1,sections.get(1))));
+-            var result=new PassiveStepSolver(model).solve(graph,5,()->{});
++            var result=new TrBdf2StepSolver(model).solve(graph,5,()->{});
+             for(int i=0;i<2;i++) {
+                 var p=sections.get(i);double reference=100*Math.PI*rho*Math.pow(p.diameter(),4)/(128*mu*p.length());
+                 assertTrue(4*reference/(Math.PI*mu*p.diameter())<2000,"Analytic fixture left laminar regime");
+@@ -45,9 +45,9 @@ class HydraulicMatrixQualificationTest {
+         var upper=state(true,200000-rho*PassiveStepSolver.GRAVITY*dz);
+         var pipe=new PassiveNetwork.Pipe(3,0,1,new PipeResistance.Geometry(100,.01,0,0));
+         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,lower),new PassiveNetwork.Reservoir(2,dz,upper)),List.of(pipe));
+-        var rest=new PassiveStepSolver(model).solve(graph,.1,()->{});assertEquals(0,rest.massFlows()[0],1e-10);
++        var rest=new TrBdf2StepSolver(model).solve(graph,.1,()->{});assertEquals(0,rest.massFlows()[0],1e-10);
+         var reversed=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,dz,lower),new PassiveNetwork.Reservoir(2,0,upper)),List.of(pipe));
+-        var result=new PassiveStepSolver(model).solve(reversed,.1,()->{});assertTrue(result.massFlows()[0]>0);
++        var result=new TrBdf2StepSolver(model).solve(reversed,.1,()->{});assertTrue(result.massFlows()[0]>0);
+         double before=0,after=0;for(int i=0;i<2;i++) {
+             var node=reversed.reservoirs().get(i);before+=node.inventory().internalEnergy()+node.state().mass()*PassiveStepSolver.GRAVITY*node.elevation();
+             after+=result.inventories().get(i).internalEnergy()+result.states().get(i).mass()*PassiveStepSolver.GRAVITY*node.elevation();
+@@ -64,7 +64,7 @@ class HydraulicMatrixQualificationTest {
+             var original=new PassiveNetwork(nodes,pipes);var shuffled=new ArrayList<>(nodes);Collections.shuffle(shuffled,random);
+             var index=new HashMap<Long,Integer>();for(int i=0;i<6;i++)index.put(shuffled.get(i).id(),i);
+             var permutedPipes=new ArrayList<PassiveNetwork.Pipe>();for(var p:pipes)permutedPipes.add(new PassiveNetwork.Pipe(p.id(),index.get(nodes.get(p.first()).id()),index.get(nodes.get(p.second()).id()),p.sections(),p.control()));Collections.shuffle(permutedPipes,random);
+-            var a=new PassiveStepSolver(model).solve(original,.05,()->{});var b=new PassiveStepSolver(model).solve(new PassiveNetwork(shuffled,permutedPipes),.05,()->{});
++            var a=new TrBdf2StepSolver(model).solve(original,.05,()->{});var b=new TrBdf2StepSolver(model).solve(new PassiveNetwork(shuffled,permutedPipes),.05,()->{});
+             double before=0,after=0,beforeU=0,afterU=0,maximumPressureDifference=0;int component=water?com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK:com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN;
+             for(int i=0;i<6;i++) {
+                 int j=index.get(nodes.get(i).id());var ia=a.inventories().get(i);var ib=b.inventories().get(j);
+diff --git a/src/test/java/com/wormzjl/createcheme/science/fluid/network/HydraulicReferenceQualificationTest.java b/src/test/java/com/wormzjl/createcheme/science/fluid/network/HydraulicReferenceQualificationTest.java
+index cd4a4ee..41cf228 100644
+--- a/src/test/java/com/wormzjl/createcheme/science/fluid/network/HydraulicReferenceQualificationTest.java
++++ b/src/test/java/com/wormzjl/createcheme/science/fluid/network/HydraulicReferenceQualificationTest.java
+@@ -50,7 +50,7 @@ class HydraulicReferenceQualificationTest {
+                         var drain = new PassiveNetwork.Reservoir(2, 0, sink, PassiveNetwork.NodeKind.VOID);
+                         var graph = new PassiveNetwork(reverse ? List.of(drain, generator) : List.of(generator, drain),
+                                 List.of(new PassiveNetwork.Pipe(3, 0, 1, geometry)));
+-                        var actual = new PassiveStepSolver(model).solve(graph, 5, () -> {});
++                        var actual = new TrBdf2StepSolver(model).solve(graph, 5, () -> {});
+                         double expected = reverse ? -expectedFlow : expectedFlow;
+                         assertEquals(expected, actual.massFlows()[0], 1e-10 + 1e-4 * expectedFlow);
+                         assertEquals(FlowControl.Mode.PASSIVE, actual.modes().getFirst());
+diff --git a/src/test/java/com/wormzjl/createcheme/science/fluid/network/NetworkRegimeTest.java b/src/test/java/com/wormzjl/createcheme/science/fluid/network/NetworkRegimeTest.java
+index 6fbee1b..e240c21 100644
+--- a/src/test/java/com/wormzjl/createcheme/science/fluid/network/NetworkRegimeTest.java
++++ b/src/test/java/com/wormzjl/createcheme/science/fluid/network/NetworkRegimeTest.java
+@@ -29,7 +29,7 @@ class NetworkRegimeTest {
+         var graph=new PassiveNetwork(List.of(gas(1,350,220000,0,PassiveNetwork.NodeKind.GENERATOR),gas(2,400,210000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.GENERATOR),
+                 gas(3,350,195000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.JUNCTION),gas(4,350,180000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(
+                 new PassiveNetwork.Pipe(1,0,2,geometry),new PassiveNetwork.Pipe(2,1,2,geometry),new PassiveNetwork.Pipe(3,2,3,geometry)));
+-        var result=new PassiveStepSolver(model).solve(graph,1,()->{});var q=result.massFlows();assertTrue(q[0]>0&&q[1]>0);
++        var result=new TrBdf2StepSolver(model).solve(graph,1,()->{});var q=result.massFlows();assertTrue(q[0]>0&&q[1]>0);
+         assertEquals(q[0]+q[1],q[2],1e-9);var mixture=result.states().get(2);var n=PhaseLayout.totalAmounts(mixture);
+         assertEquals(q[0]/q[2],n[0]*model.hydrocarbon.molecularWeight(0)/mixture.mass(),1e-8);
+         double h=0;for(int i=0;i<2;i++){var feed=graph.reservoirs().get(i).state();h+=q[i]*feed.enthalpy()/feed.mass();}
+@@ -39,11 +39,11 @@ class NetworkRegimeTest {
+         var reversed=new PassiveNetwork(List.of(gas(1,350,220000,0,PassiveNetwork.NodeKind.GENERATOR),gas(2,400,170000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR),
+                 gas(3,350,195000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.JUNCTION),gas(4,350,180000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(
+                 new PassiveNetwork.Pipe(1,0,2,geometry),new PassiveNetwork.Pipe(2,1,2,geometry),new PassiveNetwork.Pipe(3,2,3,geometry)));
+-        var back=new PassiveStepSolver(model).solve(reversed,.1,()->{});assertTrue(back.massFlows()[1]<0);
++        var back=new TrBdf2StepSolver(model).solve(reversed,.1,()->{});assertTrue(back.massFlows()[1]<0);
+         assertEquals(0,PhaseLayout.totalAmounts(back.states().get(2))[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN],1e-9);assertTrue(back.inventories().get(1).moles()[0]>0);
+         var serial=new PassiveNetwork(List.of(gas(1,350,250000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.GENERATOR),gas(2,350,200000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.JUNCTION),gas(3,350,101325,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(
+                 new PassiveNetwork.Pipe(1,0,1,geometry,new FlowControl.PressureValve(200000)),new PassiveNetwork.Pipe(2,1,2,geometry,new FlowControl.PressureValve(180000))));
+-        var result=new PassiveStepSolver(model).solve(serial,1,()->{});assertTrue(result.massFlows()[0]>0);assertEquals(result.massFlows()[0],result.massFlows()[1],1e-9);
++        var result=new TrBdf2StepSolver(model).solve(serial,1,()->{});assertTrue(result.massFlows()[0]>0);assertEquals(result.massFlows()[0],result.massFlows()[1],1e-9);
+         assertEquals(FlowControl.Mode.VALVE_OPEN,result.modes().getFirst());
+     }
+     @Test void aRejectedTrialRestartsFromTheSameConservedStateAtTheSmallerStep() {
+@@ -60,7 +60,7 @@ class NetworkRegimeTest {
+         double setting=500000*model.pumpReferenceDensity()/(source.state().mass()/source.state().volume());
+         for(double p:new double[]{1.49e6,1.51e6}) {
+             var graph=new PassiveNetwork(List.of(source,gas(2,350,p,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(new PassiveNetwork.Pipe(1,0,1,geometry,new FlowControl.Pump(.001,setting,1))));
+-            var result=new PassiveStepSolver(model).solve(graph,1,()->{});
++            var result=new TrBdf2StepSolver(model).solve(graph,1,()->{});
+             if(p<1.5e6)assertTrue(result.massFlows()[0]>0);else assertEquals(0,result.massFlows()[0],1e-9);
+         }
+         var recycle=new PassiveNetwork(List.of(gas(1,350,150000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR),gas(2,350,150000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR)),List.of(
+diff --git a/src/test/java/com/wormzjl/createcheme/science/fluid/network/ScheduledTransferEstimatorTest.java b/src/test/java/com/wormzjl/createcheme/science/fluid/network/ScheduledTransferEstimatorTest.java
+index 09ccff1..8c0152b 100644
+--- a/src/test/java/com/wormzjl/createcheme/science/fluid/network/ScheduledTransferEstimatorTest.java
++++ b/src/test/java/com/wormzjl/createcheme/science/fluid/network/ScheduledTransferEstimatorTest.java
+@@ -25,7 +25,7 @@ class ScheduledTransferEstimatorTest {
+     }
+     private void compare(PassiveNetwork graph) {
+         var actual=new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
+-        var reference=new PassiveIntervalSolver(model).solve(graph,5,new PassiveIntervalSolver.Settings(.005,.05,.0001,4096),()->{});
++        var reference=new PassiveIntervalSolver(model,PassiveIntervalSolver.ErrorControl.STEP_DOUBLING).solve(graph,5,new PassiveIntervalSolver.Settings(.005,.05,.0001,4096),()->{});
+         for(int i=0;i<graph.reservoirs().size();i++) {
+             var a=actual.graph().reservoirs().get(i).state();var r=reference.graph().reservoirs().get(i).state();
+             assertEquals(r.pressure(),a.pressure(),.001*r.pressure());assertEquals(r.temperature(),a.temperature(),.05);assertEquals(r.mass(),a.mass(),.001*r.mass());
+diff --git a/src/test/java/com/wormzjl/createcheme/science/fluid/network/TrBdf2Test.java b/src/test/java/com/wormzjl/createcheme/science/fluid/network/TrBdf2Test.java
+index feec580..1ee4bd6 100644
+--- a/src/test/java/com/wormzjl/createcheme/science/fluid/network/TrBdf2Test.java
++++ b/src/test/java/com/wormzjl/createcheme/science/fluid/network/TrBdf2Test.java
+@@ -10,13 +10,13 @@ class TrBdf2Test {
+     @Test void embeddedControlAgreesWithStepDoublingAndFixedStepsShowSecondOrder() {
+         var graph=graph(gas(1,180000,0),gas(2,101325,0),new FlowControl.Passive());
+         var embedded=new PassiveIntervalSolver(model).solve(graph,.2,PassiveIntervalSolver.Settings.defaults(),()->{});
+-        var doubled=new PassiveIntervalSolver(model).solve(graph,.2,PassiveIntervalSolver.Settings.defaults(),()->{});
++        var doubled=new PassiveIntervalSolver(model,PassiveIntervalSolver.ErrorControl.STEP_DOUBLING).solve(graph,.2,PassiveIntervalSolver.Settings.defaults(),()->{});
+         assertEquals(doubled.averageMassFlows()[0],embedded.averageMassFlows()[0],.005*Math.abs(doubled.averageMassFlows()[0]));
+         double reference=integratedMass(graph,256),coarse=Math.abs(integratedMass(graph,4)-reference),fine=Math.abs(integratedMass(graph,8)-reference);
+         assertTrue(coarse/fine>3,"Observed error ratio="+coarse/fine);
+     }
+     private double integratedMass(PassiveNetwork initial,int steps) {
+-        var graph=initial;var solver=new PassiveStepSolver(model);double mass=0;
++        var graph=initial;var solver=new TrBdf2StepSolver(model);double mass=0;
+         for(int i=0;i<steps;i++){var result=solver.solve(graph,.2/steps,()->{});graph=PassiveIntervalSolver.replace(graph,result);mass+=result.massFlows()[0]*.2/steps;}
+         return mass;
+     }
+@@ -44,7 +44,7 @@ class TrBdf2Test {
+         // A pump's setting is its rise for water (F4, P1): the setting that is 500 kPa on this nitrogen, as before.
+         var suction=gas(1,101325,0);
+         var graph=graph(suction,gas(2,200000,10),new FlowControl.Pump(.001,500000*model.pumpReferenceDensity()/(suction.state().mass()/suction.state().volume()),.8));
+-        var result=new PassiveStepSolver(model).solve(graph,.2,()->{});
++        var result=new TrBdf2StepSolver(model).solve(graph,.2,()->{});
+         assertTrue(result.pumpWorkJoule()>0);double change=0;
+         for(int i=0;i<2;i++){var old=graph.reservoirs().get(i).inventory();var next=result.inventories().get(i);double dm=(next.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]-old.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN])*model.hydrocarbon.molecularWeight(com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN);change+=next.internalEnergy()-old.internalEnergy()+dm*graph.reservoirs().get(i).elevation()*PassiveStepSolver.GRAVITY;}
+         assertEquals(result.pumpWorkJoule(),change,1e-5);assertTrue(result.boundaries().isEmpty());
+@@ -52,7 +52,7 @@ class TrBdf2Test {
+     @Test void sourceAndVoidKeepSeparateNonzeroLedgersDespiteZeroNetTransfer() {
+         var source=new PassiveNetwork.Reservoir(1,0,gas(1,200000,0).state(),PassiveNetwork.NodeKind.GENERATOR);
+         var sink=new PassiveNetwork.Reservoir(2,0,gas(2,101325,0).state(),PassiveNetwork.NodeKind.VOID);
+-        var result=new PassiveStepSolver(model).solve(graph(source,sink,new FlowControl.Passive()),2,()->{});
++        var result=new TrBdf2StepSolver(model).solve(graph(source,sink,new FlowControl.Passive()),2,()->{});
+         double sourceMoles=0,sinkMoles=0;for(var entry:result.boundaries()){if(entry.nodeId()==1)sourceMoles+=entry.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN];else sinkMoles+=entry.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN];}
+         assertTrue(sourceMoles>0);assertEquals(sourceMoles,-sinkMoles,1e-9);
+         assertEquals(result.massFlows()[0]*2,sourceMoles*model.hydrocarbon.molecularWeight(com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN),1e-9);

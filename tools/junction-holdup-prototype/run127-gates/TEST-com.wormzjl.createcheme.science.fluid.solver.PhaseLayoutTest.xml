@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.solver.PhaseLayoutTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-26T05:19:44.999Z" hostname="WORMZ-PC" time="0.006">
+  <properties/>
+  <testcase name="coupledVolumeEnergyAndPhaseEquationsRecoverIndependentTpTargets()" classname="com.wormzjl.createcheme.science.fluid.solver.PhaseLayoutTest" time="0.002"/>
+  <testcase name="sparseTwoPhaseEncodingKeepsPhasePropertySnapshotsIsolated()" classname="com.wormzjl.createcheme.science.fluid.solver.PhaseLayoutTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
