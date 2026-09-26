@@ -176,8 +176,8 @@ public final class FluidServerBenchmark {
             for(var pool:java.lang.management.ManagementFactory.getMemoryPoolMXBeans())if(pool.getType()==java.lang.management.MemoryType.HEAP&&pool.getCollectionUsage()!=null)used+=pool.getCollectionUsage().getUsed();
             return used;
         }
-        /** Rest and steady-flow certificates: the replayed and identity-advanced spans inside the window, never solves. */
-        long replayedIntervals,restedIntervals;double replayedSeconds,restedSeconds;
+        /** Certificates: the replayed spans (the identity at drift 0 included) inside the window, never solves. */
+        long replayedIntervals;double replayedSeconds;
         /**
          * The reference state for comparing a run with certificates against one without: every island's
          * inventory and its own boundary ledger (components, then energy with pump work) at island tick
@@ -251,8 +251,9 @@ public final class FluidServerBenchmark {
             var awake=snapshots.stream().filter(s->s.certificate().isEmpty()).toList();
             var debts=awake.stream().map(s->(s.clock().onlineTick()-s.clock().committedTick())/20.0).toList();
             long eligible=awake.stream().filter(s->s.clock().onlineTick()-s.clock().committedTick()>=s.clock().cadenceTicks()).count();
-            long rest=snapshots.stream().filter(s->s.certificate().map(c->c.kind()==IslandCertificate.Kind.REST).orElse(false)).count();
-            long steady=snapshots.stream().filter(s->s.certificate().map(c->c.kind()==IslandCertificate.Kind.STEADY).orElse(false)).count();
+            // One certificate kind: "rest" counts the certified islands on which nothing moves (drift 0, no flow).
+            long rest=snapshots.stream().filter(s->s.certificate().map(c->c.drift()==0&&c.largestFlow()==0).orElse(false)).count();
+            long steady=snapshots.stream().filter(s->s.certificate().map(c->!(c.drift()==0&&c.largestFlow()==0)).orElse(false)).count();
             var sample=new LinkedHashMap<String,Object>();
             sample.put("onlineTick",world.onlineTick());sample.put("activeWorkers",diagnostics.activeWorkers());sample.put("workerLimit",diagnostics.workerCount());
             sample.put("outstandingJobs",diagnostics.outstandingJobs());sample.put("readyJobs",diagnostics.readyJobs());sample.put("pendingCompletions",diagnostics.pendingCompletions());
@@ -303,7 +304,7 @@ public final class FluidServerBenchmark {
                 // A replayed or identity-advanced span is accounted like any other advance, but it is not a solve.
                 if(timing.advance()!=IslandCoordinator.Advance.SOLVED) {
                     if(measuring()){double seconds=(timing.endTick()-timing.startTick())/20.0;
-                        if(timing.advance()==IslandCoordinator.Advance.REPLAYED){replayedIntervals++;replayedSeconds+=seconds;}else{restedIntervals++;restedSeconds+=seconds;}}
+                        replayedIntervals++;replayedSeconds+=seconds;}
                     continue;
                 }
                 var ready=eligibleTickStarts.get(timing.endTick());Double totalLatency=ready==null?null:(System.nanoTime()-ready)/1e6;
@@ -536,13 +537,12 @@ public final class FluidServerBenchmark {
         report.put("runtimeCounters",runtimeCounters(r,(now-r.measuredStarted)/1e9));
         if(r.viewers)report.put("presentation",presentation(r));
         var certified=new LinkedHashMap<String,Object>();
-        certified.put("note","Rest and steady-flow certificates. Full solves are accepted solved intervals published in the window; replayed and identity-advanced spans are materialisations of STEADY and REST certificates, accounted in the boundary ledger but never solved. The reference state is every island's inventory at one mid-window island tick and the boundary ledger up to it, for comparing a run with certificates against one without.");
+        certified.put("note","Rest and steady-flow certificates. Full solves are accepted solved intervals published in the window; replayed spans are materialisations of certificates (the identity when nothing moves), accounted in the boundary ledger but never solved. The reference state is every island's inventory at one mid-window island tick and the boundary ledger up to it, for comparing a run with certificates against one without.");
         certified.put("restDetection",certificates.enabled());certified.put("stationaryTolerance",certificates.stationaryTolerance());certified.put("inventoryBudget",certificates.inventoryBudget());
         certified.put("maximumIntervals",certificates.maximumIntervals());certified.put("confirmIntervals",certificates.confirmIntervals());certified.put("recheckSeconds",certificates.recheckSeconds());
         certified.put("fullSolves",r.samples.stream().filter(s->s.timing().accepted()).count());
         certified.put("replayedIntervals",r.replayedIntervals);certified.put("replayedSeconds",r.replayedSeconds);
-        certified.put("restedIntervals",r.restedIntervals);certified.put("identityAdvancedSeconds",r.restedSeconds);
-        var kinds=new TreeMap<String,Long>();for(var island:finalIslands)kinds.merge(island.certificate().map(c->c.kind().name()).orElse("AWAKE"),1L,Long::sum);
+        var kinds=new TreeMap<String,Long>();for(var island:finalIslands)kinds.merge(island.certificate().map(c->c.drift()==0&&c.largestFlow()==0?"IDENTITY":"MOVING").orElse("AWAKE"),1L,Long::sum);
         certified.put("finalIslandKinds",kinds);
         // Why the awake islands did not certify at the end: reasons with their numbers masked, and a few verbatim.
         var refusals=new TreeMap<String,Long>();var examples=new ArrayList<String>();
@@ -556,7 +556,7 @@ public final class FluidServerBenchmark {
         certified.put("certifiedIslandsPerSecond",r.stressSamples.stream().map(s->s.get("certifiedIslands")).toList());
         // What each certificate says, without the saved interval it carries for a checkpoint.
         certified.put("finalCertificates",finalIslands.stream().filter(s->s.certificate().isPresent()).collect(java.util.stream.Collectors.toMap(s->s.id(),s->{var c=s.certificate().orElseThrow();var v=new LinkedHashMap<String,Object>();
-            v.put("kind",c.kind());v.put("sinceTick",c.sinceTick());v.put("baseTick",c.baseTick());v.put("horizonTick",c.horizonTick());v.put("largestFlow",c.largestFlow());return v;},(a,b)->a,TreeMap::new)));
+            v.put("drift",c.drift());v.put("sinceTick",c.sinceTick());v.put("baseTick",c.baseTick());v.put("horizonTick",c.horizonTick());v.put("largestFlow",c.largestFlow());return v;},(a,b)->a,TreeMap::new)));
         if(r.stress){var reference=new LinkedHashMap<String,Object>();reference.put("islandTick",r.referenceTick);reference.put("derivation","First island tick on the 100-tick grid at or after the middle of the configured window: warm-up "+r.warmupTicks/20+" s plus half of "+r.stressMeasurementNanos/1_000_000_000L+" s");reference.put("materialised",r.referenceMaterialised);
             reference.put("islandsExact",r.referenceBefore.entrySet().stream().filter(e->e.getValue().tick()==r.referenceTick).count());
             reference.put("before",r.referenceBefore);reference.put("after",r.referenceAfter);certified.put("reference",reference);}
@@ -603,7 +603,7 @@ public final class FluidServerBenchmark {
             double advancedSeconds=r.samples.stream().filter(s->s.timing().accepted()).mapToDouble(s->(s.timing().endTick()-s.timing().startTick())/20.0).sum();
             report.put("equivalentFiveSecondIntervalsPerSecond",advancedSeconds/(5*seconds));
             report.put("aggregateRealtimeRatio",advancedSeconds/(fixture.checkpoint.islands().size()*seconds));
-            report.put("aggregateRealtimeRatioIncludingCertified",(advancedSeconds+r.replayedSeconds+r.restedSeconds)/(fixture.checkpoint.islands().size()*seconds));
+            report.put("aggregateRealtimeRatioIncludingCertified",(advancedSeconds+r.replayedSeconds)/(fixture.checkpoint.islands().size()*seconds));
             report.put("workerCpuOccupancyNote","Lower bound from outcomes retained before their deadline; timed-out outcomes can omit CPU. Use the JFR CPU-load trace for process utilization, including rejected work.");
             report.put("meanWorkerCpuOccupancy",r.samples.stream().mapToLong(s->Math.max(0,s.timing().workerCpuNanos())).sum()/(seconds*1e9*ProcessSolveServices.diagnostics(r.server).workerCount()));
             report.put("meanReportedActiveWorkers",r.stressSamples.stream().mapToInt(s->((Number)s.get("activeWorkers")).intValue()).average().orElse(0));

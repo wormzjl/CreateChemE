@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
- * Where checkpoint format 4 lives, and what a save writes. The owner's decision (F3): per-island storage with the
+ * Where checkpoint format 5 lives, and what a save writes. The owner's decision (F3): per-island storage with the
  * mod's own dirty tracking, no world-wide size bound, a small core record in the world's saved data.
  *
  * <p><b>Layout.</b> The core record ({@link FluidCheckpointCodec#coreTag}) is the world's saved data file
@@ -230,9 +230,9 @@ public final class FluidCheckpointStore {
         for(var s:snapshots) {
             var ref=refs.get(s.id());islandBytes+=ref.unit.length();var persisted=s.certificate().flatMap(IslandCoordinator.Certified::saved);var clock=s.clock();
             rows.add(persisted.map(saved->new FluidCheckpointCodec.IndexRow(s.id(),s.revision(),ref.generation,clock.onlineTick(),clock.committedTick(),clock.retryAtTick(),clock.cadenceTicks(),
-                    saved.baseTick(),saved.kind().ordinal()+1,saved.sinceTick(),saved.interval().startTick(),saved.horizonTick(),ref.unit))
+                    saved.baseTick(),saved.sinceTick(),saved.interval().startTick(),saved.horizonTick(),ref.unit))
                     .orElseGet(()->new FluidCheckpointCodec.IndexRow(s.id(),s.revision(),ref.generation,clock.onlineTick(),clock.committedTick(),clock.retryAtTick(),clock.cadenceTicks(),
-                    FluidCheckpointCodec.AWAKE,0,0,0,0,ref.unit)));
+                    FluidCheckpointCodec.AWAKE,0,0,0,ref.unit)));
         }
         if(topologyRef!=null)topologyBytes=topologyRef.unit.length();
         byte[] ledger=FluidCheckpointCodec.ledger(checkpoint);

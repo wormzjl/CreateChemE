@@ -59,9 +59,9 @@ public final class FluidCheckpointGameTests {
                 var entry=loaded.checkpoint().islands().stream().filter(e->e.snapshot().graph().reservoirs().stream().anyMatch(n->n.id()==device)).findFirst().orElseThrow();
                 saved[0]=entry.snapshot();var live=stored.get();status[0]=live.status();
                 var certificate=saved[0].certificate().orElseThrow();
-                helper.assertTrue(certificate.kind()==IslandCertificate.Kind.REST&&certificate.saved().isPresent(),"The saved tank is not a resting certificate: "+certificate);
+                helper.assertTrue(certificate.drift()==0&&certificate.largestFlow()==0&&certificate.saved().isPresent(),"The saved tank is not a resting certificate: "+certificate);
                 helper.assertTrue(certificate.sinceTick()==live.certificate().orElseThrow().sinceTick(),"The since tick did not round-trip");
-                helper.assertTrue(saved[0].status().equals(status[0])&&status[0].startsWith("RESTING: no flow since "+String.format(Locale.ROOT,"%.1f",certificate.sinceTick()/20.0)+" s"),"Saved status: "+saved[0].status());
+                helper.assertTrue(saved[0].status().equals(status[0])&&status[0].startsWith("STEADY: no flow since "+String.format(Locale.ROOT,"%.1f",certificate.sinceTick()/20.0)+" s"),"Saved status: "+saved[0].status());
                 // The restarted server's coordinator: its dispatcher fails the test if the tank is ever handed to a worker.
                 var dispatcher=new IslandCoordinator.Dispatcher() {
                     public int availableWorkers(){return 64;}
@@ -85,7 +85,7 @@ public final class FluidCheckpointGameTests {
             helper.assertTrue(submitted[0]==0&&restarted[0].pendingCount()==0,"The restarted tank was solved: "+submitted[0]+" submissions");
             helper.assertTrue(read.clock().committedTick()==read.clock().onlineTick()&&read.clock().committedTick()>=saved[0].clock().committedTick()+150,"Materialisation did not advance the restarted tank to now: "+read.clock()+" from "+saved[0].clock());
             helper.assertTrue(read.certificate().orElseThrow().sinceTick()==saved[0].certificate().orElseThrow().sinceTick()&&read.status().equals(status[0]),"The status line moved: "+read.status());
-            helper.assertTrue(restarted[0].metrics(id).orElseThrow().advance()==IslandCoordinator.Advance.RESTED,"Not advanced by the identity");
+            helper.assertTrue(restarted[0].metrics(id).orElseThrow().advance()==IslandCoordinator.Advance.REPLAYED,"Not advanced by the certificate");
             for(int n=0;n<read.graph().reservoirs().size();n++)helper.assertTrue(read.graph().reservoirs().get(n).inventory().equals(saved[0].graph().reservoirs().get(n).inventory()),"Rest changed the inventory");
             restarted[0].stop();restarted[0]=null;
             helper.assertTrue(stored.get().status().equals(status[0]),"The live tank's status line changed: "+stored.get().status());

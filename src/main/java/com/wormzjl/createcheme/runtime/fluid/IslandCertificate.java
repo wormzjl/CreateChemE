@@ -10,8 +10,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
- * A rest or steady-flow certificate (plan section 3.3): the evidence that an island's interval map is the
- * identity (REST) or stationary (STEADY), and the arithmetic that advances the island without solving.
+ * A certificate (plan section 3.3; one kind since the backward-Euler basis, BE_INTEGRATOR_PLAN.md section 4): the
+ * evidence that an island's interval map is stationary, carrying its per-interval change {@link #drift() d} (zero
+ * for the identity map of an island at rest), and the arithmetic that advances the island without solving.
  * A checkpoint keeps it as a {@link Saved} record with its validity {@link Signature} (plan section 3.5); a
  * restart restores it while the signature still holds, and otherwise discards it and keeps the inventory.
  *
@@ -20,10 +21,10 @@ import java.util.*;
  * internal energy, and the boundary transfers, pump work and pipe history of the replayed span are the recorded
  * ones scaled by the replayed fraction. States are the base states. Conservation is exact by construction
  * because the recorded interval conserved and the scaling is linear. Solids never move under replay: the entry
- * evidence requires unchanged node solids, and a STEADY island carries no solids and has no filter.
+ * evidence requires unchanged node solids, and an island on which anything moves carries no solids in transport and
+ * has no filter.
  */
 public final class IslandCertificate {
-    public enum Kind {REST,STEADY}
 
     /** One accepted solved interval, with the graph it started from. */
     public record Interval(long startTick,long endTick,PassiveNetwork before,PassiveIntervalSolver.Result result) {
@@ -249,27 +250,27 @@ public final class IslandCertificate {
     /** Why the later interval is not a stationary repeat of the earlier one at {@code tolerance}, or null when it is; see {@link Stationarity}. */
     static String stationaryRefusal(Summary a,Summary b,double tolerance){return stationarity(a,b).refusal(tolerance);}
 
-    private final Kind kind;
     private final long baseTick,horizonTick;
     private final Summary summary;
-    private IslandCertificate(Kind kind,Summary summary,long horizonTick){this.kind=kind;this.summary=summary;baseTick=summary.endTick;this.horizonTick=horizonTick;}
+    private IslandCertificate(Summary summary,long horizonTick){this.summary=summary;baseTick=summary.endTick;this.horizonTick=horizonTick;}
 
     /**
-     * The certificate the last interval supports, or empty with the reason: REST when every change, flow, gross
-     * pipe transfer, boundary transfer and pump work of the interval is exactly zero; none when the averages are
-     * zero but something still moved back and forth (the average hides it); otherwise STEADY, which also needs no solids in
-     * transport and no filter on the island, and a horizon of at least one interval: {@code min(K_max,
-     * floor(budget / d))} intervals, d the largest relative per-interval change of any finite node component,
-     * internal energy (against {@link #energyScale}), temperature or pressure, cut short before any
-     * extrapolated component could reach zero. A constant boundary transfer cannot change
-     * sign under linear replay, so no further limit is needed for fixed nodes.
+     * The certificate the last interval supports, or empty with the reason. When every change, flow, gross pipe
+     * transfer, boundary transfer and pump work of the interval is exactly zero (the identity map, d = 0) its horizon
+     * is the policy's recheck period, or {@link Long#MAX_VALUE} without one. None when the averages are zero but
+     * something still moved back and forth (the average hides it). Otherwise it also needs no solids in transport and
+     * no filter on the island, and a horizon of at least one interval: {@code min(K_max, floor(budget / d))}
+     * intervals, d the largest relative per-interval change of any finite node component, internal energy (against
+     * {@link #energyScale}), temperature or pressure, cut short before any extrapolated component could reach zero.
+     * A constant boundary transfer cannot change sign under linear replay, so no further limit is needed for fixed
+     * nodes.
      */
     static Result issue(Summary last,CertificatePolicy policy) {
         if(!last.fullAcceptance||!last.transitionFree||!last.closuresUnchanged||!last.solidsUnchanged||!last.phasesUnchanged)return Result.refused("the interval changed a closure, a cake, a phase or node solids");
         if(last.grossWithoutNet)return Result.refused("gross flow with a zero average is not rest");
         if(last.exactZero) {
             long horizon=policy.recheckSeconds()==0?Long.MAX_VALUE:Math.addExact(last.endTick,20L*policy.recheckSeconds());
-            return Result.of(new IslandCertificate(Kind.REST,last,horizon));
+            return Result.of(new IslandCertificate(last,horizon));
         }
         if(last.solidsInTransport)return Result.refused("solids in transport");
         if(last.hasFilter)return Result.refused("a filter on the island");
@@ -283,7 +284,7 @@ public final class IslandCertificate {
         if(relative>0)intervals=Math.min(intervals,(long)Math.floor(policy.inventoryBudget()/relative));
         intervals=Math.min(intervals,zeroLimit);
         if(intervals<1)return Result.refused("drift of "+relative+" per interval exceeds the inventory budget");
-        return Result.of(new IslandCertificate(Kind.STEADY,last,Math.addExact(last.endTick,Math.multiplyExact(intervals,last.durationTicks))));
+        return Result.of(new IslandCertificate(last,Math.addExact(last.endTick,Math.multiplyExact(intervals,last.durationTicks))));
     }
     /** A certificate, or the reason there is none. */
     record Result(IslandCertificate certificate,String refusal) {
@@ -367,18 +368,18 @@ public final class IslandCertificate {
     }
 
     /**
-     * A certificate as a checkpoint keeps it: its kind, the tick its island first certified (a renewal keeps it), its
-     * horizon, the solved interval it replays together with the graph that interval started from, and the signature it
-     * was issued under. The interval's end is the certificate's base tick; its result's graph is the base graph.
+     * A certificate as a checkpoint keeps it: the tick its island first certified (a renewal keeps it), its horizon,
+     * the solved interval it replays together with the graph that interval started from, and the signature it was
+     * issued under. The interval's end is the certificate's base tick; its result's graph is the base graph.
      */
-    public record Saved(Kind kind,long sinceTick,long horizonTick,Interval interval,Signature signature) {
+    public record Saved(long sinceTick,long horizonTick,Interval interval,Signature signature) {
         public Saved {
-            Objects.requireNonNull(kind);Objects.requireNonNull(interval);Objects.requireNonNull(signature);
+            Objects.requireNonNull(interval);Objects.requireNonNull(signature);
             if(sinceTick<0||sinceTick>interval.endTick()||horizonTick<=interval.endTick())
                 throw new IllegalArgumentException("Saved certificate needs 0 <= since <= base < horizon: since "+sinceTick+", base "+interval.endTick()+", horizon "+horizonTick);
         }
         public long baseTick(){return interval.endTick();}
-        @Override public String toString(){return "Saved["+kind+", since "+sinceTick+", base "+baseTick()+", horizon "+horizonTick+", "+signature.graph().substring(0,12)+"]";}
+        @Override public String toString(){return "Saved[since "+sinceTick+", base "+baseTick()+", horizon "+horizonTick+", "+signature.graph().substring(0,12)+"]";}
     }
     /**
      * The replay arithmetic of a saved certificate, rebuilt from its interval without judging whether it still holds:
@@ -395,14 +396,14 @@ public final class IslandCertificate {
             for(double delta:summary.moles[n])if(!Double.isFinite(delta))throw new IllegalArgumentException("Saved certificate has a nonfinite component delta at node "+summary.after.reservoirs().get(n).id());
             if(!Double.isFinite(summary.energy[n]))throw new IllegalArgumentException("Saved certificate has a nonfinite energy delta at node "+summary.after.reservoirs().get(n).id());
         }
-        return new IslandCertificate(saved.kind(),summary,saved.horizonTick());
+        return new IslandCertificate(summary,saved.horizonTick());
     }
     /** A saved certificate judged for its island now: the certificate, or null with the reason it is discarded. */
     record Restored(IslandCertificate certificate,String discarded) {}
     /**
      * Whether a saved certificate still holds under the island's current model and policy: off when certificates are
-     * off, discarded when any part of its signature differs. A matching signature with a kind or horizon that the
-     * saved interval does not give under that same policy is inconsistent data, and the load is refused.
+     * off, discarded when any part of its signature differs. A matching signature with a horizon that the saved
+     * interval does not give under that same policy is inconsistent data, and the load is refused.
      */
     static Restored restore(Saved saved,FluidThermodynamics model,CertificatePolicy policy) {
         if(!policy.enabled())return new Restored(null,"certificates are off (restDetection=false)");
@@ -410,28 +411,32 @@ public final class IslandCertificate {
         if(difference!=null)return new Restored(null,"its "+difference+" changed");
         var rebuilt=rebuild(saved,model.molecularWeights());
         var issued=issue(rebuilt.summary,policy);
-        if(issued.certificate()==null||issued.certificate().kind!=saved.kind()||issued.certificate().horizonTick!=saved.horizonTick())
-            throw new IllegalArgumentException("Saved "+saved.kind()+" certificate with horizon "+saved.horizonTick()+" is not the certificate its interval gives under its own signature: "
-                    +(issued.certificate()==null?issued.refusal():issued.certificate().kind+" with horizon "+issued.certificate().horizonTick));
+        if(issued.certificate()==null||issued.certificate().horizonTick!=saved.horizonTick())
+            throw new IllegalArgumentException("Saved certificate with horizon "+saved.horizonTick()+" is not the certificate its interval gives under its own signature: "
+                    +(issued.certificate()==null?issued.refusal():"horizon "+issued.certificate().horizonTick));
         return new Restored(issued.certificate(),null);
     }
     /** The solved interval this certificate replays, with the graph it started from. */
     public Interval interval(){return summary.interval;}
 
-    public Kind kind(){return kind;}
+    /**
+     * The per-interval change d the horizon was set from ({@link Summary#drift}): zero for the identity map, where
+     * every change, flow and transfer of the interval is exactly zero.
+     */
+    public double drift(){return summary.exactZero?0:summary.drift();}
     /** The committed tick the certificate was issued at: the end of its qualifying interval. */
     public long baseTick(){return baseTick;}
-    /** The last tick replay may reach; {@link Long#MAX_VALUE} for a REST certificate that is never rechecked. */
+    /** The last tick replay may reach; {@link Long#MAX_VALUE} for an identity map that is never rechecked. */
     public long horizonTick(){return horizonTick;}
     public int intervalTicks(){return summary.durationTicks;}
     Summary summary(){return summary;}
-    /** The island's largest pipe flow in kg/s, which a STEADY certificate keeps replaying. */
+    /** The island's largest pipe flow in kg/s, which the certificate keeps replaying (zero at rest). */
     public double largestFlow(){return summary.largestFlow();}
 
     /** The island at tick t: base inventories plus the replayed fraction of the recorded change, base states. */
     PassiveNetwork graphAt(long tick) {
         if(tick<baseTick||tick>horizonTick)throw new IllegalArgumentException("Replay outside the certificate window");
-        var base=summary.after;if(kind==Kind.REST||tick==baseTick)return base;
+        var base=summary.after;if(summary.exactZero||tick==baseTick)return base;
         double f=(tick-baseTick)/(double)summary.durationTicks;var nodes=new ArrayList<PassiveNetwork.Reservoir>(base.reservoirs().size());
         for(int n=0;n<base.reservoirs().size();n++) {
             var node=base.reservoirs().get(n);

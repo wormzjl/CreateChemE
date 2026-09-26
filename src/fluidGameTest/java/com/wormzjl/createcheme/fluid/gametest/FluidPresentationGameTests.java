@@ -176,7 +176,7 @@ public final class FluidPresentationGameTests {
         });
     }
 
-    /** RESTING and STEADY status lines reach an open menu with its island's bucket once the island certifies. */
+    /** The certificate's no-flow and replaying status lines reach an open menu with its island's bucket once the island certifies. */
     @GameTest(template="empty",timeoutTicks=12000,batch="fluid-presentation-status")
     public static void aCertifiedIslandsStatusLineArrivesWithItsBucket(GameTestHelper helper) {
         var level=helper.getLevel();var world=FluidWorldAuthority.find(level.getServer()).orElseThrow();
@@ -200,9 +200,9 @@ public final class FluidPresentationGameTests {
         boolean[] removed={false};var lineIds=line.stream().mapToLong(p->identity(helper,p)).toArray();
         helper.succeedWhen(()->{
             if(removed[0]){assertCleaned(helper,world,tankId);assertCleaned(helper,world,lineIds);return;}
-            var resting=world.deliveries(rest).stream().filter(d->d.status().startsWith("RESTING: no flow since")).findFirst();
+            var resting=world.deliveries(rest).stream().filter(d->d.status().startsWith("STEADY: no flow since")).findFirst();
             var replaying=world.deliveries(steady).stream().filter(d->d.status().startsWith("STEADY: replaying")&&d.status().contains("kg/s since")&&d.status().contains(", next check at")).findFirst();
-            helper.assertTrue(resting.isPresent(),"Waiting for RESTING on the lone tank's menu: "+world.deliveries(rest).stream().map(FluidPresentation.Delivery::status).reduce((x,y)->y).orElse("none"));
+            helper.assertTrue(resting.isPresent(),"Waiting for no flow on the lone tank's menu: "+world.deliveries(rest).stream().map(FluidPresentation.Delivery::status).reduce((x,y)->y).orElse("none"));
             helper.assertTrue(replaying.isPresent(),"Waiting for STEADY on the line's menu: "+world.deliveries(steady).stream().map(FluidPresentation.Delivery::status).reduce((x,y)->y).orElse("none"));
             // A certified island's view is materialised to its bucket: no lag.
             helper.assertTrue(resting.get().viewCommittedTick()==resting.get().tick(),"The resting view lags: "+resting.get());

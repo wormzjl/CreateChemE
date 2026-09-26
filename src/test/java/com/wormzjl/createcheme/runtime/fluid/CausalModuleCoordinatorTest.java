@@ -263,12 +263,12 @@ class CausalModuleCoordinatorTest {
                 try {
                     var actual=certified(graphs(scenario.wet()),scenario.modules(),reads);actual.run(3_000);
                     var sample=FluidRuntimeDiagnostics.sample();
-                    System.out.printf(Locale.ROOT,"%s (reads %b): %d vs %d solves, certificates %d, wakes %d, rested ticks %d, materialisations %d%n",scenario.name(),reads,
-                            sample.get("solvesDispatched"),expected.commits,sample.get("certificatesIssued"),sample.get("certificateWakes"),sample.get("restedTicks"),sample.get("materialisations"));
+                    System.out.printf(Locale.ROOT,"%s (reads %b): %d vs %d solves, certificates %d, wakes %d, replayed ticks %d, materialisations %d%n",scenario.name(),reads,
+                            sample.get("solvesDispatched"),expected.commits,sample.get("certificatesIssued"),sample.get("certificateWakes"),sample.get("replayedTicks"),sample.get("materialisations"));
                     assertEquals(expected.outcome(),actual.outcome(),scenario.name()+" reads="+reads);
                     actual.assertConserved();
                     assertTrue(counted("certificatesIssued")>0,scenario.name()+": islands certified");
-                    assertTrue(counted("restedTicks")>0,scenario.name()+": certified time advanced without solving");
+                    assertTrue(counted("replayedTicks")>0,scenario.name()+": certified time advanced without solving");
                     assertTrue(counted("solvesDispatched")<expected.commits,scenario.name()+": fewer solves");
                 } finally {FluidRuntimeDiagnostics.ENABLED=false;FluidRuntimeDiagnostics.reset();}
             }

@@ -86,8 +86,8 @@ public final class FluidPropertyReloadGameTests {
         helper.startSequence().thenWaitUntil(()->helper.assertTrue(stored.get().certificate().isPresent(),"Waiting for the lone tank to certify"))
         .thenExecute(()->{
             var certified=stored.get();
-            helper.assertTrue(certified.certificate().orElseThrow().kind()==IslandCertificate.Kind.REST,"A lone tank rests exactly: "+certified.certificate());
-            helper.assertTrue(certified.status().startsWith("RESTING: no flow since"),"Status while certified: "+certified.status());
+            helper.assertTrue(certified.certificate().orElseThrow().drift()==0,"A lone tank rests exactly: "+certified.certificate());
+            helper.assertTrue(certified.status().startsWith("STEADY: no flow since"),"Status while certified: "+certified.status());
             try {
                 MaterialRuntime.publish(changed);ProcessSolveCoordinator.drainCompletedCalculations(server);
                 var s=stored.get();hold[0]=s.clock().onlineTick();held[0]=s;
@@ -148,7 +148,7 @@ public final class FluidPropertyReloadGameTests {
         helper.startSequence().thenWaitUntil(()->{
             for(long i=1;i<=3;i++)helper.assertTrue(coordinator.observe(i).certificate().isPresent(),"Waiting for island "+i+" to certify: "+coordinator.observe(i).status()+" / "+coordinator.certificationRefusal(i));
         }).thenExecute(()->{
-            for(long i=1;i<=3;i++)helper.assertTrue(coordinator.observe(i).certificate().orElseThrow().kind()==IslandCertificate.Kind.REST,"A dry tank rests exactly");
+            for(long i=1;i<=3;i++)helper.assertTrue(coordinator.observe(i).certificate().orElseThrow().drift()==0,"A dry tank rests exactly");
             held[0]=true;coordinator.suspendForPropertyChange("HELD: property data changed (module-coupled test)");
             for(int i=1;i<=3;i++){var s=coordinator.observe(i);frozen[i]=s.clock().committedTick();online[i]=s.clock().onlineTick();helper.assertTrue(s.status().startsWith("HELD: property data"),"Not held: "+s.status());}
             for(int m=0;m<2;m++)moduleTicks[m]=host.snapshots().get(m).committedTick();

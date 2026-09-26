@@ -330,7 +330,9 @@ class PresentationBucketTest {
     }
     /** A view of a certified island stops one tick short of a wake it has not acted on; the island's own deadline wakes it, at the same tick as without the view. */
     @Test void aPresentationReadStopsShortOfAWakeAndNeverWakesTheIsland() {
-        var policy=new CertificatePolicy(true,1e-9,1e-6,3,2,0);
+        // A 15 s recheck: the closed pair rests exactly (every job starts from its committed interval, review 8.9 (d)),
+        // and the view must meet a horizon the test can reach.
+        var policy=new CertificatePolicy(true,1e-9,1e-6,3,2,15);
         Rig plain=new Rig(policy),read=new Rig(policy);
         for(var rig:List.of(plain,read)){rig.register(1,closedPair());for(int i=0;i<40_000&&rig.coordinator.observe(1).certificate().isEmpty();i++)rig.tick();}
         assertEquals(plain.epoch[0],read.epoch[0]);var certificate=read.coordinator.observe(1).certificate().orElseThrow();
@@ -355,7 +357,7 @@ class PresentationBucketTest {
         var rig=new Rig(CertificatePolicy.defaults());rig.register(7,deadHeadedLine());
         var world=new World(rig).device(701,7);world.loadedBlocks.add(701L);world.presentation.deviceLoaded(701);
         for(int i=0;i<4_000&&rig.coordinator.observe(7).certificate().isEmpty();i++)world.tick();
-        assertEquals(IslandCertificate.Kind.REST,rig.coordinator.observe(7).certificate().orElseThrow().kind());
+        assertEquals(0.0,rig.coordinator.observe(7).certificate().orElseThrow().drift());
         world.run(100);
         countFromHere();world.run(10_000);
         for(var name:List.of("bucketFlushes","viewBuilds","devicePresentations","materialisations","islandVisits","solvesDispatched"))assertEquals(0,counter(name),name);
@@ -364,7 +366,7 @@ class PresentationBucketTest {
         assertEquals(100,counter("bucketFlushes"));assertEquals(100,menu.received.size());
         assertEquals(100,counter("materialisations"),"one materialisation of the resting island per bucket, for its menu");
         assertEquals(0,counter("solvesDispatched"));
-        assertTrue(menu.received.getLast().view().status().startsWith("RESTING: no flow since"),menu.received.getLast().view().status());
+        assertTrue(menu.received.getLast().view().status().startsWith("STEADY: no flow since"),menu.received.getLast().view().status());
         assertEquals(menu.received.getLast().tick(),menu.received.getLast().view().committedTick(),"the view reads the island materialised to its bucket");
     }
     /** A topology change moves a menu with its device to the replacement island's bucket. */

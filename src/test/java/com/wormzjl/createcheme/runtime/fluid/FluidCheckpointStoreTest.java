@@ -222,7 +222,7 @@ class FluidCheckpointStoreTest {
             assertEquals(a.certificate().isPresent(),b.certificate().isPresent(),what);
             if(a.certificate().isPresent()) {
                 var x=a.certificate().orElseThrow();var y=b.certificate().orElseThrow();
-                assertEquals(List.of(x.kind(),x.sinceTick(),x.baseTick(),x.horizonTick()),List.of(y.kind(),y.sinceTick(),y.baseTick(),y.horizonTick()),what);
+                assertEquals(List.of(x.drift(),x.sinceTick(),x.baseTick(),x.horizonTick()),List.of(y.drift(),y.sinceTick(),y.baseTick(),y.horizonTick()),what);
                 var s=x.saved().orElseThrow();var t=y.saved().orElseThrow();assertEquals(s.signature(),t.signature(),what);
                 assertInventories(s.interval().before(),t.interval().before(),what+" certified interval start");assertInventories(s.interval().result().graph(),t.interval().result().graph(),what+" base");
             }
@@ -415,10 +415,10 @@ class FluidCheckpointStoreTest {
             var r=saved.interval().result();
             var result=new PassiveIntervalSolver.Result(relabel.apply(r.graph()),r.advancedSeconds(),r.averageMassFlows(),r.acceptedSubsteps(),r.rejectedSubsteps(),r.pumpWorkJoule(),
                     r.boundaries().stream().map(b->new ConservativeTransport.BoundaryTransfer(node,b.moles(),b.totalEnergyJoule(),b.solids(),b.solidDirection())).toList(),r.rejectionReasons(),r.endpointModes(),r.endpointHeads(),r.acceptance(),r.pipeTransfers());
-            var copy=new IslandCertificate.Saved(saved.kind(),saved.sinceTick(),saved.horizonTick(),new IslandCertificate.Interval(saved.interval().startTick(),saved.interval().endTick(),relabel.apply(saved.interval().before()),result),
+            var copy=new IslandCertificate.Saved(saved.sinceTick(),saved.horizonTick(),new IslandCertificate.Interval(saved.interval().startTick(),saved.interval().endTick(),relabel.apply(saved.interval().before()),result),
                     IslandCertificate.Signature.of(model,policy,result.graph()));
             snapshots.add(new IslandCoordinator.Snapshot(id,0,relabel.apply(t.graph()),t.clock(),t.allowance(),t.anchor().map(a->new ApproximationAnchor(a.propertyRevision(),relabel.apply(a.graph()),a.modes())),Optional.of(result),t.status(),Map.of(),
-                    Optional.of(new IslandCoordinator.Certified(certified.kind(),certified.sinceTick(),certified.baseTick(),certified.horizonTick(),certified.largestFlow(),Optional.of(copy)))));
+                    Optional.of(new IslandCoordinator.Certified(certified.drift(),certified.sinceTick(),certified.baseTick(),certified.horizonTick(),certified.largestFlow(),Optional.of(copy)))));
         }
         countFromHere();
         var rig=new Rig(policy,model,template.epoch[0]);for(var s:snapshots)rig.coordinator.register(s,model);

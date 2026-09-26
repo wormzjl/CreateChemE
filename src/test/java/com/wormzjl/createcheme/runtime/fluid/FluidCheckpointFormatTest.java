@@ -60,12 +60,12 @@ class FluidCheckpointFormatTest {
         return island(line(first,z,Kind.GENERATOR,Kind.PIPE,Kind.PIPE,Kind.PIPE,Kind.RESERVOIR),
                 Map.of(first,new FluidDeviceSpec(1,298.15,101325,pure(water)),first+4,new FluidDeviceSpec(1,298.15,200000,pure(nitrogen))));
     }
-    /** Two nitrogen tanks a kilopascal apart: they settle to solver-noise flows and certify STEADY with finite deltas. */
+    /** Two nitrogen tanks a kilopascal apart: they settle, and every job starting from the committed interval, they certify the identity map (drift 0). */
     private PassiveNetwork closedPair(long first,int z) {
         return island(line(first,z,Kind.RESERVOIR,Kind.PIPE,Kind.PIPE,Kind.PIPE,Kind.RESERVOIR),
                 Map.of(first,new FluidDeviceSpec(1,298.15,150000,pure(nitrogen)),first+4,new FluidDeviceSpec(1,298.15,149000,pure(nitrogen))));
     }
-    /** A nitrogen generator feeding a void: STEADY through-flow with no finite node. */
+    /** A nitrogen generator feeding a void: a certified through-flow with no finite node, rechecked at its horizon. */
     private PassiveNetwork generatorToVoid(long first,int z) {
         return island(line(first,z,Kind.GENERATOR,Kind.PIPE,Kind.PIPE,Kind.PIPE,Kind.PIPE,Kind.VOID),
                 Map.of(first,new FluidDeviceSpec(1,298.15,150000,pure(nitrogen)),first+5,new FluidDeviceSpec(1,298.15,101325,pure(nitrogen))));
@@ -146,8 +146,8 @@ class FluidCheckpointFormatTest {
     private static FluidCheckpointCodec.IslandEntry withCertificateGraphs(FluidCheckpointCodec.IslandEntry entry,java.util.function.UnaryOperator<PassiveNetwork> base,java.util.function.UnaryOperator<PassiveNetwork> before) {
         var s=entry.snapshot();var c=s.certificate().orElseThrow();var saved=c.saved().orElseThrow();var interval=saved.interval();var r=interval.result();
         var result=new PassiveIntervalSolver.Result(base.apply(r.graph()),r.advancedSeconds(),r.averageMassFlows(),r.acceptedSubsteps(),r.rejectedSubsteps(),r.pumpWorkJoule(),r.boundaries(),r.rejectionReasons(),r.endpointModes(),r.endpointHeads(),r.acceptance(),r.pipeTransfers());
-        var edited=new IslandCertificate.Saved(saved.kind(),saved.sinceTick(),saved.horizonTick(),new IslandCertificate.Interval(interval.startTick(),interval.endTick(),before.apply(interval.before()),result),saved.signature());
-        var certified=new IslandCoordinator.Certified(c.kind(),c.sinceTick(),c.baseTick(),c.horizonTick(),c.largestFlow(),Optional.of(edited));
+        var edited=new IslandCertificate.Saved(saved.sinceTick(),saved.horizonTick(),new IslandCertificate.Interval(interval.startTick(),interval.endTick(),before.apply(interval.before()),result),saved.signature());
+        var certified=new IslandCoordinator.Certified(c.drift(),c.sinceTick(),c.baseTick(),c.horizonTick(),c.largestFlow(),Optional.of(edited));
         return new FluidCheckpointCodec.IslandEntry(entry.dimension(),entry.packageId(),entry.compressibility(),new IslandCoordinator.Snapshot(s.id(),s.revision(),s.graph(),s.clock(),s.allowance(),s.anchor(),Optional.of(result),s.status(),s.fences(),Optional.of(certified)));
     }
     private static PassiveNetwork withNodeEnergy(PassiveNetwork graph,double energy) {
@@ -185,10 +185,11 @@ class FluidCheckpointFormatTest {
         var world=topology.snapshot();assertEquals(1,world.events().size());
 
         var data=new FluidSavedData(checkpoint,world,key->model);var tag=data.save(new CompoundTag(),null);
-        assertEquals(4,tag.getInt("FluidFormat"));assertEquals(1_234,tag.getLong("Epoch"));
+        assertEquals(5,tag.getInt("FluidFormat"));assertEquals(1_234,tag.getLong("Epoch"));
         assertEquals(FluidCheckpointCodec.AWAKE,index(tag,4,"Base"));
         assertEquals(checkpoint.islands().get(1).snapshot().certificate().orElseThrow().baseTick(),index(tag,2,"Base"));
-        assertEquals(IslandCertificate.Kind.STEADY.ordinal()+1,tag.getCompound("Islands").getByteArray("Kind")[FluidCheckpointCodec.row(tag,2)],"the certificate summary names the kind");
+        assertFalse(tag.getCompound("Islands").contains("Kind"),"format 5 has one certificate kind and no kind column");
+        assertEquals(0.0,checkpoint.islands().get(1).snapshot().certificate().orElseThrow().drift(),"the closed pair's certificate is the identity map, drift 0");
         var loaded=FluidSavedData.load(tag,key->model,data.store().reopen());
         for(int i=0;i<4;i++) {
             var a=checkpoint.islands().get(i).snapshot();var b=loaded.checkpoint().islands().get(i).snapshot();String what="island "+a.id();
@@ -198,7 +199,7 @@ class FluidCheckpointFormatTest {
             assertEquals(a.certificate().isPresent(),b.certificate().isPresent(),what);
             if(a.certificate().isPresent()) {
                 var x=a.certificate().orElseThrow();var y=b.certificate().orElseThrow();
-                assertEquals(x.kind(),y.kind(),what);assertEquals(x.sinceTick(),y.sinceTick(),what);assertEquals(x.baseTick(),y.baseTick(),what);
+                assertEquals(x.drift(),y.drift(),what);assertEquals(x.sinceTick(),y.sinceTick(),what);assertEquals(x.baseTick(),y.baseTick(),what);
                 assertEquals(x.horizonTick(),y.horizonTick(),what);assertEquals(x.largestFlow(),y.largestFlow(),what);
                 var s=x.saved().orElseThrow();var t=y.saved().orElseThrow();
                 assertEquals(s.signature(),t.signature(),what+" signature");
@@ -241,7 +242,7 @@ class FluidCheckpointFormatTest {
         // The unit holds the certificate base; the load materialises it to the saved committed tick.
         var base=original.stored(2).certificate().orElseThrow().saved().orElseThrow().interval().result().graph();
         var now=original.read(2).graph();
-        assertTrue(java.util.stream.IntStream.range(0,now.reservoirs().size()).anyMatch(n->!now.reservoirs().get(n).inventory().equals(base.reservoirs().get(n).inventory())),"the closed pair moved since its base");
+        assertTrue(java.util.stream.IntStream.range(0,now.reservoirs().size()).allMatch(n->now.reservoirs().get(n).inventory().equals(base.reservoirs().get(n).inventory())),"the closed pair rests exactly: drift 0, the replay is the identity");
         var decoded=FluidCheckpointCodec.decode(image,key->model);
         assertInventories(base,decoded.islands().get(1).snapshot().certificate().orElseThrow().saved().orElseThrow().interval().result().graph(),"the unit records the base");
         assertInventories(original.read(2).graph(),decoded.islands().get(1).snapshot().graph(),"materialised at load");
@@ -281,12 +282,10 @@ class FluidCheckpointFormatTest {
                 new Case("earlier than its committed tick",t->set(t,2,"Horizon",committed-1)),
                 new Case("invalid certificate base",t->set(t,2,"Base",-2)),
                 new Case("carries a certificate",t->set(t,2,"Base",FluidCheckpointCodec.AWAKE)),
-                new Case("lacks its certificate record",t->t.getCompound("Islands").getByteArray("Kind")[FluidCheckpointCodec.row(t,2)]=0),
                 new Case("is empty or negative",t->set(t,2,"Start",base)),
                 new Case("disagrees with its result",t->set(t,2,"Start",start-20)),
                 new Case("since <= base",t->set(t,2,"Since",base+1)),
                 new Case("since <= base",t->set(t,2,"Since",-1)),
-                new Case("unknown certificate kind",t->t.getCompound("Islands").getByteArray("Kind")[FluidCheckpointCodec.row(t,2)]=9),
                 new Case("field Horizon",t->t.getCompound("Islands").remove("Horizon")),
                 new Case("Invalid certificate signature",t->((ListTag)t.get("Strings")).set(policyIndex,StringTag.valueOf(""))),
                 new Case("ahead of the checkpoint's world epoch",t->t.putLong("Epoch",1_233)),
@@ -335,7 +334,7 @@ class FluidCheckpointFormatTest {
         for(int i=0;i<2;i++) {
             var saved=decoded.islands().get(i).snapshot();var now=off.stored(saved.id());
             assertTrue(now.certificate().isEmpty());assertTrue(off.coordinator.retainsSolver(saved.id()));
-            assertTrue(now.status().startsWith("WAITING: saved "+saved.certificate().orElseThrow().kind()+" certificate discarded: certificates are off"),now.status());
+            assertTrue(now.status().startsWith("WAITING: saved certificate discarded: certificates are off"),now.status());
             assertInventories(rig.read(saved.id()).graph(),now.graph(),"island "+saved.id()+" keeps the inventory it was saved with");
             assertEquals(saved.clock(),now.clock());
             assertNotEquals(saved.payloadGeneration(),now.payloadGeneration(),"a discarded certificate changes what the unit records");
@@ -387,7 +386,9 @@ class FluidCheckpointFormatTest {
      */
     @Test void aCertifiedPayloadIsCopiedNotReencodedUntilASolveOrACertificate() {
         assertTrue(Boolean.getBoolean("createcheme.fluid.scheduler.verify"),"the reused units are verified against a fresh encoding");
-        var rig=new Rig(new CertificatePolicy(true,1e-9,1e-6,5,2,0));
+        // A 25 s recheck gives the resting islands a finite horizon (the closed pair rests exactly since every job starts
+        // from its committed interval, review 8.9 (d)), so the test can run to it.
+        var rig=new Rig(new CertificatePolicy(true,1e-9,1e-6,5,2,25));
         rig.register(1,deadHeadedLine(100,0));rig.register(2,closedPair(200,4));rig.register(3,slowFill(300,8));
         rig.runUntilCertified(List.of(1L,2L),2_000);
         // The world ledger, advanced with the islands' epoch as the world advances it; captured as the world captures it.
@@ -411,8 +412,9 @@ class FluidCheckpointFormatTest {
         rig.run(horizon-rig.epoch[0]+100);
         assertTrue(rig.stored(2).clock().committedTick()>horizon,"the closed pair woke at its horizon and solved its revalidating interval");
         data.save(new CompoundTag(),null);var fourth=data.lastSave();
-        assertEquals(2,fourth.payloadsEncoded(),"the revalidated pair and the awake island are encoded");assertEquals(1,fourth.payloadsReused(),"the resting line stays");
-        assertEquals(6,counter("payloadsEncoded"));assertEquals(6,counter("payloadsReused"));
+        // Under the 25 s recheck the dead-headed line reaches its horizon too and revalidates with the pair.
+        assertEquals(3,fourth.payloadsEncoded(),"the two revalidated islands and the awake island are encoded");assertEquals(0,fourth.payloadsReused(),"no certified island stayed");
+        assertEquals(7,counter("payloadsEncoded"));assertEquals(5,counter("payloadsReused"));
         assertTrue(first.payloadBytes()>0&&first.payloadBytes()==second.payloadBytes());
         assertNotNull(immediate.get("Islands"));
     }
@@ -426,7 +428,7 @@ class FluidCheckpointFormatTest {
         var original=new Rig(policy);for(long id=1;id<=1_000;id++)original.register(id,loneTank(100_000+id));
         original.run(300);
         var checkpoint=original.checkpoint();
-        assertTrue(checkpoint.islands().stream().allMatch(i->i.snapshot().certificate().map(c->c.kind()==IslandCertificate.Kind.REST&&c.horizonTick()==1_400).orElse(false)),"every tank rests with its horizon at 1400");
+        assertTrue(checkpoint.islands().stream().allMatch(i->i.snapshot().certificate().map(c->c.drift()==0&&c.horizonTick()==1_400).orElse(false)),"every tank rests with its horizon at 1400");
         long started=System.nanoTime();var image=FluidCheckpointCodec.encode(checkpoint,300,key->model);long encoded=System.nanoTime();
         var decoded=FluidCheckpointCodec.decode(image,key->model);long decodedAt=System.nanoTime();
         countFromHere();

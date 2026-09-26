@@ -352,8 +352,8 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     }
     private String pipeStatus(String status){
         if(status.contains("HELD")||status.contains("ERROR")||status.contains("WAITING")||status.contains("closed")||status.contains("UNBOUND"))return status;
+        if(status.startsWith("STEADY: no flow"))return tr("no_flow");
         if(status.startsWith("STEADY:"))return tr(status.contains("VELOCITY_LIMIT")?"velocity_limited":"flowing");
-        if(status.startsWith("RESTING:"))return tr("no_flow");
         if(status.equals("FULL")||status.equals("READY"))return tr("ready");
         return status;
     }

@@ -140,7 +140,7 @@ class IslandCertificateTest {
         return sum;
     }
 
-    /** Plan section 5 item 5: the dead-headed line and the dead-headed pump carry exactly nothing and certify REST. */
+    /** Plan section 5 item 5: the dead-headed line and the dead-headed pump carry exactly nothing and certify the identity (drift 0). */
     @Test void deadHeadedLinesCertifyRestAndThenCostNothing() {
         for(var fixture:List.of(Map.entry("dead-headed line",deadHeadedLine()),Map.entry("dead-headed pump",deadHeadedPump()))) {
             var rig=new Rig(CertificatePolicy.defaults());rig.register(1,fixture.getValue());
@@ -148,9 +148,9 @@ class IslandCertificateTest {
             System.out.println(fixture.getKey()+": certified at tick "+at+" "+rig.stored(1).certificate()+" refusal="+rig.coordinator.certificationRefusal(1));
             assertTrue(at>0,fixture.getKey()+" did not certify: "+rig.coordinator.certificationRefusal(1));
             var certified=rig.stored(1).certificate().orElseThrow();
-            assertEquals(IslandCertificate.Kind.REST,certified.kind(),fixture.getKey());
+            assertEquals(0.0,certified.drift(),fixture.getKey());
             assertEquals(Long.MAX_VALUE,certified.horizonTick(),"exact rest is never rechecked by default");
-            assertTrue(rig.stored(1).status().startsWith("RESTING: no flow since"),rig.stored(1).status());
+            assertTrue(rig.stored(1).status().startsWith("STEADY: no flow since"),rig.stored(1).status());
             assertFalse(rig.coordinator.retainsSolver(1),"a certified island releases its solver caches");
             var before=rig.stored(1).graph();int solves=rig.solves;
             countFromHere();rig.run(10_000);
@@ -160,7 +160,7 @@ class IslandCertificateTest {
             var read=rig.read(1);
             assertEquals(rig.epoch[0],read.clock().committedTick(),"a read materialises the island to now");
             assertEquals(before,read.graph(),"rest is the identity");
-            assertEquals(IslandCoordinator.Advance.RESTED,rig.coordinator.metrics(1).orElseThrow().advance());
+            assertEquals(IslandCoordinator.Advance.REPLAYED,rig.coordinator.metrics(1).orElseThrow().advance());
             assertEquals(1,counter("materialisations"));
         }
     }
@@ -172,8 +172,9 @@ class IslandCertificateTest {
         System.out.println("closed pair: certified at tick "+at+" "+rig.stored(1).certificate()+" refusal="+rig.coordinator.certificationRefusal(1));
         assertTrue(at>0,"closed pair did not certify: "+rig.coordinator.certificationRefusal(1));
         var certified=rig.stored(1).certificate().orElseThrow();
-        // The settled pair still carries solver-noise flows of order 1e-11 kg/s, so it is STEADY, not REST.
-        assertEquals(IslandCertificate.Kind.STEADY,certified.kind());
+        // Every job starts from the committed interval (no warm start, review 8.9 (d)): the settled pair converges in
+        // zero iterations from zero flow, so its certificate is the identity map, drift 0 (BE_INTEGRATOR_PLAN.md section 4).
+        assertEquals(0.0,certified.drift());
         assertTrue(certified.horizonTick()-certified.baseTick()>=1_000*100L,"horizon of "+(certified.horizonTick()-certified.baseTick())/100+" intervals");
         assertFalse(rig.coordinator.retainsSolver(1));
         // With a short window its noise flows need not repeat at the revalidation (a fresh solver finds other noise);
@@ -195,7 +196,7 @@ class IslandCertificateTest {
         long at=certified.runUntilCertified(1,2_000);
         System.out.println("generator to void: certified at tick "+at+" "+certified.stored(1).certificate()+" refusal="+certified.coordinator.certificationRefusal(1));
         assertTrue(at>0,certified.coordinator.certificationRefusal(1));
-        assertEquals(IslandCertificate.Kind.STEADY,certified.stored(1).certificate().orElseThrow().kind());
+        assertTrue(certified.stored(1).certificate().orElseThrow().horizonTick()<Long.MAX_VALUE,"a through-flow is rechecked at its horizon");
         assertTrue(certified.stored(1).status().startsWith("STEADY: replaying"),certified.stored(1).status());
         // Accumulate what crosses the boundaries, solved against replayed, over the same 2000 s.
         var solvedLedger=new double[components];var replayedLedger=new double[components];
@@ -489,7 +490,8 @@ class IslandCertificateTest {
         var issued=IslandCertificate.issue(shuttling,CertificatePolicy.defaults());
         assertNull(issued.certificate());assertTrue(issued.refusal().contains("gross"),issued.refusal());
         var still=interval(0,at,at,0,0,0,Map.of());
-        assertTrue(still.exactZero);assertEquals(IslandCertificate.Kind.REST,IslandCertificate.issue(still,CertificatePolicy.defaults()).certificate().kind());
+        assertTrue(still.exactZero);var rest=IslandCertificate.issue(still,CertificatePolicy.defaults()).certificate();
+        assertEquals(0.0,rest.drift());assertEquals(Long.MAX_VALUE,rest.horizonTick());
     }
 
     /** Plan section 5 item 5: a rate that keeps changing, however slowly, is not stationary. */
@@ -530,7 +532,7 @@ class IslandCertificateTest {
         var policy=CertificatePolicy.defaults();
         var tenth=draining(amounts(1,1e-6),amounts(-.99e-7,-.5e-13),amounts(-.99e-7,-.5e-13),1e-6,1e-6);
         var certificate=IslandCertificate.issue(tenth[1],policy).certificate();
-        assertEquals(IslandCertificate.Kind.STEADY,certificate.kind());
+        assertTrue(certificate.drift()>0);
         assertEquals(200+10*100,certificate.horizonTick(),"d = 0.99e-7 gives ten intervals of a 1e-6 budget");
         // A trace draining faster sets d and shortens the window to one interval.
         var trace=draining(amounts(1,1e-6),amounts(-1e-9,-.9e-12),amounts(-1e-9,-.9e-12),1e-6,1e-6);
@@ -697,7 +699,7 @@ class IslandCertificateTest {
         var evidence=rig.coordinator.certificationEvidence(1);
         System.out.println("closed ladder 65: certified at tick "+at+" "+rig.stored(1).certificate()+" refusal="+rig.coordinator.certificationRefusal(1)+" evidence="+evidence);
         assertTrue(at>0,"did not certify: "+rig.coordinator.certificationRefusal(1));
-        assertEquals(IslandCertificate.Kind.STEADY,rig.stored(1).certificate().orElseThrow().kind());
+        assertTrue(rig.stored(1).certificate().orElseThrow().horizonTick()<Long.MAX_VALUE,"the ladder replays its flows up to a finite horizon");
         assertEquals(at,evidence.endTick());
         double tolerance=CertificatePolicy.defaults().stationaryTolerance();
         assertTrue(evidence.stationarity().flow()<=tolerance,evidence.toString());

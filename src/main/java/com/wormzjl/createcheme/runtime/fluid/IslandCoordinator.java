@@ -72,8 +72,8 @@ public final class IslandCoordinator {
     public record Attempt(long islandId,long revision,IslandClock.Slice slice) {
         public Attempt {if(islandId<=0||revision<0)throw new IllegalArgumentException("Invalid attempt identity");Objects.requireNonNull(slice);}
     }
-    /** How a publication advanced its island: by a solve, by replaying a STEADY certificate, or by the identity of a REST one. */
-    public enum Advance {SOLVED,REPLAYED,RESTED}
+    /** How a publication advanced its island: by a solve, or by replaying its certificate (the identity at drift 0). */
+    public enum Advance {SOLVED,REPLAYED}
     /** Queue debt and publication latency remain separate from the worker's own wall/CPU time. */
     public record Metrics(long sequence,long startTick,long endTick,long dispatchedAtTick,long publishedAtTick,
                           long workerNanos,long workerCpuNanos,long dispatchToPublicationNanos,boolean accepted,Advance advance) {
@@ -83,24 +83,25 @@ public final class IslandCoordinator {
         public Metrics {Objects.requireNonNull(advance);}
     }
     /**
-     * A certified island: its kind, the tick it first certified (renewals keep it), the base of the current
-     * certificate, the last tick replay may reach, the largest flow it keeps replaying, and the certificate as a
+     * A certified island: its certificate's per-interval change d (zero at rest), the tick it first certified
+     * (renewals keep it), the base of the current certificate, the last tick replay may reach, the largest flow it
+     * keeps replaying, and the certificate as a
      * checkpoint keeps it. {@code saved} is empty while a property hold freezes the island: resume discards every
      * certificate, so one saved during a hold is not kept either, and the island restarts awake from the held state.
      */
-    public record Certified(IslandCertificate.Kind kind,long sinceTick,long baseTick,long horizonTick,double largestFlow,Optional<IslandCertificate.Saved> saved) {
+    public record Certified(double drift,long sinceTick,long baseTick,long horizonTick,double largestFlow,Optional<IslandCertificate.Saved> saved) {
         public Certified {
-            Objects.requireNonNull(kind);Objects.requireNonNull(saved);
-            if(saved.isPresent()){var s=saved.orElseThrow();if(s.kind()!=kind||s.sinceTick()!=sinceTick||s.baseTick()!=baseTick||s.horizonTick()!=horizonTick)throw new IllegalArgumentException("Saved certificate disagrees with its island");}
+            Objects.requireNonNull(saved);if(!(drift>=0)||drift==Double.POSITIVE_INFINITY)throw new IllegalArgumentException("Invalid certificate drift "+drift);
+            if(saved.isPresent()){var s=saved.orElseThrow();if(s.sinceTick()!=sinceTick||s.baseTick()!=baseTick||s.horizonTick()!=horizonTick)throw new IllegalArgumentException("Saved certificate disagrees with its island");}
         }
-        @Override public String toString(){return "Certified["+kind+", since "+sinceTick+", base "+baseTick+", horizon "+horizonTick+", largest flow "+largestFlow+(saved.isPresent()?"":", held")+"]";}
+        @Override public String toString(){return "Certified[drift "+drift+", since "+sinceTick+", base "+baseTick+", horizon "+horizonTick+", largest flow "+largestFlow+(saved.isPresent()?"":", held")+"]";}
         /** Equal when they say the same: the saved form is compared by its interval's ticks and its signature (which
          * digests the graph), since the graphs and results it carries have no value equality of their own. */
         @Override public boolean equals(Object other) {
-            return other instanceof Certified c&&kind==c.kind&&sinceTick==c.sinceTick&&baseTick==c.baseTick&&horizonTick==c.horizonTick
+            return other instanceof Certified c&&Double.doubleToLongBits(drift)==Double.doubleToLongBits(c.drift)&&sinceTick==c.sinceTick&&baseTick==c.baseTick&&horizonTick==c.horizonTick
                     &&Double.doubleToLongBits(largestFlow)==Double.doubleToLongBits(c.largestFlow)&&saved.map(Certified::identity).equals(c.saved.map(Certified::identity));
         }
-        @Override public int hashCode(){return Objects.hash(kind,sinceTick,baseTick,horizonTick,largestFlow,saved.map(Certified::identity));}
+        @Override public int hashCode(){return Objects.hash(drift,sinceTick,baseTick,horizonTick,largestFlow,saved.map(Certified::identity));}
         private static List<Object> identity(IslandCertificate.Saved s){return List.of(s.interval().startTick(),s.interval().endTick(),s.signature());}
     }
     public record Snapshot(long id,long revision,PassiveNetwork graph,IslandClock.Snapshot clock,
@@ -199,8 +200,8 @@ public final class IslandCoordinator {
         }
         private Snapshot snapshot(){return new Snapshot(id,revision,graph,clock.snapshot(),allowance,anchor,lastResult,
                 !suspended&&!clock.busy()&&fence()==clock.committedTick()?"WAITING: event alignment":status,fences,
-                certificate==null?Optional.empty():Optional.of(new Certified(certificate.kind(),certifiedSince,certificate.baseTick(),certificate.horizonTick(),certificate.largestFlow(),
-                        suspended?Optional.empty():Optional.of(new IslandCertificate.Saved(certificate.kind(),certifiedSince,certificate.horizonTick(),certificate.interval(),signature)))),
+                certificate==null?Optional.empty():Optional.of(new Certified(certificate.drift(),certifiedSince,certificate.baseTick(),certificate.horizonTick(),certificate.largestFlow(),
+                        suspended?Optional.empty():Optional.of(new IslandCertificate.Saved(certifiedSince,certificate.horizonTick(),certificate.interval(),signature)))),
                 payloadGeneration);}
         /** Something a checkpoint payload records changed: the next checkpoint encodes this island afresh. */
         private void touch(){payloadGeneration=PAYLOAD_GENERATIONS.incrementAndGet();}
@@ -302,7 +303,7 @@ public final class IslandCoordinator {
             FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificatesRestored);
         } else {
             // Awake now, with a new status: its unit records neither the certificate nor that status, so it is written afresh.
-            island.status="WAITING: saved "+saved.kind()+" certificate discarded: "+restored.discarded();island.refusal="saved certificate discarded: "+restored.discarded();island.touch();
+            island.status="WAITING: saved certificate discarded: "+restored.discarded();island.refusal="saved certificate discarded: "+restored.discarded();island.touch();
             FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificatesDiscarded);
         }
     }
@@ -881,10 +882,9 @@ public final class IslandCoordinator {
             var replay=certificate.replay(committed,target);
             island.clock.rest(target,island.fence());island.graph=replay.graph();
             island.pipeSpeed.accepted(committed,target,replay.pipeTransfers());
-            var advance=certificate.kind()==IslandCertificate.Kind.REST?Advance.RESTED:Advance.REPLAYED;
-            island.metrics=new Metrics(island.metrics==null?1:Math.addExact(island.metrics.sequence(),1),committed,target,online,online,-1,-1,0,true,advance);
+            island.metrics=new Metrics(island.metrics==null?1:Math.addExact(island.metrics.sequence(),1),committed,target,online,online,-1,-1,0,true,Advance.REPLAYED);
             FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.materialisations);
-            FluidRuntimeDiagnostics.count(advance==Advance.RESTED?FluidRuntimeDiagnostics.restedTicks:FluidRuntimeDiagnostics.replayedTicks,target-committed);
+            FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.replayedTicks,target-committed);
             if(suspension==null)island.status=certifiedStatus(island);
             // A certified payload records the base, not the materialised state, so materialisation changes nothing a
             // checkpoint keeps - except that an island stopped at its fence reads "WAITING: event alignment".
@@ -894,7 +894,7 @@ public final class IslandCoordinator {
         }
         if(presentation||stopped||suspension!=null)return;
         if(drive!=Long.MAX_VALUE&&target==drive)wake(island,null,"WAITING: module drive at "+drive);
-        else if(target==certificate.horizonTick())wake(island,certificate,"REVALIDATING: "+certificate.kind()+" certificate horizon at "+certificate.horizonTick()/20.0+" s");
+        else if(target==certificate.horizonTick())wake(island,certificate,"REVALIDATING: certificate horizon at "+certificate.horizonTick()/20.0+" s");
     }
     /** Ends a certificate: fresh solver caches, no evidence; revalidating keeps the certificate its first slice is compared with. */
     private void wake(Island island,IslandCertificate revalidating,String status) {
@@ -957,8 +957,10 @@ public final class IslandCoordinator {
     }
     private static String certifiedStatus(Island island) {
         var certificate=island.certificate;double since=island.certifiedSince/20.0;
-        return certificate.kind()==IslandCertificate.Kind.REST?String.format(Locale.ROOT,"RESTING: no flow since %.1f s",since)
-                :String.format(Locale.ROOT,"STEADY: replaying %.4g kg/s since %.1f s, next check at %.1f s",certificate.largestFlow(),since,certificate.horizonTick()/20.0);
+        // One certificate kind (BE_INTEGRATOR_PLAN.md section 4): the line names what it replays, and its recheck if it has one.
+        String what=certificate.largestFlow()==0?"no flow":String.format(Locale.ROOT,"replaying %.4g kg/s",certificate.largestFlow());
+        String next=certificate.horizonTick()==Long.MAX_VALUE?"":String.format(Locale.ROOT,", next check at %.1f s",certificate.horizonTick()/20.0);
+        return String.format(Locale.ROOT,"STEADY: %s since %.1f s%s",what,since,next);
     }
     private void schedule(long tick,IslandScheduler.Kind kind,long id,long generation) {
         scheduler.schedule(tick,kind,id,generation);

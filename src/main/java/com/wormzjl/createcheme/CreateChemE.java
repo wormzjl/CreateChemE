@@ -109,21 +109,21 @@ public final class CreateChemE {
                 .defineInRange("fluidTraceCutoffMoleFraction",FluidThermodynamics.DEFAULT_TRACE_CUTOFF_MOLE_FRACTION,
                         0,FluidThermodynamics.MAX_TRACE_CUTOFF_MOLE_FRACTION);
         FLUID_DEBUG_CHAT=builder.comment("Report held fluid intervals in chat, at most once per second; full details remain in the server log.").define("debugChat",false);
-        FLUID_REST_DETECTION=builder.comment("Certify islands whose interval map is exactly the identity (REST) or stationary (STEADY) and advance them without solving:",
-                "REST by identity, STEADY by replaying the last solved interval. Off disables certificates; islands solve every interval. Captured on server start.")
+        FLUID_REST_DETECTION=builder.comment("Certify islands whose interval map is stationary and advance them without solving, by replaying the last solved interval",
+                "(the identity when nothing moved). Off disables certificates; islands solve every interval. Captured on server start.")
                 .define("restDetection",true);
         FLUID_CERTIFICATE_TOLERANCE=builder.comment("Largest change between two consecutive intervals that still counts as stationary: per node and component,",
                 "relative to that inventory; per node energy, relative to its thermal scale; per pipe, relative to the island's largest flow;",
                 "and the largest per-interval drift of a node's temperature or pressure. 0 admits only intervals that repeat exactly.",
                 "The default 1e-7 lets through-flow islands whose holdup drifts by a few 1e-7 per interval certify; their replay stays within the inventory budget. Captured on server start.")
                 .defineInRange("certificateStationaryTolerance",1e-7,0,1e-6);
-        FLUID_CERTIFICATE_BUDGET=builder.comment("Largest relative inventory change a STEADY certificate may extrapolate before one interval is solved again. Captured on server start.")
+        FLUID_CERTIFICATE_BUDGET=builder.comment("Largest relative inventory change a certificate may extrapolate before one interval is solved again. Captured on server start.")
                 .defineInRange("certificateInventoryBudget",1e-6,1e-12,1e-3);
-        FLUID_CERTIFICATE_MAXIMUM_INTERVALS=builder.comment("Most intervals one STEADY certificate may replay; 17280 is one game day at a 5 s cadence. Captured on server start.")
+        FLUID_CERTIFICATE_MAXIMUM_INTERVALS=builder.comment("Most intervals one certificate of an island on which something moves may replay; 17280 is one game day at a 5 s cadence. Captured on server start.")
                 .defineInRange("certificateMaximumIntervals",17_280,1,1_000_000);
         FLUID_REST_CONFIRM_INTERVALS=builder.comment("Consecutive stationary solved intervals before an island certifies, and again after a property hold. Captured on server start.")
                 .defineInRange("restConfirmIntervals",2,1,10);
-        FLUID_REST_RECHECK_SECONDS=builder.comment("Solve an exact-zero REST island again after this many simulated seconds; 0 means never. Captured on server start.")
+        FLUID_REST_RECHECK_SECONDS=builder.comment("Solve a certified island on which nothing moves (the identity map) again after this many simulated seconds; 0 means never. Captured on server start.")
                 .defineInRange("restRecheckSeconds",0,0,86_400);
         builder.pop();
         builder.push("columnV3");

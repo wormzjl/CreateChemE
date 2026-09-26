@@ -53,10 +53,9 @@ public final class FluidRuntimeDiagnostics {
     public static final LongAdder certificatesIssued=new LongAdder();
     public static final LongAdder certificatesRenewed=new LongAdder();
     public static final LongAdder certificateWakes=new LongAdder();
-    /** Materialisations of certified islands, and the online ticks they advanced by STEADY replay and by REST identity. */
+    /** Materialisations of certified islands, and the online ticks they advanced by replay (the identity at drift 0 included). */
     public static final LongAdder materialisations=new LongAdder();
     public static final LongAdder replayedTicks=new LongAdder();
-    public static final LongAdder restedTicks=new LongAdder();
     /** Presentation (plan section 3.4): bucket flushes that had a dirty device or an open menu, views handed to
      * loaded block entities, static payloads among {@link #menuPackets}, player inputs queued for a reply, and
      * replies composed at a bucket. */
@@ -95,7 +94,7 @@ public final class FluidRuntimeDiagnostics {
         map.put("deadlinesFired",deadlinesFired);
         map.put("drainContinuations",drainContinuations);map.put("drainContinuationsDeferred",drainContinuationsDeferred);
         map.put("certificatesIssued",certificatesIssued);map.put("certificatesRenewed",certificatesRenewed);map.put("certificateWakes",certificateWakes);
-        map.put("materialisations",materialisations);map.put("replayedTicks",replayedTicks);map.put("restedTicks",restedTicks);
+        map.put("materialisations",materialisations);map.put("replayedTicks",replayedTicks);
         map.put("bucketFlushes",bucketFlushes);map.put("devicePresentations",devicePresentations);map.put("staticPayloads",staticPayloads);
         map.put("queuedInputs",queuedInputs);map.put("inputReplies",inputReplies);
         map.put("certificatesRestored",certificatesRestored);map.put("certificatesDiscarded",certificatesDiscarded);

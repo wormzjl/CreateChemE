@@ -142,7 +142,7 @@ class IslandSchedulerTest {
             for(long id=1;id<=count;id++)coordinator.register(island(id,0,0,Map.of()),MODEL);
             int tick=0;
             for(;tick<1_000&&coordinator.observe().stream().anyMatch(s->s.certificate().isEmpty());tick++){coordinator.tick();if(!dispatch.attempts.isEmpty())dispatch.finishAll();}
-            for(var snapshot:coordinator.observe())assertEquals(IslandCertificate.Kind.REST,snapshot.certificate().orElseThrow().kind(),"island "+snapshot.id());
+            for(var snapshot:coordinator.observe())assertEquals(0.0,snapshot.certificate().orElseThrow().drift(),"island "+snapshot.id());
             assertEquals(0,coordinator.readyCount());assertEquals(0,coordinator.pendingCount());assertEquals(2L*count,dispatch.submitted.size(),"two exact-zero intervals each");
             count();
             for(int idle=0;idle<10_000;idle++){coordinator.tick();tick++;if(!dispatch.attempts.isEmpty())dispatch.finishAll();}

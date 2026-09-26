@@ -19,19 +19,20 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
- * Checkpoint format 4 of committed science and runtime state: what one storage unit holds and what the core record
+ * Checkpoint format 5 of committed science and runtime state: what one storage unit holds and what the core record
  * holds. Rebuilds properties through the immutable model; it never deserializes implementation caches or creates a
  * nitrogen charge. Where the units live - pack files beside the world's saved data, dirty tracking, atomic writes and
  * orphan cleanup - is {@link FluidCheckpointStore}'s business.
  *
- * <p><b>Core record</b> (one NBT compound, the world's saved data): {@code FluidFormat = 4}; the world {@code Epoch};
+ * <p><b>Core record</b> (one NBT compound, the world's saved data): {@code FluidFormat = 5}; the world {@code Epoch};
  * the {@code Ledger} of buffered transfers, pending material and module states as checksummed JSON; {@code Strings},
  * an append-only table of the long texts units refer to (dimensions, packages, property revisions, certificate
  * policies); {@code Packages}, one entry per property package with the thermodynamic revision and energy reference
  * the units were written under; the pack files and their sizes; the topology unit's reference; and {@code Islands},
  * the island index in columns: identity, revision and unit generation, the clock ({@code Online}, {@code Committed},
- * {@code Retry}, {@code Cadence}), the certificate summary ({@code Base} - or {@link #AWAKE} -, {@code Kind},
- * {@code Since}, {@code Start}, {@code Horizon}) and where the island's unit lies with its SHA-256. {@code SHA256}
+ * {@code Retry}, {@code Cadence}), the certificate summary ({@code Base} - or {@link #AWAKE} -, {@code Since},
+ * {@code Start}, {@code Horizon}; format 5 dropped format 4's {@code Kind} column with the merge of the REST and
+ * STEADY certificates into one kind) and where the island's unit lies with its SHA-256. {@code SHA256}
  * covers every field.
  *
  * <p><b>Island unit</b> (binary, {@link FluidUnitIO}): a header naming the island, its revision and the unit's
@@ -44,11 +45,11 @@ import java.util.function.UnaryOperator;
  * certified island's unit records its certificate base, not its materialised state, so while it stays certified its
  * unit never changes; a load materialises it from the base to the committed tick without a solve.
  *
- * <p>No other format is read: format 3 and older are refused with the instruction to create a fresh world (the
+ * <p>No other format is read: format 4 and older are refused with the instruction to create a fresh world (the
  * owner's standing rule on save compatibility).
  */
 public final class FluidCheckpointCodec {
-    public static final int VERSION=4;
+    public static final int VERSION=5;
     /** The {@code Base} of an awake island: it carries no certificate. */
     public static final long AWAKE=-1;
     static final int UNIT_MAGIC=0x43434655,UNIT_FORMAT=1;
@@ -66,7 +67,6 @@ public final class FluidCheckpointCodec {
     private static final PassiveStepSolver.Acceptance[] ACCEPTANCES=PassiveStepSolver.Acceptance.values();
     private static final FlowControl.Mode[] MODES=FlowControl.Mode.values();
     private static final PassiveNetwork.NodeKind[] NODE_KINDS=PassiveNetwork.NodeKind.values();
-    private static final IslandCertificate.Kind[] KINDS=IslandCertificate.Kind.values();
     private FluidCheckpointCodec() {}
 
     public record IslandEntry(String dimension,String packageId,double compressibility,IslandCoordinator.Snapshot snapshot) {
@@ -408,7 +408,7 @@ public final class FluidCheckpointCodec {
     }
 
     /** What the index says about one island: identity, revision and unit generation, clock, certificate summary. */
-    record IndexRow(long id,long revision,long generation,long online,long committed,long retry,int cadence,long base,int kind,long since,long start,long horizon,UnitRef unit) {}
+    record IndexRow(long id,long revision,long generation,long online,long committed,long retry,int cadence,long base,long since,long start,long horizon,UnitRef unit) {}
     /** Where a unit lies: its pack, offset, length and SHA-256. */
     record UnitRef(long pack,long offset,int length,byte[] sha256) {}
     private record Topology(long[] ids,double[] elevations,PassiveNetwork.NodeKind[] kinds,double[] volumes,long[] pipeIds,int[] first,int[] second,
@@ -465,20 +465,18 @@ public final class FluidCheckpointCodec {
         var clock=new IslandClock.Snapshot(row.online,row.committed,row.retry,row.cadence);
         long generation=IslandCoordinator.freshPayloadGeneration();
         if(row.base==AWAKE) {
-            if(row.kind!=0||row.since!=0||row.start!=0||row.horizon!=0||signature!=null)throw new IllegalArgumentException("Awake island "+id+" carries a certificate");
+            if(row.since!=0||row.start!=0||row.horizon!=0||signature!=null)throw new IllegalArgumentException("Awake island "+id+" carries a certificate");
             return new IslandEntry(dimension,packageId,compressibility,new IslandCoordinator.Snapshot(id,row.revision,graph,clock,allowance,anchor,result,status,fences,Optional.empty(),generation));
         }
         if(row.base<0)throw new IllegalArgumentException("Island "+id+": invalid certificate base tick "+row.base);
-        if(row.kind==0||signature==null||result.isEmpty())throw new IllegalArgumentException("Certified island "+id+" lacks its certificate record");
-        if(row.kind<1||row.kind>KINDS.length)throw new IllegalArgumentException("Island "+id+": unknown certificate kind");
-        var kind=KINDS[row.kind-1];
+        if(signature==null||result.isEmpty())throw new IllegalArgumentException("Certified island "+id+" lacks its certificate record");
         if(row.base>row.committed)throw new IllegalArgumentException("Certified island "+id+": base tick "+row.base+" is later than its committed tick "+row.committed);
         if(row.horizon<row.committed)throw new IllegalArgumentException("Certified island "+id+": horizon "+row.horizon+" is earlier than its committed tick "+row.committed);
         if(row.start<0||row.start>=row.base)throw new IllegalArgumentException("Certified island "+id+": interval ["+row.start+", "+row.base+"] is empty or negative");
-        var persisted=new IslandCertificate.Saved(kind,row.since,row.horizon,new IslandCertificate.Interval(row.start,row.base,certifiedFrom,result.orElseThrow()),signature);
+        var persisted=new IslandCertificate.Saved(row.since,row.horizon,new IslandCertificate.Interval(row.start,row.base,certifiedFrom,result.orElseThrow()),signature);
         // The island at its saved committed tick: its base inventory plus the replayed fraction, never a solve.
         var rebuilt=IslandCertificate.rebuild(persisted,model.molecularWeights());
-        var certified=new IslandCoordinator.Certified(kind,row.since,row.base,row.horizon,rebuilt.largestFlow(),Optional.of(persisted));
+        var certified=new IslandCoordinator.Certified(rebuilt.drift(),row.since,row.base,row.horizon,rebuilt.largestFlow(),Optional.of(persisted));
         return new IslandEntry(dimension,packageId,compressibility,new IslandCoordinator.Snapshot(id,row.revision,rebuilt.graphAt(row.committed),clock,allowance,anchor,result,status,fences,Optional.of(certified),generation));
     }
     private static PassiveNetwork related(FluidUnitIO.Reader r,int flag,PassiveNetwork main,Topology topology,FluidThermodynamics model) {
@@ -585,16 +583,16 @@ public final class FluidCheckpointCodec {
         }
         int n=core.islands.size();
         long[] ids=new long[n],revisions=new long[n],generations=new long[n],online=new long[n],committed=new long[n],retry=new long[n],base=new long[n],since=new long[n],start=new long[n],horizon=new long[n],pack=new long[n],offset=new long[n];
-        int[] cadence=new int[n],length=new int[n];byte[] kind=new byte[n],digests=new byte[32*n];
+        int[] cadence=new int[n],length=new int[n];byte[] digests=new byte[32*n];
         for(int i=0;i<n;i++) {
             var row=core.islands.get(i);ids[i]=row.id;revisions[i]=row.revision;generations[i]=row.generation;online[i]=row.online;committed[i]=row.committed;retry[i]=row.retry;cadence[i]=row.cadence;
-            base[i]=row.base;kind[i]=(byte)row.kind;since[i]=row.since;start[i]=row.start;horizon[i]=row.horizon;pack[i]=row.unit.pack;offset[i]=row.unit.offset;length[i]=row.unit.length;
+            base[i]=row.base;since[i]=row.since;start[i]=row.start;horizon[i]=row.horizon;pack[i]=row.unit.pack;offset[i]=row.unit.offset;length[i]=row.unit.length;
             System.arraycopy(row.unit.sha256,0,digests,32*i,32);
         }
         var islands=new CompoundTag();
         islands.putLongArray("Id",ids);islands.putLongArray("Revision",revisions);islands.putLongArray("Generation",generations);
         islands.putLongArray("Online",online);islands.putLongArray("Committed",committed);islands.putLongArray("Retry",retry);islands.putIntArray("Cadence",cadence);
-        islands.putLongArray("Base",base);islands.putByteArray("Kind",kind);islands.putLongArray("Since",since);islands.putLongArray("Start",start);islands.putLongArray("Horizon",horizon);
+        islands.putLongArray("Base",base);islands.putLongArray("Since",since);islands.putLongArray("Start",start);islands.putLongArray("Horizon",horizon);
         islands.putLongArray("Pack",pack);islands.putLongArray("Offset",offset);islands.putIntArray("Length",length);islands.putByteArray("SHA256",digests);
         tag.put("Islands",islands);
         tag.putByteArray("SHA256",manifest(tag));
@@ -602,7 +600,7 @@ public final class FluidCheckpointCodec {
     }
     private static final List<String> LONG_COLUMNS=List.of("Id","Revision","Generation","Online","Committed","Retry","Base","Since","Start","Horizon","Pack","Offset");
     /**
-     * Reads and validates a core record: format 4 only (older formats are refused with the instruction to create a
+     * Reads and validates a core record: format 5 only (older formats are refused with the instruction to create a
      * fresh world), every field present and typed, the envelope and ledger digests, the string and package tables,
      * the pack list, and every index row's unit reference lying inside a listed pack. The units themselves are read by
      * {@link #island} and {@link #topology}.
@@ -621,10 +619,10 @@ public final class FluidCheckpointCodec {
         long nextPack=requireLong(tag,"NextPack","checkpoint"),nextGeneration=requireLong(tag,"NextGeneration","checkpoint");
         if(!(tag.get("Islands") instanceof CompoundTag islands))throw new IllegalArgumentException("Missing or mistyped fluid checkpoint field Islands");
         var columns=new HashMap<String,long[]>();for(var key:LONG_COLUMNS)columns.put(key,requireLongs(islands,key,"island"));
-        int[] cadence=requireInts(islands,"Cadence","island"),length=requireInts(islands,"Length","island");byte[] kinds=requireBytes(islands,"Kind","island"),digests=requireBytes(islands,"SHA256","island");
+        int[] cadence=requireInts(islands,"Cadence","island"),length=requireInts(islands,"Length","island");byte[] digests=requireBytes(islands,"SHA256","island");
         int n=columns.get("Id").length;
         for(var column:columns.entrySet())if(column.getValue().length!=n)throw new IllegalArgumentException("Fluid island column "+column.getKey()+" holds "+column.getValue().length+" entries, "+n+" expected");
-        if(cadence.length!=n||length.length!=n||kinds.length!=n||digests.length!=32*n)throw new IllegalArgumentException("Fluid island columns disagree in length");
+        if(cadence.length!=n||length.length!=n||digests.length!=32*n)throw new IllegalArgumentException("Fluid island columns disagree in length");
         CompoundTag topologyTag=null;
         if(tag.contains("Topology")){if(!(tag.get("Topology") instanceof CompoundTag t))throw new IllegalArgumentException("Missing or mistyped fluid checkpoint field Topology");topologyTag=t;}
         if(topologyTag!=null)for(var key:List.of("Generation","Pack","Offset"))requireLong(topologyTag,key,"topology");
@@ -659,7 +657,7 @@ public final class FluidCheckpointCodec {
         for(int i=0;i<n;i++) {
             System.arraycopy(digests,32*i,digest,0,32);
             var row=new IndexRow(ids[i],columns.get("Revision")[i],columns.get("Generation")[i],columns.get("Online")[i],columns.get("Committed")[i],columns.get("Retry")[i],cadence[i],
-                    columns.get("Base")[i],kinds[i],columns.get("Since")[i],columns.get("Start")[i],columns.get("Horizon")[i],
+                    columns.get("Base")[i],columns.get("Since")[i],columns.get("Start")[i],columns.get("Horizon")[i],
                     unit(sizes,columns.get("Pack")[i],columns.get("Offset")[i],length[i],digest.clone(),"island "+ids[i]));
             if(row.id<=0||row.revision<0)throw new IllegalArgumentException("Invalid island identity "+row.id+" revision "+row.revision);
             generation(generations,row.generation,nextGeneration,"island "+row.id);
@@ -684,7 +682,7 @@ public final class FluidCheckpointCodec {
 
     /** The envelope digest: every field of the core record in a fixed order, every text with its length. */
     private static byte[] manifest(CompoundTag tag) {
-        var d=new Digest();d.text("createcheme-fluid-checkpoint-4");d.number(requireLong(tag,"Epoch","checkpoint"));d.bytes(requireBytes(tag,"LedgerSHA256","checkpoint"));
+        var d=new Digest();d.text("createcheme-fluid-checkpoint-5");d.number(requireLong(tag,"Epoch","checkpoint"));d.bytes(requireBytes(tag,"LedgerSHA256","checkpoint"));
         var strings=(ListTag)tag.get("Strings");d.number(strings.size());for(int i=0;i<strings.size();i++)d.text(strings.getString(i));
         var packages=(ListTag)tag.get("Packages");d.number(packages.size());
         for(int i=0;i<packages.size();i++) {
@@ -701,7 +699,7 @@ public final class FluidCheckpointCodec {
         var islands=(CompoundTag)tag.get("Islands");
         for(var key:LONG_COLUMNS){d.text(key);d.longs(requireLongs(islands,key,"island"));}
         d.text("Cadence");d.ints(requireInts(islands,"Cadence","island"));d.text("Length");d.ints(requireInts(islands,"Length","island"));
-        d.text("Kind");d.bytes(requireBytes(islands,"Kind","island"));d.text("SHA256");d.bytes(requireBytes(islands,"SHA256","island"));
+        d.text("SHA256");d.bytes(requireBytes(islands,"SHA256","island"));
         return d.digest();
     }
     private static final class Digest {
