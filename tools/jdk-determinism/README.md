@@ -77,3 +77,7 @@ python3 tools/jdk-determinism/compare.py $SP/cap --manifest $SP/jdks/manifest.ts
 
 Identical output across runtimes = every file of `<cap>/<id>/` except `meta.txt`, `runtime-summary.txt` (walls) and
 the Math columns of `mathsweep-*.txt` byte-identical, and `probe-sha256.txt` identical.
+
+## prototype/
+
+`0001-WIP-jdk-determinism-StrictMath-routing-prototype.patch` is `git format-patch` of the prototype commit `4956d2e` (branch `claude/jdk-determinism-wip`, base `efd123a`), kept here because that branch was never pushed. Re-apply with `git am tools/jdk-determinism/prototype/*.patch`; then `full-science-routing.patch` and `pow-strength-reduction.patch` are the two options of `documentation/2026-09-27-jdk-determinism/HANDOFF.md` section 5.

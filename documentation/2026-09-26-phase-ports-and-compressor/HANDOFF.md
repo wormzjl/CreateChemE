@@ -64,3 +64,7 @@ Tools/docs commits between them: `3097e60`, `3dbd9b8`, `9c723e0`, `9b33d03`, `0c
 - **One Gradle lane.** One Gradle invocation at a time on the machine, the full `test` task included; side worktrees used the harness instead.
 - **GameTests run headless here, the MCP client cannot.** `runFluidGameTestServer` runs in the container (33/33 on fresh run ids); the langyo/minecraft-mod-mcp in-game check needs a display and is the owner's.
 - A fix resting on an assumption not forced by physics or a recorded rule is presented as options (the vent gate, D11-D14 were decided that way); every test failure is classified before any edit, and re-baselines record old and new values.
+
+## 7. Follow-up batch (2026-09-27)
+
+The owner's requirement that results be identical across JDKs led to `documentation/2026-09-27-jdk-determinism/` (sweep of 36 runtimes, diagnosis = the libm intrinsics, `DeterministicMath` facade prototyped, four owner decisions pending): see its `HANDOFF.md`. Adopting it re-baselines this batch's junction lines and `chain-100.json` once (ulp level) and removes the Windows-vs-Linux roundoff difference noted in section 3 and 6 above.
