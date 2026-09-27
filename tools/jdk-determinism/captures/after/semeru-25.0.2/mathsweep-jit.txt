@@ -1,0 +1,14 @@
+# java.runtime.version=25.0.2+10-LTS java.vm.name=Eclipse OpenJ9 VM java.vendor=IBM Corporation java.vendor.version=25.0.2.0 os.arch=amd64
+# inputs per function 1048576, repetitions 3 (the last is reported)
+fn        differ   maxUlp mathHash           strictHash         inputHash          repsStable  firstDifferingInput(hex) math strict
+log            0        0 59640537d7133d29   59640537d7133d29   303388e7a1445619   yes         -
+exp            0        0 122f7303ff862c52   122f7303ff862c52   c596cbfc0f091082   yes         -
+pow            0        0 4024a8923ce42dae   4024a8923ce42dae   4cd36ee300710cac   yes         -
+cbrt           0        0 bde4306aac784503   bde4306aac784503   fa6f396c3c10e0b3   yes         -
+log1p          0        0 f12956dc899e01b4   f12956dc899e01b4   a637c68074e655c5   yes         -
+expm1          0        0 830d5839b33a1c2f   830d5839b33a1c2f   61bab45ecea56332   yes         -
+cos            0        0 469b3f99f13ce570   469b3f99f13ce570   029a3bc6044dedfa   yes         -
+log10          0        0 8e7a3db4dfa2b891   8e7a3db4dfa2b891   7901cd30ecc1f8b9   yes         -
+acos           0        0 bc359fef99faf6a0   bc359fef99faf6a0   ad5a310969de0ff6   yes         -
+sqrt           0        0 214ccae308e66ccb   214ccae308e66ccb   19e5bca3f0353750   yes         -
+fma            0        0 9ecf2268acaa6947   9ecf2268acaa6947   1d52ef4e8be56426   yes         -

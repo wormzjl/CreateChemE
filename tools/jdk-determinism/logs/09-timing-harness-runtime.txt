@@ -1,0 +1,19 @@
+# harness.sh runtime on the container JDK (OpenJDK 21.0.10+7-Ubuntu), alternating before (efd123a, out-before) / after (prototype, out-after); machine otherwise idle; 4 cores
+before run1 wall=55.013s MIXED_GAS_COST interval=5 cases=12 ms=433 newtonSolves=286 allocatedMB=135.4  249 tests successful 
+after run1 wall=72.268s MIXED_GAS_COST interval=5 cases=12 ms=819 newtonSolves=286 allocatedMB=574.1  249 tests successful 
+before run2 wall=54.200s MIXED_GAS_COST interval=5 cases=12 ms=422 newtonSolves=286 allocatedMB=135.4  249 tests successful 
+after run2 wall=72.828s MIXED_GAS_COST interval=5 cases=12 ms=877 newtonSolves=286 allocatedMB=573.8  249 tests successful 
+before run3 wall=53.999s MIXED_GAS_COST interval=5 cases=12 ms=494 newtonSolves=286 allocatedMB=135.4  249 tests successful 
+after run3 wall=73.047s MIXED_GAS_COST interval=5 cases=12 ms=863 newtonSolves=286 allocatedMB=573.8  249 tests successful 
+attrib(pow=Math.pow, rest StrictMath) run1 wall=55.949s MIXED_GAS_COST interval=5 cases=12 ms=446 newtonSolves=286 allocatedMB=137.5
+attrib(pow=Math.pow, rest StrictMath) run2 wall=55.293s MIXED_GAS_COST interval=5 cases=12 ms=513 newtonSolves=286 allocatedMB=137.4
+# facade build (DeterministicMath: StrictMath + allocation-free fdlibm pow), alternating with before
+before run1 wall=53.306s MIXED_GAS_COST interval=5 cases=12 ms=446 newtonSolves=286 allocatedMB=135.4  249 tests successful 
+facade run1 wall=64.588s MIXED_GAS_COST interval=5 cases=12 ms=637 newtonSolves=286 allocatedMB=137.7  249 tests successful 
+before run2 wall=57.447s MIXED_GAS_COST interval=5 cases=12 ms=476 newtonSolves=286 allocatedMB=135.8  249 tests successful 
+facade run2 wall=65.734s MIXED_GAS_COST interval=5 cases=12 ms=679 newtonSolves=286 allocatedMB=137.7  249 tests successful 
+before run3 wall=54.592s MIXED_GAS_COST interval=5 cases=12 ms=423 newtonSolves=286 allocatedMB=135.3  249 tests successful 
+facade run3 wall=62.338s MIXED_GAS_COST interval=5 cases=12 ms=650 newtonSolves=286 allocatedMB=137.7  249 tests successful 
+facade+pow strength reduction (not in the prototype) run1 wall=54.111s MIXED_GAS_COST interval=5 cases=12 ms=439 newtonSolves=286 allocatedMB=137.7  249 tests successful , 0 tests failed 
+facade+pow strength reduction (not in the prototype) run2 wall=52.337s MIXED_GAS_COST interval=5 cases=12 ms=452 newtonSolves=286 allocatedMB=137.7  249 tests successful , 0 tests failed 
+facade+pow strength reduction (not in the prototype) run3 wall=55.038s MIXED_GAS_COST interval=5 cases=12 ms=445 newtonSolves=286 allocatedMB=137.7  249 tests successful , 0 tests failed 

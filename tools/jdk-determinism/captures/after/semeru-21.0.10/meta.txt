@@ -1,0 +1,13 @@
+id=semeru-21.0.10
+java=$JDKS/semeru-21.0.10/bin/java
+java.runtime.version=21.0.10+7-LTS
+java.vm.name=Eclipse OpenJ9 VM
+java.vm.version=21.0.10+7-openj9-0.57.0
+java.vendor=IBM Corporation
+java.vendor.version=21.0.10.0
+build=$SP/jdk-sweep/out-after (claude/jdk-determinism-wip prototype (DeterministicMath facade: StrictMath + allocation-free fdlibm pow; fluid boundary; chain-100 re-captured), compiled by OpenJDK 21.0.10+7-Ubuntu javac --release 21)
+runtime.exit=1 runtime.wall=84.1s junction.lines=33
+regression.exit=0
+probe.exit=0 probe.wall=6.0s
+mathsweep.jit.exit=0
+mathsweep.xint.exit=0

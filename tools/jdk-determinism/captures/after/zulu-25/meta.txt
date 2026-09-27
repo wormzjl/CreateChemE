@@ -1,0 +1,15 @@
+id=zulu-25
+java=$JDKS/zulu-25/bin/java
+java.runtime.version=25.0.4.1+1-LTS
+java.vm.name=OpenJDK 64-Bit Server VM
+java.vm.version=25.0.4.1+1-LTS
+java.vendor=Azul Systems, Inc.
+java.vendor.version=Zulu25.36+205-CA
+build=$SP/jdk-sweep/out-after (claude/jdk-determinism-wip prototype (DeterministicMath facade: StrictMath + allocation-free fdlibm pow; fluid boundary; chain-100 re-captured), compiled by OpenJDK 21.0.10+7-Ubuntu javac --release 21)
+runtime.exit=1 runtime.wall=66.0s junction.lines=33
+regression.exit=0
+probe.exit=0 probe.wall=2.5s
+probe.nolibm.exit=0
+mathsweep.jit.exit=0
+mathsweep.xint.exit=0
+mathsweep.nolibm.exit=0

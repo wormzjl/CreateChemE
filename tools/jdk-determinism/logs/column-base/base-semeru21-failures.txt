@@ -1,0 +1,6 @@
+  science.column.v3.V3ExactWarmStartSweepTest numericalTwoPhaseMatrixRemainsRejectedAfterFreshExactInputHotStarts() | feedTemperatureK=550.0, topPressurePa=250000.0, stagePressureDropPa=0.0, condenserTemperatureK=300.0, refluxRatio=2.0, reboilerDut
+  science.column.v3.V3SideDrawCalculatorTest legalNearFeedDrawNeverBecomesInvalidInputWhenTheDrawBlindSeedIsAvailable() | iteration budget exhausted ==> expected: <true> but was: <false>
+  science.column.v3.V3LearnedRecoveryTest anAcceptedLearnedCorrectionIsIdenticalUnderEitherRecoveryRule() | Unexpected type, expected: <com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome.Success> but was: <com.wormzjl.createcheme.s
+  science.column.v3.V3ExactWarmStartSweepTest physicallyAcceptedLiquidOnlyStatePassesFreshExactInputHotStart() | feedTemperatureK=550.0, topPressurePa=250000.0, stagePressureDropPa=750.0, condenserTemperatureK=300.0, refluxRatio=2.0, reboilerD
+  science.column.v3.ColumnInputPresetTest everySelectablePresetIsValidAndSurvivesSaving() | com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.writeInput(com.wormzjl.createcheme.science.column.v
+  science.column.v3.thermo.RegroupedCrudeTest previouslyDifficultCrudesPublishAuditedClassicalSolutionsWithoutLearnedSeeds() | Regrouped preset deadline

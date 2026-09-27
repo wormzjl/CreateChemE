@@ -1,0 +1,33 @@
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeResistance.java c/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeResistance.java
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeResistance.java	2026-09-27 04:58:47.868540719 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeResistance.java	2026-09-27 05:07:24.182433160 +0000
+@@ -32,12 +32,12 @@
+         }
+         double q=Math.abs(massFlow),reSlope=4/(Math.PI*viscosity*pipe.diameter),re=q*reSlope;
+         double area=pipe.area(),coefficient=1/(2*density*area*area);
+-        double laminarSlope=128*viscosity*pipe.length/(Math.PI*density*DeterministicMath.pow(pipe.diameter,4));
++        double laminarSlope=128*viscosity*pipe.length/(Math.PI*density*(pipe.diameter*pipe.diameter*(pipe.diameter*pipe.diameter)));
+         double loss=laminarSlope*q,derivative=laminarSlope;
+         if(re>2000) {
+-            double argument=pipe.roughness/(3.7*pipe.diameter)+5.74/DeterministicMath.pow(re,.9);
++            double re09=DeterministicMath.pow(re,.9),argument=pipe.roughness/(3.7*pipe.diameter)+5.74/re09;
+             double logarithm=DeterministicMath.log10(argument),friction=.25/(logarithm*logarithm);
+-            double df=-.5/DeterministicMath.pow(logarithm,3)*(-.9*5.74/DeterministicMath.pow(re,1.9))/(argument*DeterministicMath.log(10));
++            double df=-.5/(logarithm*logarithm*logarithm)*(-.9*5.74/(re09*re))/(argument*2.302585092994046);
+             double turbulent=friction*pipe.length/pipe.diameter*coefficient*q*q;
+             double turbulentSlope=pipe.length/pipe.diameter*coefficient*(2*q*friction+q*q*df*reSlope);
+             double s=Math.min(1,(re-2000)/2000),weight=s*s*(3-2*s),weightSlope=6*s*(1-s)*reSlope/2000;
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/fluid/thermo/TranslatedPengRobinson.java c/src/main/java/com/wormzjl/createcheme/science/fluid/thermo/TranslatedPengRobinson.java
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/thermo/TranslatedPengRobinson.java	2026-09-27 04:58:47.931118339 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/thermo/TranslatedPengRobinson.java	2026-09-27 05:07:24.182699622 +0000
+@@ -315,8 +315,8 @@
+         double dpdt = R/(v-b) - da/denominator;
+         if (!(dpdv < 0)) throw new IllegalArgumentException("Mechanically unstable PR root");
+         double dvdp = 1/dpdv, dvdt = -dpdt/dpdv;
+-        double dpdvv = 2*R*temperature/DeterministicMath.pow(v-b,3) + 2*a/(denominator*denominator)
+-                - 8*a*(v+b)*(v+b)/DeterministicMath.pow(denominator,3);
++        double dpdvv = 2*R*temperature/((v-b)*(v-b)*(v-b)) + 2*a/(denominator*denominator)
++                - 8*a*(v+b)*(v+b)/(denominator*denominator*denominator);
+         double dpdtv = -R/((v-b)*(v-b)) + 2*da*(v+b)/(denominator*denominator);
+         double dvdtt = -(-dda/denominator + 2*dpdtv*dvdt + dpdvv*dvdt*dvdt)/dpdv;
+         double physicalV = v + shift;

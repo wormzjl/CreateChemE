@@ -1,0 +1,15 @@
+id=sapmachine-21
+java=$JDKS/sapmachine-21/bin/java
+java.runtime.version=21.0.12.1+1-LTS
+java.vm.name=OpenJDK 64-Bit Server VM
+java.vm.version=21.0.12.1+1-LTS
+java.vendor=SAP SE
+java.vendor.version=SapMachine
+build=$SP/jdk-sweep/out-before (efd123a (tools-only diff), compiled by OpenJDK 21.0.10+7-Ubuntu javac --release 21)
+runtime.exit=0 runtime.wall=55.1s junction.lines=33
+regression.exit=0
+probe.exit=0 probe.wall=2.3s
+probe.nolibm.exit=0
+mathsweep.jit.exit=0
+mathsweep.xint.exit=0
+mathsweep.nolibm.exit=0

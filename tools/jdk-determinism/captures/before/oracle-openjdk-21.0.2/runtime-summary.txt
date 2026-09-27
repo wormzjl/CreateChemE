@@ -1,0 +1,6 @@
+[       249 tests found           ]
+[         0 tests skipped         ]
+[         0 tests aborted         ]
+[       249 tests successful      ]
+[         0 tests failed          ]
+MIXED_GAS_COST interval=5 cases=12 ms=533 newtonSolves=286 allocatedMB=135.4

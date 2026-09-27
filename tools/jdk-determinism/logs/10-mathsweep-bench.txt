@@ -1,0 +1,25 @@
+# indicative ns/call (warmed loop, volatile black hole, not JMH) on 21.0.10+7-Ubuntu-124.04 OpenJDK 64-Bit Server VM
+log    Math   6.48 ns  StrictMath   8.15 ns  ratio 1.26
+exp    Math   6.52 ns  StrictMath   9.50 ns  ratio 1.46
+pow    Math  13.52 ns  StrictMath  98.76 ns  ratio 7.31
+cbrt   Math  11.42 ns  StrictMath  11.28 ns  ratio 0.99
+expm1  Math  21.06 ns  StrictMath  20.38 ns  ratio 0.97
+log1p  Math  14.78 ns  StrictMath  14.90 ns  ratio 1.01
+# indicative ns/call (warmed loop, volatile black hole, not JMH) on 25.0.4.1+1-LTS OpenJDK 64-Bit Server VM
+log    Math   6.46 ns  StrictMath   7.67 ns  ratio 1.19
+exp    Math   5.82 ns  StrictMath   8.54 ns  ratio 1.47
+pow    Math  12.76 ns  StrictMath  88.44 ns  ratio 6.93
+cbrt   Math   9.15 ns  StrictMath  14.51 ns  ratio 1.59
+expm1  Math  21.15 ns  StrictMath  21.26 ns  ratio 1.01
+log1p  Math  15.27 ns  StrictMath  15.56 ns  ratio 1.02
+# indicative ns/call (warmed loop, volatile black hole, not JMH) on 21.0.10+7-LTS Eclipse OpenJ9 VM
+log    Math   9.12 ns  StrictMath   9.45 ns  ratio 1.04
+exp    Math  10.67 ns  StrictMath  10.39 ns  ratio 0.97
+pow    Math  71.07 ns  StrictMath  70.85 ns  ratio 1.00
+cbrt   Math  14.96 ns  StrictMath  15.02 ns  ratio 1.00
+expm1  Math  17.66 ns  StrictMath  17.42 ns  ratio 0.99
+log1p  Math  15.96 ns  StrictMath  15.73 ns  ratio 0.99
+21.0.10+7-Ubuntu-124.04 OpenJDK 64-Bit Server VM: pow ns/call Math 12.11  StrictMath 91.15  DeterministicMath 42.23
+25.0.4.1+1-LTS OpenJDK 64-Bit Server VM: pow ns/call Math 12.92  StrictMath 90.78  DeterministicMath 46.30
+21.0.10+7-LTS Eclipse OpenJ9 VM: pow ns/call Math 63.12  StrictMath 61.72  DeterministicMath 51.12
+25.0.4.1+1-jvmci-25.3-b22 OpenJDK 64-Bit Server VM: pow ns/call Math 11.81  StrictMath 58.77  DeterministicMath 51.12

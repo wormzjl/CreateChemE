@@ -1,0 +1,26 @@
+### chain-100 - 100-reservoir cosine-pressure chain (1 x 5 s)
+| interval | wall ms | allocated MB | accepted | rejected | implicitSolves | activeSetPasses | newtonSolves | newtonIterations | newtonBacktracks | residualEvaluations | residualEvaluationsInJacobian | jacobianBuilds | jacobianColors | jacobianNonzeros | jacobianBlockBuilds | jacobianBlockColumns | jacobianBlockFallbacks | newtonSolvesPreconditioned | newtonIterationsPreconditioned | newtonIterationsFresh | newtonIterationsStale | newtonStepEvaluationsFresh | newtonStepEvaluationsStale | newtonMeritProbes | newtonRefreshesStalled | newtonRefreshesAged | newtonRefreshesFailed | verificationResiduals | equationGateRejections | equationGatePolishes | equationGatePolishesAccepted | luFactorizations | luFactorNanos | luSolves | luSolveNanos | luChecks | luRefinements | luOrderings | luOrderingNanos | luStorages | luSupersededFactorizations | transportFactorizations | transportFactorNanos | transportSolves | transportSolveNanos | transportOrderings | transportOrderingNanos | stateCalls | stateCallsInJacobian | temperatureTermsCalls | flashCalls | reconstructCalls | reconstructNanos | traceOmittedUnknowns | truncatedNodePasses | traceReactivations | solidMomentProjections | solidMomentProjectionsAtAcceptedPoints | solidTransitionRejections | workspaceReuses | workspaceBuilds | stepAttempts | stepAttemptsAccepted |
+attempts: [Attempt[index=0, step=1.0, accepted=true, dominant=be-state, error=0.0012837802542461042], Attempt[index=1, step=2.0, accepted=true, dominant=be-state, error=0.001974873530922163], Attempt[index=2, step=2.0, accepted=true, dominant=be-state, error=0.0015538234403225817]]
+chain-100 vs reference: max deviation: state/moles 8.012e-15 relative (chain-100 interval 0 node 27 moles[1] reference 0.20785966498276476 -> 0.20785966498276642), temperature 2.842e-13 K (chain-100 interval 0 node 62 temperature reference 349.99029792769363 -> 349.99029792769335), phase fraction 3.886e-16 (chain-100 interval 0 node 27 liquidVolume reference 0.04276501149520089 -> 0.0427650114952013), flow 6.804e-11 relative (chain-100 interval 0 pipe 4 averageMassFlow reference -4.217556210219395E-4 -> -4.21755620993242E-4, difference 2.8697476252975695E-14 kg/s, controller allowance 3.154305636239644E-8 kg/s)
+chain-100 interval 0 node 1 temperature: expected 349.9691707721423, got 349.96917077214215 (difference 1.7053025658242404E-13)
+chain-100 interval 0 node 1 pressure: expected 150661.35609003517, got 150661.3560900346 (difference 5.820766091346741E-10)
+chain-100 interval 0 node 1 mass: expected 38.864360901667155, got 38.86436090166719 (difference 3.552713678800501E-14)
+chain-100 interval 0 node 1 volume: expected 1.0, got 1.0000000000000002 (difference 2.220446049250313E-16)
+chain-100 interval 0 node 1 liquidVolume: expected 0.04287779261203801, got 0.042877792612038126 (difference 1.1796119636642288E-16)
+chain-100 interval 0 node 1 vaporVolume: expected 0.9567275834233299, got 0.95672758342333 (difference 1.1102230246251565E-16)
+chain-100 interval 0 node 1 waterVolume: expected 3.9462396463219447E-4, got 3.946239646321966E-4 (difference 2.1141942363467336E-18)
+chain-100 interval 0 node 1 moles[0]: expected 0.8749223092269601, got 0.8749223092269611 (difference 9.992007221626409E-16)
+chain-100 interval 0 node 1 moles[1]: expected 0.20838891702676357, got 0.20838891702676376 (difference 1.942890293094024E-16)
+chain-100 interval 0 node 1 moles[2]: expected 1.8534210895661427, got 1.8534210895661443 (difference 1.5543122344752192E-15)
+chain-100 interval 0 node 1 moles[3]: expected 1.1393204569475641, got 1.1393204569475652 (difference 1.1102230246251565E-15)
+chain-100 interval 0 node 1 moles[4]: expected 3.8950232967667473, got 3.8950232967667495 (difference 2.220446049250313E-15)
+chain-100 interval 0 node 1 moles[5]: expected 2.910300323246285, got 2.9103003232462874 (difference 2.220446049250313E-15)
+chain-100 interval 0 node 1 moles[6]: expected 4.296798573217701, got 4.2967985732177025 (difference 1.7763568394002505E-15)
+chain-100 interval 0 node 1 moles[7]: expected 29.098800951350736, got 29.098800951350764 (difference 2.842170943040401E-14)
+chain-100 interval 0 node 1 moles[8]: expected 21.549069624126243, got 21.549069624126258 (difference 1.4210854715202004E-14)
+chain-100 interval 0 node 1 moles[9]: expected 20.60425864186159, got 20.60425864186161 (difference 1.7763568394002505E-14)
+chain-100 interval 0 node 1 moles[10]: expected 18.31930391236479, got 18.31930391236481 (difference 1.7763568394002505E-14)
+chain-100 interval 0 node 1 moles[11]: expected 15.226551587612455, got 15.226551587612466 (difference 1.0658141036401503E-14)
+chain-100 interval 0 node 1 moles[12]: expected 12.837656870063205, got 12.837656870063213 (difference 8.881784197001252E-15) ==> expected: <true> but was: <false>
+[         0 tests successful      ]
+[         1 tests failed          ]

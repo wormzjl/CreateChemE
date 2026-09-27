@@ -1,0 +1,778 @@
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/HollandB12Thermo.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/HollandB12Thermo.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/HollandB12Thermo.java	2026-09-27 02:21:51.445349131 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/HollandB12Thermo.java	2026-09-27 05:17:55.278106719 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityResult;
+@@ -49,7 +51,7 @@
+         double[] logPhi = new double[data.componentCount()];
+         if (phase == V3Phase.LIQUID) {
+             double[] ratios = equilibriumRatios(temperatureKelvin, pressurePascal);
+-            for (int component = 0; component < ratios.length; component++) logPhi[component] = Math.log(ratios[component]);
++            for (int component = 0; component < ratios.length; component++) logPhi[component] = DeterministicMath.log(ratios[component]);
+         }
+         return new V3FugacityResult(phase, logPhi, phase == V3Phase.LIQUID ? 0.1 : 1.0,
+                 molarEnthalpy(temperatureKelvin, pressurePascal, normalized, phase, workspace), 1, 0.0);
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/IndependentHollandMeshOracle.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/IndependentHollandMeshOracle.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/IndependentHollandMeshOracle.java	2026-09-27 02:21:51.445603678 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/IndependentHollandMeshOracle.java	2026-09-27 05:17:55.265176551 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import java.util.Arrays;
+ import java.util.Objects;
+ 
+@@ -192,8 +194,8 @@
+             double vaporTotal = sum(vapor[node]);
+             double[] ratios = equilibriumRatios(temperatures[node]);
+             for (int component = 0; component < componentCount; component++) {
+-                residual[row++] = Math.log(vapor[node][component] / vaporTotal)
+-                        - Math.log(ratios[component] * liquid[node][component] / liquidTotal);
++                residual[row++] = DeterministicMath.log(vapor[node][component] / vaporTotal)
++                        - DeterministicMath.log(ratios[component] * liquid[node][component] / liquidTotal);
+             }
+         }
+         for (int node = 1; node < NODE_COUNT; node++) {
+@@ -243,10 +245,10 @@
+         double[] coordinates = new double[coordinateCount()];
+         int index = 0;
+         for (double[] node : state.liquidComponentFlows()) {
+-            for (double flow : node) coordinates[index++] = Math.log(requirePositive(flow, "independent liquid flow"));
++            for (double flow : node) coordinates[index++] = DeterministicMath.log(requirePositive(flow, "independent liquid flow"));
+         }
+         for (double[] node : state.vaporComponentFlows()) {
+-            for (double flow : node) coordinates[index++] = Math.log(requirePositive(flow, "independent vapor flow"));
++            for (double flow : node) coordinates[index++] = DeterministicMath.log(requirePositive(flow, "independent vapor flow"));
+         }
+         for (int node = 1; node < NODE_COUNT; node++) coordinates[index++] = state.temperaturesFahrenheit()[node];
+         return coordinates;
+@@ -262,12 +264,12 @@
+         double[][] vapor = new double[NODE_COUNT][componentCount];
+         for (int node = 0; node < NODE_COUNT; node++) {
+             for (int component = 0; component < componentCount; component++) {
+-                liquid[node][component] = requirePositive(Math.exp(coordinates[index++]), "independent liquid flow");
++                liquid[node][component] = requirePositive(DeterministicMath.exp(coordinates[index++]), "independent liquid flow");
+             }
+         }
+         for (int node = 0; node < NODE_COUNT; node++) {
+             for (int component = 0; component < componentCount; component++) {
+-                vapor[node][component] = requirePositive(Math.exp(coordinates[index++]), "independent vapor flow");
++                vapor[node][component] = requirePositive(DeterministicMath.exp(coordinates[index++]), "independent vapor flow");
+             }
+         }
+         double[] temperatures = new double[NODE_COUNT];
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAuditor.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAuditor.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAuditor.java	2026-09-27 02:21:51.445603678 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAuditor.java	2026-09-27 05:17:55.327209708 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
+@@ -769,7 +771,7 @@
+                     vapor, V3Phase.VAPOR, workspace);
+             double[] kValues = new double[overall.length];
+             for (int component = 0; component < kValues.length; component++) {
+-                kValues[component] = Math.exp(liquidFugacity.logFugacityCoefficient(component)
++                kValues[component] = DeterministicMath.exp(liquidFugacity.logFugacityCoefficient(component)
+                         - vaporFugacity.logFugacityCoefficient(component)) / vaporScale;
+                 if (!Double.isFinite(kValues[component]) || kValues[component] <= 0.0) {
+                     return IndependentCondenserFlash.unavailable(overall.length);
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3AnchorTransformerInitializer.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3AnchorTransformerInitializer.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3AnchorTransformerInitializer.java	2026-09-27 02:21:51.445603678 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3AnchorTransformerInitializer.java	2026-09-27 05:17:55.243761465 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.google.gson.Gson;
+ import java.io.IOException;
+ import java.io.InputStream;
+@@ -275,7 +277,7 @@
+                     for (int k = 0; k < 16; k++) scores[j] += qkv[i][head * 16 + k] * qkv[j][64 + head * 16 + k];
+                     scores[j] *= .25; max = Math.max(max, scores[j]);
+                 }
+-                for (int j = 0; j < n; j++) { scores[j] = Math.exp(scores[j] - max); sum += scores[j]; }
++                for (int j = 0; j < n; j++) { scores[j] = DeterministicMath.exp(scores[j] - max); sum += scores[j]; }
+                 for (int j = 0; j < n; j++) for (int k = 0; k < 16; k++) joined[head * 16 + k] += scores[j] / sum * qkv[j][128 + head * 16 + k];
+             }
+             output[i] = linear(joined, p + "out_proj", control);
+@@ -312,7 +314,7 @@
+         // Its effect on complete model outputs is bounded by the parity gate.
+         for (int i = 0; i < x.length; i++) {
+             double v = x[i] / Math.sqrt(2), a = Math.abs(v), t = 1 / (1 + .3275911 * a);
+-            double erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * Math.exp(-a * a);
++            double erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * DeterministicMath.exp(-a * a);
+             x[i] *= .5 * (1 + Math.copySign(erf, v));
+         }
+         return x;
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java	2026-09-27 02:21:51.447980979 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java	2026-09-27 05:17:55.251245882 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationEvidence;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
+@@ -2634,8 +2636,8 @@
+     static String closureSuffix(double closureTolerance) {
+         V3ConvergenceEvidence.requireClosure(closureTolerance);
+         if (closureTolerance <= V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE) return "";
+-        int exponent = (int) Math.floor(Math.log10(closureTolerance));
+-        double mantissa = closureTolerance / Math.pow(10.0, exponent);
++        int exponent = (int) Math.floor(DeterministicMath.log10(closureTolerance));
++        double mantissa = closureTolerance / DeterministicMath.pow(10.0, exponent);
+         String digits = new java.math.BigDecimal(mantissa)
+                 .round(new java.math.MathContext(6)).stripTrailingZeros().toPlainString();
+         return "-closure" + digits + "e" + exponent;
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.java	2026-09-27 02:21:51.447980979 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.java	2026-09-27 05:17:55.258446027 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityResult;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
+@@ -411,7 +413,7 @@
+         double sum = 0.0;
+         for (int component = 0; component < active.componentCount(); component++) {
+             int publicComponent = active.publicIndex(component);
+-            sum += liquidComposition[publicComponent] * Math.exp(
++            sum += liquidComposition[publicComponent] * DeterministicMath.exp(
+                     liquid.logFugacityCoefficient(publicComponent) - vapor.logFugacityCoefficient(publicComponent));
+         }
+         return sum - 1.0;
+@@ -466,9 +468,9 @@
+         for (int node = 0; node < current.length; node++) {
+             for (int component = 0; component < current[node].length; component++) {
+                 maximumLogChange = Math.max(maximumLogChange,
+-                        Math.abs(Math.log(target[node][component]) - Math.log(current[node][component])));
+-                current[node][component] = Math.exp((1.0 - damping) * Math.log(current[node][component])
+-                        + damping * Math.log(target[node][component]));
++                        Math.abs(DeterministicMath.log(target[node][component]) - DeterministicMath.log(current[node][component])));
++                current[node][component] = DeterministicMath.exp((1.0 - damping) * DeterministicMath.log(current[node][component])
++                        + damping * DeterministicMath.log(target[node][component]));
+             }
+         }
+         return maximumLogChange;
+@@ -771,10 +773,10 @@
+                 vaporSum += vapor[node][component];
+             }
+             if (!(liquidSum > 0.0)) return Double.POSITIVE_INFINITY;
+-            mismatch = Math.max(mismatch, Math.abs(Math.log(liquidSum / liquidTotals[node])));
++            mismatch = Math.max(mismatch, Math.abs(DeterministicMath.log(liquidSum / liquidTotals[node])));
+             if (node == 0 && vaporSum == 0.0 && vaporTotals[node] == 0.0) continue;
+             if (!(vaporSum > 0.0)) return Double.POSITIVE_INFINITY;
+-            mismatch = Math.max(mismatch, Math.abs(Math.log(vaporSum / vaporTotals[node])));
++            mismatch = Math.max(mismatch, Math.abs(DeterministicMath.log(vaporSum / vaporTotals[node])));
+         }
+         return mismatch;
+     }
+@@ -809,7 +811,7 @@
+                     V3Phase.VAPOR, workspace);
+             for (int component = 0; component < active.componentCount(); component++) {
+                 int publicComponent = active.publicIndex(component);
+-                ratios[node][component] = boundedRatio(Math.exp(
++                ratios[node][component] = boundedRatio(DeterministicMath.exp(
+                         liquidResult.logFugacityCoefficient(publicComponent)
+                                 - vaporResult.logFugacityCoefficient(publicComponent)));
+             }
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3DryMeshCoordinateMap.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3DryMeshCoordinateMap.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3DryMeshCoordinateMap.java	2026-09-27 02:21:51.447980979 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3DryMeshCoordinateMap.java	2026-09-27 05:17:55.358919794 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import java.util.List;
+ import java.util.Objects;
+ 
+@@ -116,18 +118,18 @@
+         if (!Double.isFinite(flow) || flow <= 0.0) {
+             throw new IllegalArgumentException("V3 MESH active flow must be positive before entering log coordinates");
+         }
+-        return Math.log(flow / componentFlowScales[component]);
++        return DeterministicMath.log(flow / componentFlowScales[component]);
+     }
+ 
+     private double logFreeWater(double flow) {
+         if (!Double.isFinite(flow) || flow <= 0.0) {
+             throw new IllegalArgumentException("V3 MESH free water must be positive on a wet tray before entering log coordinates");
+         }
+-        return Math.log(flow / freeWaterFlowScale);
++        return DeterministicMath.log(flow / freeWaterFlowScale);
+     }
+ 
+     private double freeWaterFlow(double coordinate) {
+-        double flow = freeWaterFlowScale * Math.exp(coordinate);
++        double flow = freeWaterFlowScale * DeterministicMath.exp(coordinate);
+         if (!Double.isFinite(flow) || flow <= 0.0) {
+             throw new IllegalArgumentException("V3 MESH free-water log coordinate decodes outside the finite positive flow domain");
+         }
+@@ -135,7 +137,7 @@
+     }
+ 
+     private double flow(double coordinate, int component) {
+-        double flow = componentFlowScales[component] * Math.exp(coordinate);
++        double flow = componentFlowScales[component] * DeterministicMath.exp(coordinate);
+         if (!Double.isFinite(flow) || flow <= 0.0) {
+             throw new IllegalArgumentException("V3 MESH log coordinate decodes outside the finite positive flow domain");
+         }
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralFeatures.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralFeatures.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralFeatures.java	2026-09-27 02:21:51.447980979 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralFeatures.java	2026-09-27 05:17:55.290931058 +0000
+@@ -1,12 +1,14 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import java.util.Arrays;
+ 
+ /** Gen3 targets separate phase traffic from normalized compositions and optional learned seed support. */
+ public final class V3FactorizedNeuralFeatures {
+     public static final String REVISION = "v3-factorized-stage-1";
+     public static final double TRACE_FLOOR_FRACTION = 1e-10;
+-    private static final double MAXIMUM_LOG_TOTAL = Math.log1p(1000);
++    private static final double MAXIMUM_LOG_TOTAL = DeterministicMath.log1p(1000);
+ 
+     private V3FactorizedNeuralFeatures() {}
+ 
+@@ -27,7 +29,7 @@
+             result[n][0] = temperatures[n];
+             encodePhase(result[n], 1, 3, 5 + 2*c, liquid[n], feed, total);
+             encodePhase(result[n], 2, 3 + c, 5 + 3*c, vapor[n], feed, total);
+-            result[n][3 + 2*c] = Math.log1p(water[n] / (total * 1e-8));
++            result[n][3 + 2*c] = DeterministicMath.log1p(water[n] / (total * 1e-8));
+             result[n][4 + 2*c] = wet[n] ? 1 : 0;
+         }
+         return result;
+@@ -36,13 +38,13 @@
+     private static void encodePhase(double[] target, int totalIndex, int compositionOffset, int presenceOffset,
+             double[] flows, double[] feed, double totalFeed) {
+         double phaseTotal = Arrays.stream(flows).sum();
+-        target[totalIndex] = Math.log1p(phaseTotal / totalFeed);
++        target[totalIndex] = DeterministicMath.log1p(phaseTotal / totalFeed);
+         double center = 0; int active = 0;
+         for (int c = 0; c < feed.length; c++) {
+             double floor = Math.max(feed[c], totalFeed * 1e-12) * TRACE_FLOOR_FRACTION;
+             target[presenceOffset + c] = feed[c] > 0 && flows[c] >= floor ? 8 : -8;
+             if (feed[c] == 0 || phaseTotal == 0) continue;
+-            double logRatio = Math.log(Math.max(flows[c], floor) / phaseTotal / (feed[c] / totalFeed));
++            double logRatio = DeterministicMath.log(Math.max(flows[c], floor) / phaseTotal / (feed[c] / totalFeed));
+             target[compositionOffset + c] = logRatio; center += logRatio; active++;
+         }
+         if (active > 0) for (int c = 0; c < feed.length; c++)
+@@ -114,7 +116,7 @@
+ 
+         /** Presence logit a kept component must reach to be lifted; unreachable while the rule is off. */
+         double liftLogit() {
+-            return liftsPresentTraces() ? Math.log(liftPresenceProbability / (1 - liftPresenceProbability))
++            return liftsPresentTraces() ? DeterministicMath.log(liftPresenceProbability / (1 - liftPresenceProbability))
+                     : Double.POSITIVE_INFINITY;
+         }
+     }
+@@ -151,7 +153,7 @@
+             double waterLog = row[3 + 2*c];
+             if (waterLog > 30) throw new IllegalArgumentException("Unbounded factorized water flow");
+             wet[n] = row[4 + 2*c] >= .5 && n > 0 && n < count-1 && !input.steamFeeds().isEmpty();
+-            water[n] = wet[n] ? Math.expm1(Math.max(0, waterLog)) * total * 1e-8 : 0;
++            water[n] = wet[n] ? DeterministicMath.expm1(Math.max(0, waterLog)) * total * 1e-8 : 0;
+         }
+         for (var spec : input.specifications()) if (spec instanceof V3ColumnSpecification.CondenserOutletTemperature t) temperatures[0] = t.kelvin();
+         return new V3NeuralSeed(input, revision, branch, liquid, vapor, temperatures, water, wet);
+@@ -159,7 +161,7 @@
+ 
+     private static double phaseTotal(double value, double feed) {
+         if (value > MAXIMUM_LOG_TOTAL) throw new IllegalArgumentException("Unbounded factorized phase total");
+-        return Math.expm1(Math.max(0, value)) * feed;
++        return DeterministicMath.expm1(Math.max(0, value)) * feed;
+     }
+ 
+     private static double[] decodePhase(double[] row, int compositionOffset, int presenceOffset, double total,
+@@ -167,12 +169,12 @@
+         double[] flows = new double[feed.length], logits = new double[feed.length];
+         boolean[] present = new boolean[feed.length]; int fallback = -1;
+         double maximum = -Double.MAX_VALUE, fallbackMaximum = -Double.MAX_VALUE;
+-        double thresholdLogit = presenceThreshold == 0 ? -Double.MAX_VALUE : Math.log(presenceThreshold / (1-presenceThreshold));
++        double thresholdLogit = presenceThreshold == 0 ? -Double.MAX_VALUE : DeterministicMath.log(presenceThreshold / (1-presenceThreshold));
+         for (int c = 0; c < feed.length; c++) {
+             if (Math.abs(row[compositionOffset+c]) > 120 || Math.abs(row[presenceOffset+c]) > 120)
+                 throw new IllegalArgumentException("Unbounded factorized composition or presence logit");
+             if (feed[c] == 0) continue;
+-            logits[c] = Math.log(feed[c] / totalFeed) + row[compositionOffset+c];
++            logits[c] = DeterministicMath.log(feed[c] / totalFeed) + row[compositionOffset+c];
+             if (fallback < 0 || logits[c] > fallbackMaximum) { fallback = c; fallbackMaximum = logits[c]; }
+             present[c] = row[presenceOffset+c] >= thresholdLogit;
+             if (present[c]) maximum = Math.max(maximum, logits[c]);
+@@ -190,7 +192,7 @@
+         // A positive phase-total head retains at least one component if all support scores are uncertain.
+         if (maximum == -Double.MAX_VALUE) { present[fallback] = true; maximum = fallbackMaximum; }
+         double sum = 0;
+-        for (int c = 0; c < feed.length; c++) if (present[c]) { flows[c] = Math.exp(logits[c]-maximum); sum += flows[c]; }
++        for (int c = 0; c < feed.length; c++) if (present[c]) { flows[c] = DeterministicMath.exp(logits[c]-maximum); sum += flows[c]; }
+         double retained = 0, liftLogit = options.liftLogit();
+         double[] lifted = null;
+         for (int c = 0; c < feed.length; c++) {
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FreeWaterContinuation.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FreeWaterContinuation.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FreeWaterContinuation.java	2026-09-27 02:21:51.447980979 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FreeWaterContinuation.java	2026-09-27 05:17:55.271691762 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
+ import java.util.ArrayList;
+ import java.util.List;
+@@ -361,7 +363,7 @@
+         private double saturationResidual(int tray) {
+             double water = waterVaporFlow(tray);
+             V3WetTraySet.Saturation saturation = V3WetTraySet.saturation(problem, state, tray, water);
+-            return saturation == null ? Double.NaN : Math.log(saturation.ratio());
++            return saturation == null ? Double.NaN : DeterministicMath.log(saturation.ratio());
+         }
+ 
+         private double waterVaporFlow(int node) {
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralFeatures.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralFeatures.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralFeatures.java	2026-09-27 02:21:51.447980979 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralFeatures.java	2026-09-27 05:17:55.343562287 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
+ import java.util.Arrays;
+ 
+@@ -23,7 +25,7 @@
+         double[] feed = input.feedComponentMolarFlowsMolPerSecond();
+         double total = Arrays.stream(feed).sum(), span = input.stageCount() + 1.0;
+         double[] x = new double[globalWidth(feed.length)];
+-        x[0] = Math.log(total); x[1] = input.feedTemperatureKelvin();
++        x[0] = DeterministicMath.log(total); x[1] = input.feedTemperatureKelvin();
+         x[2] = input.topPressurePascal() / 1e5; x[3] = input.stagePressureDropPascal() / 1e3;
+         x[4] = input.stageCount() / 64.0; x[5] = input.feedStageNumber() / span;
+         for (V3ColumnSpecification spec : input.specifications()) {
+@@ -117,9 +119,9 @@
+         double[][] y = new double[t.length][outputWidth(feed.length)];
+         for (int n = 0; n < t.length; n++) {
+             int k = 0; y[n][k++] = t[n];
+-            for (int c = 0; c < feed.length; c++) y[n][k++] = Math.log1p(l[n][c] / componentScale(feed[c], total));
+-            for (int c = 0; c < feed.length; c++) y[n][k++] = Math.log1p(v[n][c] / componentScale(feed[c], total));
+-            y[n][k++] = Math.log1p(w[n] / (total * FLOW_FLOOR)); y[n][k] = wet[n] ? 1 : 0;
++            for (int c = 0; c < feed.length; c++) y[n][k++] = DeterministicMath.log1p(l[n][c] / componentScale(feed[c], total));
++            for (int c = 0; c < feed.length; c++) y[n][k++] = DeterministicMath.log1p(v[n][c] / componentScale(feed[c], total));
++            y[n][k++] = DeterministicMath.log1p(w[n] / (total * FLOW_FLOOR)); y[n][k] = wet[n] ? 1 : 0;
+         }
+         return y;
+     }
+@@ -156,7 +158,7 @@
+     private static double componentScale(double componentFeed, double total) { return Math.max(componentFeed, total * 1e-12) * 1e-5; }
+     private static double flow(double value, double scale) {
+         if (!Double.isFinite(value) || value > 30) throw new IllegalArgumentException("Unbounded neural flow");
+-        return scale * Math.expm1(Math.max(0, value));
++        return scale * DeterministicMath.expm1(Math.max(0, value));
+     }
+     private static double nearestPosition(int[] positions, int node, double span) {
+         if (positions.length == 0) return 0;
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3HollandExample32.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3HollandExample32.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3HollandExample32.java	2026-09-27 02:21:51.447980979 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3HollandExample32.java	2026-09-27 05:17:55.316635604 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
+ import java.util.ArrayList;
+@@ -132,10 +134,10 @@
+             for (int component = 0; component < components; component++) {
+                 liquid[node][component] = source.liquidComponentFlows()[node][component]
+                         * HollandExample32Data.LB_MOL_PER_HOUR_TO_MOL_PER_SECOND
+-                        * Math.exp((((node * 31 + component * 17) % 7) - 3) * 0.002);
++                        * DeterministicMath.exp((((node * 31 + component * 17) % 7) - 3) * 0.002);
+                 vapor[node][component] = source.vaporComponentFlows()[node][component]
+                         * HollandExample32Data.LB_MOL_PER_HOUR_TO_MOL_PER_SECOND
+-                        * Math.exp((((node * 19 + component * 23) % 7) - 3) * 0.002);
++                        * DeterministicMath.exp((((node * 19 + component * 23) % 7) - 3) * 0.002);
+             }
+         }
+         return new V3DryMeshState(problem.topology(), components, liquid, vapor, temperatures);
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator.java	2026-09-27 02:21:51.451980980 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator.java	2026-09-27 05:17:55.351484159 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityDerivatives;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityResult;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
+@@ -319,9 +321,9 @@
+ 
+     private double equilibriumResidual(V3DryMeshState state, int node, int component, NodeProperties properties) {
+         int publicComponent = activeComponentBasis.publicIndex(component);
+-        double residual = Math.log(properties.vaporComposition()[publicComponent])
++        double residual = DeterministicMath.log(properties.vaporComposition()[publicComponent])
+                 + properties.vaporResult().logFugacityCoefficient(publicComponent)
+-                - Math.log(properties.liquidComposition()[publicComponent])
++                - DeterministicMath.log(properties.liquidComposition()[publicComponent])
+                 - properties.liquidResult().logFugacityCoefficient(publicComponent);
+         return problem.hasSteamFeeds() ? residual + waterDilutionLogTerm(state, node, properties.vaporTotal()) : residual;
+     }
+@@ -377,8 +379,8 @@
+             throw new IllegalArgumentException("V3 MESH wet tray carries no positive water vapor");
+         }
+         double hydrocarbon = properties.vaporTotal();
+-        return Math.log(problem.nodePressurePascal(node)) + Math.log(water) - Math.log(hydrocarbon + water)
+-                - Math.log(V3WaterProperties.saturationPressurePascal(state.temperatureKelvin(node)));
++        return DeterministicMath.log(problem.nodePressurePascal(node)) + DeterministicMath.log(water) - DeterministicMath.log(hydrocarbon + water)
++                - DeterministicMath.log(V3WaterProperties.saturationPressurePascal(state.temperatureKelvin(node)));
+     }
+ 
+     private double phaseEnergy(V3DryMeshState state, int node, boolean liquid, NodeProperties[] properties) {
+@@ -465,7 +467,7 @@
+ 
+     private double waterDilutionLogTerm(V3DryMeshState state, int node, double hydrocarbonVaporTotal) {
+         double water = waterVaporFlow(state, node);
+-        return water == 0.0 ? 0.0 : Math.log(hydrocarbonVaporTotal / (hydrocarbonVaporTotal + water));
++        return water == 0.0 ? 0.0 : DeterministicMath.log(hydrocarbonVaporTotal / (hydrocarbonVaporTotal + water));
+     }
+ 
+     /**
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3StageEquilibriumRatios.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3StageEquilibriumRatios.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3StageEquilibriumRatios.java	2026-09-27 02:21:51.451980980 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3StageEquilibriumRatios.java	2026-09-27 05:17:55.334604232 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityResult;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
+@@ -58,7 +60,7 @@
+                         V3Phase.VAPOR, workspace);
+                 for (int component = 0; component < ratios.length; component++) {
+                     int publicComponent = basis.publicIndex(component);
+-                    ratios[component] = Math.exp(liquid.logFugacityCoefficient(publicComponent)
++                    ratios[component] = DeterministicMath.exp(liquid.logFugacityCoefficient(publicComponent)
+                             - vapor.logFugacityCoefficient(publicComponent));
+                 }
+             } catch (V3ThermoException | IllegalArgumentException unavailable) {
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3TrayHydraulics.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3TrayHydraulics.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3TrayHydraulics.java	2026-09-27 02:21:51.451980980 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3TrayHydraulics.java	2026-09-27 05:17:55.284518714 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
+ import java.util.Locale;
+ import java.util.Objects;
+@@ -204,8 +206,8 @@
+         double standardReduced = Math.min(0.98,
+                 STANDARD_DENSITY_TEMPERATURE_KELVIN / tray.liquidCriticalTemperatureKelvin());
+         double reduced = Math.min(0.98, tray.temperatureKelvin() / tray.liquidCriticalTemperatureKelvin());
+-        return standardDensity * Math.pow(rackettCompressibility,
+-                Math.pow(1.0 - standardReduced, 2.0 / 7.0) - Math.pow(1.0 - reduced, 2.0 / 7.0));
++        return standardDensity * DeterministicMath.pow(rackettCompressibility,
++                DeterministicMath.pow(1.0 - standardReduced, 2.0 / 7.0) - DeterministicMath.pow(1.0 - reduced, 2.0 / 7.0));
+     }
+ 
+     /**
+@@ -231,13 +233,13 @@
+         double densityDifference = Math.max(1.0, liquidDensity - vaporDensity);
+         double bubblingVelocity = vaporVolumeFlow / bubblingArea();
+         double capacityFactor = bubblingVelocity * Math.sqrt(vaporDensity / densityDifference);
+-        double aeration = Math.exp(-12.55 * Math.pow(capacityFactor, 0.91));
+-        double crestCoefficient = 0.501 + 0.438 * Math.exp(-137.8 * WEIR_HEIGHT_METRES);
++        double aeration = DeterministicMath.exp(-12.55 * DeterministicMath.pow(capacityFactor, 0.91));
++        double crestCoefficient = 0.501 + 0.438 * DeterministicMath.exp(-137.8 * WEIR_HEIGHT_METRES);
+         double clearLiquidHeight = aeration * (WEIR_HEIGHT_METRES + crestCoefficient
+-                * Math.pow(Math.max(0.0, liquidVolumeFlow) / (weirLengthMetres() * aeration), 2.0 / 3.0));
++                * DeterministicMath.pow(Math.max(0.0, liquidVolumeFlow) / (weirLengthMetres() * aeration), 2.0 / 3.0));
+         double holeVelocity = bubblingVelocity / HOLE_AREA_FRACTION;
+         double dry = vaporDensity * holeVelocity * holeVelocity / (2.0 * ORIFICE_COEFFICIENT * ORIFICE_COEFFICIENT);
+-        double bubbleDiameter = 1.27 * Math.cbrt(HOLE_DIAMETER_METRES * SURFACE_TENSION_NEWTON_PER_METRE
++        double bubbleDiameter = 1.27 * DeterministicMath.cbrt(HOLE_DIAMETER_METRES * SURFACE_TENSION_NEWTON_PER_METRE
+                 / (STANDARD_GRAVITY * densityDifference));
+         double residual = 6.0 * SURFACE_TENSION_NEWTON_PER_METRE / bubbleDiameter;
+         double flowParameter = tray.vaporMassFlowKgPerSecond() > 0.0
+@@ -245,9 +247,9 @@
+                         + tray.freeWaterMolarFlowMolPerSecond() * WATER_MOLECULAR_WEIGHT_KG_PER_MOL)
+                         / tray.vaporMassFlowKgPerSecond() * Math.sqrt(vaporDensity / liquidDensity)
+                 : 1.0;
+-        double capacityParameter = (0.0105 + 8.127e-4 * Math.pow(TRAY_SPACING_METRES * 1000.0, 0.755)
+-                * Math.exp(-1.463 * Math.pow(flowParameter, 0.842)))
+-                * Math.pow(SURFACE_TENSION_NEWTON_PER_METRE / 0.02, 0.2);
++        double capacityParameter = (0.0105 + 8.127e-4 * DeterministicMath.pow(TRAY_SPACING_METRES * 1000.0, 0.755)
++                * DeterministicMath.exp(-1.463 * DeterministicMath.pow(flowParameter, 0.842)))
++                * DeterministicMath.pow(SURFACE_TENSION_NEWTON_PER_METRE / 0.02, 0.2);
+         double flood = (vaporVolumeFlow / netArea())
+                 / (capacityParameter * Math.sqrt(Math.max(1.0e-9, densityDifference / vaporDensity)));
+         return new Terms(dry, liquidDensity * STANDARD_GRAVITY * clearLiquidHeight, residual, flood);
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlash.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlash.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlash.java	2026-09-27 02:21:51.455624410 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlash.java	2026-09-27 05:17:55.297222915 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3.thermo;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ /** Bounded rigorous dry-hydrocarbon TP flash with normal all-liquid, two-phase, and all-vapor outcomes. */
+ final class V3FeedFlash {
+     private static final int MAXIMUM_ITERATIONS = 64;
+@@ -13,7 +15,7 @@
+             V3PengRobinsonThermo model, double temperatureKelvin, double pressurePascal, V3ThermoWorkspace workspace) {
+         int componentCount = workspace.componentCount();
+         model.wilsonK(temperatureKelvin, pressurePascal, workspace.wilsonK, workspace);
+-        for (int component = 0; component < componentCount; component++) workspace.logK[component] = Math.log(workspace.wilsonK[component]);
++        for (int component = 0; component < componentCount; component++) workspace.logK[component] = DeterministicMath.log(workspace.wilsonK[component]);
+ 
+         double atLiquidEndpoint = rachfordRiceResidual(workspace.normalizedOverall, workspace.logK, 0.0);
+         double atVaporEndpoint = rachfordRiceResidual(workspace.normalizedOverall, workspace.logK, 1.0);
+@@ -81,8 +83,8 @@
+     private static double rachfordRiceRoot(double[] composition, double[] logK, double[] k, double[] kMinusOne) {
+         for (int component = 0; component < composition.length; component++) {
+             if (composition[component] == 0.0) continue;
+-            k[component] = Math.exp(logK[component]);
+-            kMinusOne[component] = Math.expm1(logK[component]);
++            k[component] = DeterministicMath.exp(logK[component]);
++            kMinusOne[component] = DeterministicMath.expm1(logK[component]);
+         }
+         double lower = 0.0;
+         double upper = 1.0;
+@@ -115,8 +117,8 @@
+         double residual = 0.0;
+         for (int component = 0; component < composition.length; component++) {
+             if (composition[component] == 0.0) continue;
+-            double k = Math.exp(logK[component]);
+-            double kMinusOne = Math.expm1(logK[component]);
++            double k = DeterministicMath.exp(logK[component]);
++            double kMinusOne = DeterministicMath.expm1(logK[component]);
+             // Keep a tiny positive K at beta=1 instead of cancelling it in 1 + (K - 1).
+             double denominator = (1.0 - vaporFraction) + vaporFraction * k;
+             if (!(denominator > 0.0) || !Double.isFinite(denominator)) return Double.NaN;
+@@ -135,7 +137,7 @@
+                 vapor[component] = 0.0;
+                 continue;
+             }
+-            double k = Math.exp(logK[component]);
++            double k = DeterministicMath.exp(logK[component]);
+             liquid[component] = overall[component] / ((1.0 - vaporFraction) + vaporFraction * k);
+             vapor[component] = k * liquid[component];
+             liquidTotal += liquid[component];
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyComponent.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyComponent.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyComponent.java	2026-09-27 02:21:51.455624410 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyComponent.java	2026-09-27 05:17:55.303349822 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3.thermo;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import java.util.Objects;
+ 
+ /** Immutable SI property data for one hydrocarbon in a registered V3 package. */
+@@ -43,7 +45,7 @@
+         double delta = temperatureKelvin - 298.15;
+         double cubic = cpA + cpB * delta + cpC * delta * delta + cpD * delta * delta * delta;
+         if (cpE == 0.0 && cpF == 0.0) return cubic;
+-        return cubic + Math.pow(delta, 4) * (cpE + cpF * delta);
++        return cubic + DeterministicMath.pow(delta, 4) * (cpE + cpF * delta);
+     }
+ 
+     /** Analytic ideal-gas enthalpy relative to 298.15 K in J/mol. */
+@@ -52,6 +54,6 @@
+         double cubicIntegral = cpA * delta + 0.5 * cpB * delta * delta + cpC * delta * delta * delta / 3.0
+                 + 0.25 * cpD * delta * delta * delta * delta;
+         if (cpE == 0.0 && cpF == 0.0) return cubicIntegral;
+-        return cubicIntegral + Math.pow(delta, 5) * (cpE / 5.0 + cpF * delta / 6.0);
++        return cubicIntegral + DeterministicMath.pow(delta, 5) * (cpE / 5.0 + cpF * delta / 6.0);
+     }
+ }
+diff -ruN a/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3TruncatedFlash.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3TruncatedFlash.java
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3TruncatedFlash.java	2026-09-27 02:21:51.455980980 +0000
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3TruncatedFlash.java	2026-09-27 05:17:55.309897151 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3.thermo;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
+ import java.util.Objects;
+ 
+@@ -76,7 +78,7 @@
+         double[] referenceVapor = reference.vaporComposition();
+         for (int component = 0; component < overall.length; component++) {
+             workspace.logK[component] = support.phaseSupport(component) == V3FlashPhaseSupport.PhaseSupport.BOTH
+-                    ? Math.log(referenceVapor[component]) - Math.log(referenceLiquid[component]) : 0.0;
++                    ? DeterministicMath.log(referenceVapor[component]) - DeterministicMath.log(referenceLiquid[component]) : 0.0;
+         }
+         for (int iteration = 1; iteration <= MAXIMUM_ITERATIONS; iteration++) {
+             checkpoint.run();
+@@ -159,12 +161,12 @@
+                 case LIQUID_ONLY -> -overall[component] / (1.0 - beta);
+                 case VAPOR_ONLY -> overall[component] / beta;
+                 case BOTH -> {
+-                    double k = Math.exp(logK[component]);
++                    double k = DeterministicMath.exp(logK[component]);
+                     double denominator = (1.0 - beta) + beta * k;
+                     if (!Double.isFinite(k) || !Double.isFinite(denominator) || denominator <= 0.0) {
+                         throw failure("Reduced flash has an invalid finite K or RR denominator");
+                     }
+-                    yield overall[component] * Math.expm1(logK[component]) / denominator;
++                    yield overall[component] * DeterministicMath.expm1(logK[component]) / denominator;
+                 }
+             };
+         }
+@@ -192,7 +194,7 @@
+                     vaporAmount = overall[component];
+                 }
+                 case BOTH -> {
+-                    double vaporWeight = beta * Math.exp(logK[component]);
++                    double vaporWeight = beta * DeterministicMath.exp(logK[component]);
+                     double liquidWeight = 1.0 - beta;
+                     double denominator = liquidWeight + vaporWeight;
+                     if (!Double.isFinite(denominator) || denominator <= 0.0) throw failure("Invalid reduced phase weights");
+@@ -233,7 +235,7 @@
+         boolean materialClosed = true;
+         boolean retainedEquilibrium = true;
+         boolean omittedStillTrace = true;
+-        double logCutoff = Math.log(policy.cutoffMoleFraction());
++        double logCutoff = DeterministicMath.log(policy.cutoffMoleFraction());
+         for (int component = 0; component < overall.length; component++) {
+             double liquidAmount = (1.0 - beta) * liquid[component];
+             double vaporAmount = beta * vapor[component];
+@@ -249,14 +251,14 @@
+                 case ABSENT -> materialClosed &= liquidAmount == 0.0 && vaporAmount == 0.0;
+                 case BOTH -> retainedEquilibrium &= liquid[component] > 0.0 && vapor[component] > 0.0
+                         && Double.isFinite(targetLogK[component])
+-                        && Math.abs(Math.log(vapor[component]) - Math.log(liquid[component]) - targetLogK[component])
++                        && Math.abs(DeterministicMath.log(vapor[component]) - DeterministicMath.log(liquid[component]) - targetLogK[component])
+                         <= LOG_K_TOLERANCE;
+                 case LIQUID_ONLY -> omittedStillTrace &= vapor[component] == 0.0 && liquid[component] > 0.0
+                         && Double.isFinite(targetLogK[component])
+-                        && Math.log(liquid[component]) + targetLogK[component] < logCutoff;
++                        && DeterministicMath.log(liquid[component]) + targetLogK[component] < logCutoff;
+                 case VAPOR_ONLY -> omittedStillTrace &= liquid[component] == 0.0 && vapor[component] > 0.0
+                         && Double.isFinite(targetLogK[component])
+-                        && Math.log(vapor[component]) - targetLogK[component] < logCutoff;
++                        && DeterministicMath.log(vapor[component]) - targetLogK[component] < logCutoff;
+             }
+         }
+         double betaError = Math.abs(beta - referenceBeta);
+diff -ruN a/src/test/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlashReference.java b/src/test/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlashReference.java
+--- a/src/test/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlashReference.java	2026-09-27 02:21:51.515628773 +0000
++++ b/src/test/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlashReference.java	2026-09-27 05:17:55.365848823 +0000
+@@ -1,5 +1,7 @@
+ package com.wormzjl.createcheme.science.column.v3.thermo;
+ 
++import com.wormzjl.createcheme.science.math.DeterministicMath;
++
+ /** Frozen db46e88 flash for numerical equivalence tests; do not update with the implementation. */
+ final class V3FeedFlashReference {
+     private static final int MAXIMUM_ITERATIONS = 64;
+@@ -13,7 +15,7 @@
+             V3PengRobinsonThermo model, double temperatureKelvin, double pressurePascal, V3ThermoWorkspace workspace) {
+         int componentCount = workspace.componentCount();
+         model.wilsonK(temperatureKelvin, pressurePascal, workspace.wilsonK, workspace);
+-        for (int component = 0; component < componentCount; component++) workspace.logK[component] = Math.log(workspace.wilsonK[component]);
++        for (int component = 0; component < componentCount; component++) workspace.logK[component] = DeterministicMath.log(workspace.wilsonK[component]);
+ 
+         double atLiquidEndpoint = rachfordRiceResidual(workspace.normalizedOverall, workspace.logK, 0.0);
+         double atVaporEndpoint = rachfordRiceResidual(workspace.normalizedOverall, workspace.logK, 1.0);
+@@ -91,8 +93,8 @@
+         double residual = 0.0;
+         for (int component = 0; component < composition.length; component++) {
+             if (composition[component] == 0.0) continue;
+-            double k = Math.exp(logK[component]);
+-            double kMinusOne = Math.expm1(logK[component]);
++            double k = DeterministicMath.exp(logK[component]);
++            double kMinusOne = DeterministicMath.expm1(logK[component]);
+             // Keep a tiny positive K at beta=1 instead of cancelling it in 1 + (K - 1).
+             double denominator = (1.0 - vaporFraction) + vaporFraction * k;
+             if (!(denominator > 0.0) || !Double.isFinite(denominator)) return Double.NaN;
+@@ -111,7 +113,7 @@
+                 vapor[component] = 0.0;
+                 continue;
+             }
+-            double k = Math.exp(logK[component]);
++            double k = DeterministicMath.exp(logK[component]);
+             liquid[component] = overall[component] / ((1.0 - vaporFraction) + vaporFraction * k);
+             vapor[component] = k * liquid[component];
+             liquidTotal += liquid[component];
+diff -ruN a/src/test/java/com/wormzjl/createcheme/science/fluid/DeterministicMathSourceTest.java b/src/test/java/com/wormzjl/createcheme/science/fluid/DeterministicMathSourceTest.java
+--- a/src/test/java/com/wormzjl/createcheme/science/fluid/DeterministicMathSourceTest.java	2026-09-27 04:59:11.383844338 +0000
++++ b/src/test/java/com/wormzjl/createcheme/science/fluid/DeterministicMathSourceTest.java	2026-09-27 05:24:38.966566051 +0000
+@@ -7,7 +7,6 @@
+ import java.nio.file.Path;
+ import java.util.ArrayList;
+ import java.util.List;
+-import java.util.Set;
+ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
+ import java.util.stream.Stream;
+@@ -23,8 +22,7 @@
+  * {@code java.lang.StrictMath} function (or {@code Math.random}) is called directly in the scanned sources.
+  *
+  * <p>Scanned: {@code science/} and {@code runtime/} of the main sources, and the exact-regression fixtures of
+- * {@code fluid/benchmark} in the test sources. Exempt: the facade itself, and, pending the owner's scope decision, the
+- * column solver {@code science/column/} except the files the fluid thermodynamics executes ({@link #SHARED_WITH_FLUID}).
++ * {@code fluid/benchmark} in the test sources. Exempt: the facade itself.
+  */
+ class DeterministicMathSourceTest {
+     /** java.lang.Math functions that are not correctly rounded (or not deterministic at all). */
+@@ -39,9 +37,6 @@
+     private static final Path TEST = Path.of("src/test/java/com/wormzjl/createcheme");
+     private static final List<Path> ROOTS = List.of(MAIN.resolve("science"), MAIN.resolve("runtime"),
+             TEST.resolve("fluid/benchmark"));
+-    private static final Path EXEMPT = MAIN.resolve("science/column");
+-    /** Column files whose functions the fluid network executes (FluidThermodynamics, WaterRegion1). */
+-    static final Set<Path> SHARED_WITH_FLUID = Set.of(MAIN.resolve("science/column/v3/thermo/V3WaterProperties.java"));
+     /** The facade itself, the only file that may call StrictMath's functions. */
+     private static final Path FACADE = MAIN.resolve("science/math/DeterministicMath.java");
+ 
+@@ -55,18 +50,15 @@
+                 files = walk.filter(p -> p.toString().endsWith(".java")).sorted().toList();
+             }
+             for (Path file : files) {
+-                if (file.equals(FACADE) || file.startsWith(EXEMPT) && !SHARED_WITH_FLUID.contains(file)) {
++                if (file.equals(FACADE)) {
+                     continue;
+                 }
+                 scanned++;
+                 violations.addAll(violations(file, Files.readString(file)));
+             }
+         }
+-        for (Path shared : SHARED_WITH_FLUID) {
+-            assertTrue(Files.isRegularFile(shared), "shared file is missing (moved?): " + shared);
+-        }
+-        // The scanned roots hold 106 files at 2026-09-27; a much smaller count means the scan lost its roots.
+-        assertTrue(scanned >= 100, "only " + scanned + " files scanned");
++        // The scanned roots hold 205 files at 2026-09-27; a much smaller count means the scan lost its roots.
++        assertTrue(scanned >= 200, "only " + scanned + " files scanned");
+         assertTrue(Files.isRegularFile(FACADE), "facade is missing (moved?): " + FACADE);
+         assertTrue(violations.isEmpty(), "use DeterministicMath (bitwise identical on every JVM) instead of:\n"
+                 + String.join("\n", violations));

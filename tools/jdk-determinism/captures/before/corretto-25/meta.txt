@@ -1,0 +1,15 @@
+id=corretto-25
+java=$JDKS/corretto-25/bin/java
+java.runtime.version=25.0.4.1+10-LTS
+java.vm.name=OpenJDK 64-Bit Server VM
+java.vm.version=25.0.4.1+10-LTS
+java.vendor=Amazon.com Inc.
+java.vendor.version=Corretto-25.0.4.10.1
+build=$SP/jdk-sweep/out-before (efd123a (tools-only diff), compiled by OpenJDK 21.0.10+7-Ubuntu javac --release 21)
+runtime.exit=1 runtime.wall=55.1s junction.lines=33
+regression.exit=1
+probe.exit=0 probe.wall=3.2s
+probe.nolibm.exit=0
+mathsweep.jit.exit=0
+mathsweep.xint.exit=0
+mathsweep.nolibm.exit=0

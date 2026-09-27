@@ -1,0 +1,15 @@
+id=oracle-openjdk-21.0.2
+java=$JDKS/oracle-openjdk-21.0.2/bin/java
+java.runtime.version=21.0.2+13-58
+java.vm.name=OpenJDK 64-Bit Server VM
+java.vm.version=21.0.2+13-58
+java.vendor=Oracle Corporation
+java.vendor.version=
+build=$SP/jdk-sweep/out-before (efd123a (tools-only diff), compiled by OpenJDK 21.0.10+7-Ubuntu javac --release 21)
+runtime.exit=0 runtime.wall=55.2s junction.lines=33
+regression.exit=0
+probe.exit=0 probe.wall=2.4s
+probe.nolibm.exit=0
+mathsweep.jit.exit=0
+mathsweep.xint.exit=0
+mathsweep.nolibm.exit=0

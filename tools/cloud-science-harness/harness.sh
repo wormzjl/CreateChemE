@@ -19,6 +19,7 @@
 #   OUT    compiled classes and reports (default: $REPO/build/cloud-harness; git-ignored)
 #   LIB    jar folder (default: this folder's lib/, filled by `fetch`)
 #   JAVA_HOME  optional; javac/java from its bin/ when set
+#   JAVA   optional; the java binary that runs the tests (overrides JAVA_HOME for java only; javac stays)
 #   HARNESS_JVM_OPTS  extra JVM options for the test JVM (default: -Xmx2g)
 set -uo pipefail
 unset JAVA_TOOL_OPTIONS   # the container proxy options only print a banner here
@@ -28,7 +29,7 @@ REPO=$(cd "${REPO:-$HERE/../..}" && pwd)
 OUT=${OUT:-$REPO/build/cloud-harness}
 LIB=${LIB:-$HERE/lib}
 JAVAC=${JAVA_HOME:+$JAVA_HOME/bin/}javac
-JAVA=${JAVA_HOME:+$JAVA_HOME/bin/}java
+JAVA=${JAVA:-${JAVA_HOME:+$JAVA_HOME/bin/}java}   # JAVA= runs the tests under another runtime (JDK sweep)
 JVM_OPTS=${HARNESS_JVM_OPTS:--Xmx2g}
 
 MAVEN=https://repo.maven.apache.org/maven2
@@ -146,9 +147,9 @@ junction_lines() {
   jdk=$("$JAVA" -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.runtime.version = //p')
   [ "$refjdk" = "$jdk" ] || echo "harness: NOTE the reference was recorded on JDK $refjdk, this run uses $jdk; a last-bit ledger difference can be the JDK (README, Reference results)"
   if diff <(normalise "$ref") <(normalise "$got") > "$OUT/reports/$1/junction-lines.diff"; then
-    echo "harness: $(wc -l < "$got") junction lines identical to reference/junction-lines.txt (6e1c5b6; wall ms, bytes and allocatedMB ignored)"
+    echo "harness: $(wc -l < "$got") junction lines identical to reference/junction-lines.txt (wall ms, bytes and allocatedMB ignored)"
   else
-    echo "harness: JUNCTION LINES DIFFER from reference/junction-lines.txt (< reference at 6e1c5b6, > this run):"
+    echo "harness: JUNCTION LINES DIFFER from reference/junction-lines.txt (< reference, > this run):"
     cat "$OUT/reports/$1/junction-lines.diff"; return 1
   fi
 }

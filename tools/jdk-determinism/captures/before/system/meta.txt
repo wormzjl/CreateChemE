@@ -1,0 +1,15 @@
+id=system
+java=$JDKS/system/bin/java
+java.runtime.version=21.0.10+7-Ubuntu-124.04
+java.vm.name=OpenJDK 64-Bit Server VM
+java.vm.version=21.0.10+7-Ubuntu-124.04
+java.vendor=Ubuntu
+java.vendor.version=
+build=$SP/jdk-sweep/out-before (efd123a (tools-only diff), compiled by OpenJDK 21.0.10+7-Ubuntu javac --release 21)
+runtime.exit=0 runtime.wall=56.8s junction.lines=33
+regression.exit=0
+probe.exit=0 probe.wall=2.5s
+probe.nolibm.exit=0
+mathsweep.jit.exit=0
+mathsweep.xint.exit=0
+mathsweep.nolibm.exit=0

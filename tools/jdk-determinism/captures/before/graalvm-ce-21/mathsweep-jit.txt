@@ -1,0 +1,14 @@
+# java.runtime.version=21.0.2+13-jvmci-23.1-b30 java.vm.name=OpenJDK 64-Bit Server VM java.vendor=GraalVM Community java.vendor.version=GraalVM CE 21.0.2+13.1 os.arch=amd64
+# inputs per function 1048576, repetitions 3 (the last is reported)
+fn        differ   maxUlp mathHash           strictHash         inputHash          repsStable  firstDifferingInput(hex) math strict
+log        28115        1 b2af78f5d069d724   59640537d7133d29   303388e7a1445619   yes         0x1.574b2589e9197p2 0x1.ae0100c278161p0 0x1.ae0100c27816p0
+exp        80844        1 ffea27edaabf3f25   122f7303ff862c52   c596cbfc0f091082   yes         0x1.1da6ee2ba1d4p0 0x1.86ab10c1fba35p1 0x1.86ab10c1fba36p1
+pow        87714        1 dd6dd31188b6bf75   4024a8923ce42dae   4cd36ee300710cac   yes         0x1.a2df7737091f4p18,0x1.851eb851eb852p-2 0x1.14455df361315p7 0x1.14455df361316p7
+cbrt           0        0 bde4306aac784503   bde4306aac784503   fa6f396c3c10e0b3   yes         -
+log1p          0        0 f12956dc899e01b4   f12956dc899e01b4   a637c68074e655c5   yes         -
+expm1          0        0 830d5839b33a1c2f   830d5839b33a1c2f   61bab45ecea56332   yes         -
+cos        30675        1 89334f4e34e2d41b   469b3f99f13ce570   029a3bc6044dedfa   yes         0x1.0f5bf5af9da2cp2 -0x1.d1f24999f284dp-2 -0x1.d1f24999f284ep-2
+log10      69214        2 f0cc5ef2c13c7c4a   8e7a3db4dfa2b891   7901cd30ecc1f8b9   yes         0x1.00ee28f72dc4fp-11 -0x1.a7a609af06325p1 -0x1.a7a609af06324p1
+acos           0        0 bc359fef99faf6a0   bc359fef99faf6a0   ad5a310969de0ff6   yes         -
+sqrt           0        0 214ccae308e66ccb   214ccae308e66ccb   19e5bca3f0353750   yes         -
+fma            0        0 9ecf2268acaa6947   9ecf2268acaa6947   1d52ef4e8be56426   yes         -

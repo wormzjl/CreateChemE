@@ -1,0 +1,31 @@
+# harness science and runtime consoles, masked (wall ms, bytes, allocatedMB, identity hashes, '<n> ms', order inside reasons={...}); '<' = base efd123a on OpenJ9 (Semeru 21.0.10), '>' = prototype on HotSpot (OpenJDK 21.0.10); run 2026-09-27
+## science
+4807c4807
+< [        59 containers found      ]
+---
+> [        61 containers found      ]
+4809c4809
+< [        59 containers started    ]
+---
+> [        61 containers started    ]
+4811c4811
+< [        59 containers successful ]
+---
+> [        61 containers successful ]
+4813c4813
+< [       223 tests found           ]
+---
+> [       228 tests found           ]
+4815c4815
+< [       223 tests started         ]
+---
+> [       228 tests started         ]
+4817c4817
+< [       223 tests successful      ]
+---
+> [       228 tests successful      ]
+## runtime
+67c67
+< one placement, median ms by world size: {500=0.522704, 2000=0.276722, 5000=0.22095}
+---
+> one placement, median ms by world size: {500=0.168968, 2000=0.140398, 5000=0.195148}
