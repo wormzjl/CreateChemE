@@ -18,12 +18,6 @@ V3 has its own Minecraft-independent thermodynamics implementation under `scienc
 
 The custom multicomponent fluid system, connected plant simulation, reaction models, continuous equipment operation, and final multiblock structures are not implemented yet.
 
-## V1 removal and compatibility
-
-The original V1 calculator, its solver, packets, and `createcheme:column_calculator` block/item/block-entity/menu registrations have been removed. This is a breaking change for worlds and inventories containing V1 calculators: there is no remapping or conversion of their saved inputs/results. Replace any V1 calculators in the previous version before upgrading a world that needs them. Existing V3 registration IDs, saved input schema, property-package IDs, and dataset revisions are preserved.
-
-Client and server must both run the refactored version; the network protocol version changed to reject the old packet set.
-
 ## Building and verification
 
 Build the mod with Java 21 using the Gradle wrapper:
